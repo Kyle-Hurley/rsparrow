@@ -28,10 +28,12 @@ network fixture and shared helper utilities. Must complete before all other sub-
 Completed 2026-02-23: 23 tests pass, 0 fail. testthat edition 3 active.
 </sub_plan>
 
-<sub_plan id="06B" file="PLAN_06B_NETWORK_TESTS.md" status="pending" blocked_by="06A">
+<sub_plan id="06B" file="PLAN_06B_NETWORK_TESTS.md" status="in_progress" blocked_by="06A">
 Network Topology Tests — unit tests for hydseq, rsparrow_hydseq (exported), calcHeadflag,
 calcTermflag, accumulateIncrArea. Uses mini_network fixture from 06A.
 Estimated test runtime: &lt;5 seconds.
+Task 06B-1 complete (2026-03-07): test-hydseq.R, 7 tests passing.
+Tasks 06B-2 (test-calcflags.R) and 06B-3 (test-accumulateIncrArea.R) pending.
 </sub_plan>
 
 <sub_plan id="06C" file="PLAN_06C_FORTRAN_TESTS.md" status="pending" blocked_by="06A">

@@ -32,7 +32,7 @@ Adjust test calls to match actual signatures if they differ.
 
 <tasks>
 
-<task id="06B-1" status="pending">
+<task id="06B-1" status="complete">
 <subject>Write test-hydseq.R</subject>
 <description>
 File: tests/testthat/test-hydseq.R
@@ -89,6 +89,15 @@ Test 7: "rsparrow_hydseq preserves non-hydseq columns"
   - No dependency on Fortran (hydseq is pure R)
   - Test file runs in under 2 seconds
 </success_criteria>
+<completed date="2026-03-07">
+  - 7 tests pass (14 expectations total)
+  - Internal hydseq() accessed via rsparrow:::hydseq() — not exported
+  - Ordering convention confirmed: terminal reach gets hydseq=-1 (max/least negative);
+    headwaters get more negative values; sorted ascending = upstream-first processing order
+  - Linear network test requires termflag, frac, demiarea columns because hydseq()
+    unconditionally calls accumulateIncrArea() due to bug in line 186 condition
+    (filed as GitHub issue: hydseq.R boolean condition bugs)
+</completed>
 </task>
 
 <task id="06B-2" status="pending">

@@ -1,25 +1,23 @@
 <testing_strategy>
 
 <current_state>
-<framework>testthat (listed as Suggests in DESCRIPTION)</framework>
+<framework>testthat (>= 3.0.0) in DESCRIPTION Suggests; Config/testthat/edition: 3</framework>
 <runner>tests/testthat.R (standard testthat runner)</runner>
-<helper>tests/testthat/helper.R (test setup)</helper>
-<fixtures>tests/testthat/fixtures/ (test data files)</fixtures>
-<test_count>16 test files</test_count>
+<helper>tests/testthat/helper.R (expect_numeric_close, expect_names_present, make_mock_rsparrow)</helper>
+<fixtures>tests/testthat/fixtures/ (mini_network.rda, mini_model_inputs.rda, regression outputs)</fixtures>
+<test_count>9 test files, 30 tests passing</test_count>
+<last_updated>2026-03-07</last_updated>
 </current_state>
 
 <existing_tests>
-<test_group name="Report Generation" files="7">
-test-makeReport_diagnosticPlotsNLLS.R
-test-makeReport_drainageAreaErrorsPlot.R
-test_makeReport_header.R
-test-makeReport_modelEstPerf.R
-test-makeReport_modelSimPerf.R
-test-makeReport_outputMaps.R
-test-makeReport_residMaps.R
-Note: These test Rmd report rendering, not core modeling logic. The makeReport_* functions
-remain in R/ but are candidates for removal. If reports are removed for CRAN, these tests
-become irrelevant.
+<test_group name="Network Processing" files="1">
+test-hydseq.R (7 tests, added 2026-03-07, Plan 06B-1)
+Tests: hydseq() return structure, headwater ordering, flow-direction consistency,
+linear network handling, rsparrow_hydseq/hydseq agreement, input validation,
+column preservation.
+Note: Internal hydseq() accessed via rsparrow:::hydseq(). Ordering convention confirmed:
+terminal reach = hydseq max (least negative); headwaters = most negative; sorted ascending
+= upstream-first. hydseqTerm, upstream, accumulateIncrArea, sumIncremAttributes still untested.
 </test_group>
 
 <test_group name="Data Reading/Preparation" files="3">
@@ -56,7 +54,9 @@ is high risk without regression tests.
 </gap>
 
 <gap priority="1" name="Network Processing">
-NO tests for: hydseq, hydseqTerm, upstream, accumulateIncrArea, sumIncremAttributes.
+PARTIAL coverage (Plan 06B-1 complete): hydseq and rsparrow_hydseq have 7 tests in
+test-hydseq.R. Still NO tests for: hydseqTerm, upstream, accumulateIncrArea,
+sumIncremAttributes (planned in 06B-2 and 06B-3).
 Hydrological sequencing is foundational; bugs would corrupt all downstream results.
 </gap>
 
