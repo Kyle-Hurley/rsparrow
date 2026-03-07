@@ -178,7 +178,45 @@ runRsparrow.R (now in inst/legacy/). Package builds successfully via R CMD build
 vignettes due to missing deps). Tests exist at tests/testthat/ but require fixtures. Tutorial models in
 UserTutorial/ (static TN) and UserTutorialDynamic/ (dynamic TP) serve as working examples.
 Build: R CMD build --no-build-vignettes RSPARROW_master/ -> rsparrow_2.1.0.tar.gz
+
+Git and GitHub workflow:
+- Remote: https://github.com/Kyle-Hurley/rsparrow (branch: main)
+- Use `gh` CLI for all GitHub operations (issues, PRs, etc.)
+- When signing commits as co-author, use: Co-Authored-By: Claude Sonnet 4.6
+  (no email address — omit the angle-bracket email entirely)
+- Bugs discovered incidentally during a task but outside its scope must NOT be silently
+  ignored or fixed without permission. Instead, open a GitHub issue via `gh issue create`
+  with a descriptive title and body explaining the bug, then continue the current task.
 </development_workflow>
+
+<commands>
+Common commands (working directory: repo root rsparrow-master/; source scripts/renv.sh or prefix with env vars):
+
+  # Set environment (once per shell session)
+  source scripts/renv.sh
+  # or prefix commands with: R_LIBS=/home/kp/R/libs _R_CHECK_FORCE_SUGGESTS_=false
+
+  # R CMD check (CRAN compliance + tests)
+  R_LIBS=/home/kp/R/libs _R_CHECK_FORCE_SUGGESTS_=false R CMD check --no-build-vignettes RSPARROW_master/
+
+  # Build package tarball
+  R CMD build --no-build-vignettes RSPARROW_master/
+
+  # Run testthat tests (after install)
+  R_LIBS=/home/kp/R/libs R CMD INSTALL --no-multiarch RSPARROW_master/
+  R_LIBS=/home/kp/R/libs Rscript -e "testthat::test_package('rsparrow')"
+
+  # Run a single test file
+  R_LIBS=/home/kp/R/libs Rscript -e "testthat::test_file('RSPARROW_master/tests/testthat/<file>.R')"
+
+  # Rebuild roxygen docs + NAMESPACE
+  R_LIBS=/home/kp/R/libs Rscript -e "roxygen2::roxygenise('RSPARROW_master/')"
+
+  # Or use Make targets: check | test | build | document | install | clean
+  make check
+
+Baseline (Plan 06A): R CMD check produces 4 WARNINGs, 3 NOTEs, 0 ERRORs, 23 tests pass.
+</commands>
 
 <related_documentation>
 <doc>docs/reference/ARCHITECTURE.md - Detailed module structure and execution flow</doc>
