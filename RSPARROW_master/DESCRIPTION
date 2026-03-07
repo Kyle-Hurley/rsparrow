@@ -1,0 +1,162 @@
+Package: rsparrow
+Type: Package
+Title: SPARROW Water-Quality Modeling
+Version: 2.1.0
+Date: 2025-01-31
+Authors@R: c(
+    person("Lillian", "Gorman Sanisaca",
+           email = "lgormansanisaca@usgs.gov", role = "aut"),
+    person("Kyle", "Hurley",
+           email = "khurley@usgs.gov", role = c("aut", "cre")),
+    person("Richard", "Alexander",
+           email = "ralex@usgs.gov", role = "aut"))
+Description: Setup and execution of the USGS SPARROW (SPAtially Referenced
+    Regressions On Watershed attributes) water-quality model for a
+    user-defined domain.
+Roxygen: list(markdown=TRUE)
+VignetteBuilder: knitr
+Depends:
+    R(>= 4.4.0)
+Imports:
+    data.table (>= 1.13.2),
+    nlmrt (>= 2016.3.2),
+    numDeriv (>= 2016.8-1.1)
+Suggests:
+    car (>= 3.0-10),
+    dplyr (>= 1.0.2),
+    ggplot2 (>= 3.3.2),
+    gplots (>= 3.1.0),
+    gridExtra (>= 2.3),
+    knitr (>= 1.30),
+    leaflet (>= 2.0.3),
+    magrittr (>= 1.5),
+    mapview (>= 2.9.0),
+    plotly (>= 4.9.2.1),
+    plyr (>= 1.8.6),
+    rmarkdown (>= 2.5),
+    sf (>= 0.9-6),
+    spdep (>= 1.1-5),
+    testthat (>= 3.0.0)
+License: CC0
+URL: https://code.usgs.gov/water/stats/RSPARROW
+Collate:
+    'accumulateIncrArea.R'
+    'addMarkerText.R'
+    'addVars.R'
+    'aggDynamicMapdata.R'
+    'applyUserModify.R'
+    'areColors.R'
+    'assignIncremSiteIDs.R'
+    'calcHeadflag.R'
+    'calcIncremLandUse.R'
+    'calcClassLandusePercent.R'
+    'calcDemtareaClass.R'
+    'calcTermflag.R'
+    'checkAnyMissingSubdataVars.R'
+    'checkBinaryMaps.R'
+    'checkClassificationVars.R'
+    'checkData1NavigationVars.R'
+    'checkDupVarnames.R'
+    'checkDynamic.R'
+    'checkFileEncoding.R'
+    'createMasterDataDictionary.R'
+    'checkMissingData1Vars.R'
+    'checkMissingSubdataVars.R'
+    'checkingMissingVars.R'
+    'checkDrainageareaErrors.R'
+    'checkDrainageareaMapPrep.R'
+    'controlFileTasksModel.R'
+    'copyStructure.R'
+    'correlationMatrix.R'
+    'createInitialParameterControls.R'
+    'createInitialDataDictionary.R'
+    'createDataMatrix.R'
+    'createSubdataSorted.R'
+    'createVerifyReachAttr.R'
+    'dataInputPrep.R'
+    'deliver.R'
+    'diagnosticPlots_4panel_A.R'
+    'diagnosticPlots_4panel_B.R'
+    'diagnosticPlotsNLLS_dyn.R'
+    'diagnosticPlotsNLLS_timeSeries.R'
+    'diagnosticPlotsNLLS.R'
+    'diagnosticPlotsValidate.R'
+    'diagnosticSensitivity.R'
+    'diagnosticSpatialAutoCorr.R'
+    'eigensort.R'
+    'estimateBootstraps.R'
+    'estimateNLLSmetrics.R'
+    'estimateNLLStable.R'
+    'estimateOptimize.R'
+    'estimate.R'
+    'estimateFeval.R'
+    'estimateWeightedErrors.R'
+    'findMinMaxLatLon.R'
+    'fixDupLatLons.R'
+    'g_legend.R'
+    'getdindx.R'
+    'getuindx.R'
+    'getVarList.R'
+    'hline.R'
+    'hydseq.R'
+    'hydseqTerm.R'
+    'makeAESvector.R'
+    'mapBreaks.R'
+    'mapLoopStr.R'
+    'mod_read_utf8.R'
+    'named.list.R'
+    'naOmitFuncStr.R'
+    'outcharfun.R'
+    'plotlyLayout.R'
+    'predict.R'
+    'predict_core.R'
+    'predictScenarios.R'
+    'predictBootstraps.R'
+    'predictOutCSV.R'
+    'predictScenariosOutCSV.R'
+    'predictScenariosPrep.R'
+    'predictSensitivity.R'
+    'predictBoot.R'
+    'predictBootsOutCSV.R'
+    'predictSummaryOutCSV.R'
+    'read_dataDictionary.R'
+    'readData.R'
+    'readDesignMatrix.R'
+    'readForecast.R'
+    'readParameters.R'
+    'replaceData1Names.R'
+    'replaceNAs.R'
+    'selectCalibrationSites.R'
+    'selectDesignMatrix.R'
+    'selectParmValues.R'
+    'selectValidationSites.R'
+    'setNAdf.R'
+    'setNLLSWeights.R'
+    'set_unique_breaks.R'
+    'setupDynamicMaps.R'
+    'startEndmodifySubdata.R'
+    'startModelRun.R'
+    'sumIncremAttributes.R'
+    'syncVarNames.R'
+    'test_addPlotlyvars.R'
+    'unPackList.R'
+    'upstream.R'
+    'validateMetrics.R'
+    'validateFevalNoadj.R'
+    'verifyDemtarea.R'
+    'rsparrow_model.R'
+    'predict.rsparrow.R'
+    'summary.rsparrow.R'
+    'print.rsparrow.R'
+    'coef.rsparrow.R'
+    'residuals.rsparrow.R'
+    'vcov.rsparrow.R'
+    'plot.rsparrow.R'
+    'rsparrow_bootstrap.R'
+    'rsparrow_scenario.R'
+    'rsparrow_hydseq.R'
+    'rsparrow_validate.R'
+    'read_sparrow_data.R'
+    'rsparrow-package.R'
+RoxygenNote: 7.3.2
+Config/testthat/edition: 3
