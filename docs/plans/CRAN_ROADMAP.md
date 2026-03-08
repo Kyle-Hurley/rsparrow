@@ -32,15 +32,16 @@ parameter dispatching to "residuals" (→ diagnosticPlots_4panel_A/B), "sensitiv
 After Plan 05D: 49 eval(parse()) remain (27 COMPLEX/deferred from 05C, plus ~22 hardened
 hover-text patterns brought in from inlined make_* files — all non-arbitrary). R CMD build
 succeeds.
-Plans 06A–06E (test suite) are complete: 8 broken makeReport_* test files deleted,
+Plans 06A–06F (test suite) are all complete: 8 broken makeReport_* test files deleted,
 testthat edition 3 configured, helper.R rewritten, fixtures created (mini_network.rda,
-mini_model_inputs.rda). 19 test files pass (0 fail):
+mini_model_inputs.rda). 24 test files pass (0 fail):
   06B (network): 15 tests — hydseq, calcHeadflag/Termflag, accumulateIncrArea
   06C (Fortran):  17 tests — deliver(), tnoder/ptnoder/deliv_fraction Fortran wrappers
   06D (estimation): 11 tests — setNLLSWeights, estimateWeightedErrors, estimateOptimize
   06E (prediction): 17 tests — predict_sparrow, .predict_core, predictSensitivity
     Plan 05B regression confirmed: .predict_core == predict_sparrow to 1e-10
-Remaining work: Plan 06F (exported API tests).
+  06F (exported API): 38 tests (1 skip) — rsparrow_hydseq, read_sparrow_data, all 7 S3
+    methods, rsparrow_bootstrap/validate/scenario/model argument validation
 R CMD check: 4 WARNINGs (pre-existing dep-not-installed), 3 NOTEs; 0 test errors.
 </executive_summary>
 
@@ -70,7 +71,7 @@ R CMD check: 4 WARNINGs (pre-existing dep-not-installed), 3 NOTEs; 0 test errors
 </documentation>
 
 <testing_and_examples>
-<requirement status="partial">Add regression tests for core math: estimateFeval, predict, deliver, hydseq — Plans 06B–06E complete (17+17+11+17 tests); Plan 06F (exported API tests) pending</requirement>
+<requirement status="done">Add regression tests for core math: estimateFeval, predict, deliver, hydseq, and exported API — Plans 06B–06F complete (15+17+11+17+38 tests; 1 skip). 24 test files, 0 failures.</requirement>
 <requirement status="done">Create small synthetic reach network dataset (7 reaches, Y-shaped) for fast unit tests — fixtures/mini_network.rda (Plan 06A)</requirement>
 <requirement status="done">Generate reference output fixtures for estimation/prediction unit tests — fixtures/mini_model_inputs.rda (Plan 06A; synthetic, not UserTutorial-derived)</requirement>
 <requirement>All tests must complete within CRAN's 10-minute limit for R CMD check</requirement>
@@ -227,8 +228,8 @@ A second vignette on scenario analysis and bootstrapping can follow in a later r
   - [PARTIAL] Remove non-core functions (~44 removed in Plan 02; 15 more in Plan 05A; 20 more in Plan 05D; ~45 remain: unPackList.R + 3 COMPLEX/deferred callers, mapLoopStr.R, aggDynamicMapdata.R, plotlyLayout.R, addMarkerText.R, setupDynamicMaps.R, and diagnostic/map files)
   - Create example dataset in data/
   - Write primary vignette
-  - [PARTIAL] Build test suite for core estimation and prediction — Plans 06A–06E complete
-    (19 test files, 60+ tests); Plan 06F (exported API) pending
+  - [DONE] Build test suite for core estimation, prediction, and exported API — Plans 06A–06F
+    all complete (24 test files, 98 tests / 38+1 skip in 06F alone); 0 failures
 </priority>
 
 <priority level="3" label="Important but not blocking initial submission">
@@ -560,6 +561,37 @@ Completed all 3 tasks. Completed 2026-03-08.
     pload_inc_src vars — known residual, does not affect return value.
   - Plan 05B consolidation confirmed non-breaking: all regression tests pass to 1e-10
   - Total: 17 tests (22 expectations), all pass; 0 fail
+</plan>
+
+
+<plan id="06F" label="Exported API Tests">
+Completed all 5 tasks. Completed 2026-03-08.
+  - test-rsparrow-hydseq.R (6 tests): exported rsparrow_hydseq() — existence/callability,
+    returns data.frame with hydseq column, custom from_col/to_col names preserved,
+    error on non-data.frame input, error on missing from_col, error on missing waterid column.
+    Note: test data must include termflag, frac, demiarea (required by internal hydseq()).
+  - test-read-sparrow-data.R (5 tests): returns list with file.output.list/data1/data_names,
+    error for nonexistent path_main, error for missing parameters.csv, run_id-prefixed
+    dataDictionary.csv created at results/run1/run1_dataDictionary.csv. Uses make_minimal_sparrow_dir()
+    helper with 5-column dataDictionary (varType, sparrowNames, data1UserNames, varunits, explanation).
+  - test-s3-methods.R (11 tests): print.rsparrow returns invisible x; output contains coefficient
+    names; summary.rsparrow returns summary.rsparrow class; summary output contains R2/RMSE;
+    coef() returns named numeric matching coefficients; residuals() returns numeric vector;
+    vcov() returns NULL when ifHess="no"; vcov() returns matrix when available; print does not
+    modify object; all 5 S3 methods registered (verified via methods(), not isS3method()).
+  - test-plot-rsparrow.R (6 tests): plot.rsparrow registered as S3 method; invalid type stops
+    with error mentioning valid types; valid types ("residuals","sensitivity","spatial") pass
+    dispatch without "invalid type" error (deeper data-missing errors are acceptable); ...
+    forwarded through dispatch.
+  - test-rsparrow-wrappers.R (10+1 skip tests): rsparrow_bootstrap formal args (object, n_boot,
+    seed); class check errors for all three wrappers; rsparrow_validate detects missing
+    Vsites.list; rsparrow_scenario requires rsparrow class; rsparrow_model has 6 required args;
+    rsparrow_model stops for nonexistent path_main; rsparrow_model validates model_type via
+    match.arg before calling read_sparrow_data. 1 skip: reproducibility test requires fitted model.
+  - Key implementation notes: isS3method() does not work for base S3 — use
+    "method.class" %in% as.character(methods("generic")) instead; rsparrow_bootstrap
+    API is (object, n_boot, seed) not (model, biters, iseed) as the plan doc assumed.
+  - Total: 38 tests (1 skip), all pass; 0 fail
 </plan>
 
 </completed_plans>

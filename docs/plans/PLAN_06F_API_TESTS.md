@@ -1,4 +1,4 @@
-<plan id="06F" label="Exported API Tests" status="pending" blocked_by="06A">
+<plan id="06F" label="Exported API Tests" status="complete" blocked_by="06A">
 
 <objective>
 Write tests for all 13 exported functions using the make_mock_rsparrow() helper and
@@ -28,7 +28,7 @@ including systems without gfortran.
 
 <tasks>
 
-<task id="06F-1" status="pending">
+<task id="06F-1" status="complete">
 <subject>Write test-rsparrow-hydseq.R — exported hydseq function</subject>
 <description>
 File: tests/testthat/test-rsparrow-hydseq.R
@@ -76,7 +76,7 @@ Test 6: "rsparrow_hydseq stops when waterid column missing"
 </success_criteria>
 </task>
 
-<task id="06F-2" status="pending">
+<task id="06F-2" status="complete">
 <subject>Write test-read-sparrow-data.R — data reading function</subject>
 <description>
 File: tests/testthat/test-read-sparrow-data.R
@@ -157,7 +157,7 @@ This is the most implementation-sensitive test in Plan 06F.
 </notes>
 </task>
 
-<task id="06F-3" status="pending">
+<task id="06F-3" status="complete">
 <subject>Write test-s3-methods.R — print, summary, coef, residuals, vcov</subject>
 <description>
 File: tests/testthat/test-s3-methods.R
@@ -238,7 +238,7 @@ Test 11: "S3 dispatch is correct — methods are called for rsparrow class"
 </success_criteria>
 </task>
 
-<task id="06F-4" status="pending">
+<task id="06F-4" status="complete">
 <subject>Write test-plot-rsparrow.R — plot S3 method</subject>
 <description>
 File: tests/testthat/test-plot-rsparrow.R
@@ -293,7 +293,7 @@ Test 6: "plot.rsparrow `...` are passed through to diagnostic function"
 </success_criteria>
 </task>
 
-<task id="06F-5" status="pending">
+<task id="06F-5" status="complete">
 <subject>Write test-rsparrow-wrappers.R — bootstrap, validate, scenario arg validation</subject>
 <description>
 File: tests/testthat/test-rsparrow-wrappers.R

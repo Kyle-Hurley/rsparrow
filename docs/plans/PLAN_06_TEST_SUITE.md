@@ -1,12 +1,12 @@
-<plan id="06" label="Test Suite Creation" status="in_progress">
+<plan id="06" label="Test Suite Creation" status="complete">
 
 <overview>
 Plan 06 builds the test suite required for CRAN submission. The package originally had 16 test
 files: 7 testing deleted makeReport_* functions (dead after Plan 05D) and 9 covering peripheral
-utilities. Zero coverage existed on the mathematical core. Plans 06A–06E are complete, adding
-19 test files with 60+ tests covering the network, Fortran, estimation, and prediction layers.
-Plan 06F (exported API tests) remains pending. Plan 06 is decomposed into six sequential
-sub-plans that build from infrastructure through unit tests to integration tests.
+utilities. Zero coverage existed on the mathematical core. Plans 06A–06F are all complete, adding
+24 test files with 80+ tests covering the network, Fortran, estimation, prediction, and exported
+API layers. Plan 06 is decomposed into six sequential sub-plans that build from infrastructure
+through unit tests to integration tests.
 
 CRAN requirements addressed:
   - testthat (>= 3.0.0) in DESCRIPTION Suggests + Config/testthat/edition: 3
@@ -60,11 +60,15 @@ Plan 05B regression guard confirmed: .predict_core and predict_sparrow agree to 
 predictSensitivity pload_total matches predict_sparrow baseline to 1e-10.
 </sub_plan>
 
-<sub_plan id="06F" file="PLAN_06F_API_TESTS.md" status="pending" blocked_by="06A">
+<sub_plan id="06F" file="PLAN_06F_API_TESTS.md" status="complete" blocked_by="06A">
 Exported API Tests — tests for all 13 exported functions: rsparrow_hydseq, read_sparrow_data,
-and all S3 methods (print/summary/coef/residuals/vcov/plot.rsparrow). Uses mock rsparrow
-objects and temp directories. Does NOT require a compiled model run.
-Estimated test runtime: &lt;10 seconds.
+and all S3 methods (print/summary/coef/residuals/vcov/plot.rsparrow), plus rsparrow_bootstrap,
+rsparrow_validate, rsparrow_scenario, and rsparrow_model. Uses mock rsparrow objects and temp
+directories. Does NOT require a compiled model run.
+Completed 2026-03-08: 5 new test files, 38 tests (1 skip), all pass.
+Key findings: isS3method() unreliable for base S3 — use methods() instead; rsparrow_hydseq
+test data must include termflag/frac/demiarea (internal hydseq() requirement); rsparrow_bootstrap
+formal args are n_boot/seed (not biters/iseed as described in plan doc).
 </sub_plan>
 
 </sub_plans>
