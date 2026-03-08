@@ -1,11 +1,12 @@
 <plan id="06" label="Test Suite Creation" status="in_progress">
 
 <overview>
-Plan 06 builds the test suite required for CRAN submission. The package currently has 16 test
-files: 7 test deleted makeReport_* functions (dead after Plan 05D) and 9 cover peripheral
-utilities. Zero coverage exists on the mathematical core (estimateFeval, predict_sparrow,
-deliver, hydseq, Fortran wrappers). Plan 06 is decomposed into six sequential sub-plans that
-build from infrastructure through unit tests to integration tests.
+Plan 06 builds the test suite required for CRAN submission. The package originally had 16 test
+files: 7 testing deleted makeReport_* functions (dead after Plan 05D) and 9 covering peripheral
+utilities. Zero coverage existed on the mathematical core. Plans 06A–06E are complete, adding
+19 test files with 60+ tests covering the network, Fortran, estimation, and prediction layers.
+Plan 06F (exported API tests) remains pending. Plan 06 is decomposed into six sequential
+sub-plans that build from infrastructure through unit tests to integration tests.
 
 CRAN requirements addressed:
   - testthat (>= 3.0.0) in DESCRIPTION Suggests + Config/testthat/edition: 3

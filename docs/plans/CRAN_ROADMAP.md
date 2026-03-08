@@ -32,10 +32,15 @@ parameter dispatching to "residuals" (→ diagnosticPlots_4panel_A/B), "sensitiv
 After Plan 05D: 49 eval(parse()) remain (27 COMPLEX/deferred from 05C, plus ~22 hardened
 hover-text patterns brought in from inlined make_* files — all non-arbitrary). R CMD build
 succeeds.
-Plan 06A (test infrastructure) is complete: 8 broken makeReport_* test files deleted,
-testthat edition 3 configured, helper.R rewritten with 3 shared utilities, fixtures/
-mini_network.rda and fixtures/mini_model_inputs.rda created, 23 tests pass (0 fail).
-Remaining work: Plans 06B–06F (network, Fortran, estimation, prediction, API tests).
+Plans 06A–06E (test suite) are complete: 8 broken makeReport_* test files deleted,
+testthat edition 3 configured, helper.R rewritten, fixtures created (mini_network.rda,
+mini_model_inputs.rda). 19 test files pass (0 fail):
+  06B (network): 15 tests — hydseq, calcHeadflag/Termflag, accumulateIncrArea
+  06C (Fortran):  17 tests — deliver(), tnoder/ptnoder/deliv_fraction Fortran wrappers
+  06D (estimation): 11 tests — setNLLSWeights, estimateWeightedErrors, estimateOptimize
+  06E (prediction): 17 tests — predict_sparrow, .predict_core, predictSensitivity
+    Plan 05B regression confirmed: .predict_core == predict_sparrow to 1e-10
+Remaining work: Plan 06F (exported API tests).
 R CMD check: 4 WARNINGs (pre-existing dep-not-installed), 3 NOTEs; 0 test errors.
 </executive_summary>
 
@@ -65,7 +70,7 @@ R CMD check: 4 WARNINGs (pre-existing dep-not-installed), 3 NOTEs; 0 test errors
 </documentation>
 
 <testing_and_examples>
-<requirement>Add regression tests for core math: estimateFeval, predict, deliver, hydseq (currently zero coverage on all core functions) — Plans 06B–06E</requirement>
+<requirement status="partial">Add regression tests for core math: estimateFeval, predict, deliver, hydseq — Plans 06B–06E complete (17+17+11+17 tests); Plan 06F (exported API tests) pending</requirement>
 <requirement status="done">Create small synthetic reach network dataset (7 reaches, Y-shaped) for fast unit tests — fixtures/mini_network.rda (Plan 06A)</requirement>
 <requirement status="done">Generate reference output fixtures for estimation/prediction unit tests — fixtures/mini_model_inputs.rda (Plan 06A; synthetic, not UserTutorial-derived)</requirement>
 <requirement>All tests must complete within CRAN's 10-minute limit for R CMD check</requirement>
@@ -222,7 +227,8 @@ A second vignette on scenario analysis and bootstrapping can follow in a later r
   - [PARTIAL] Remove non-core functions (~44 removed in Plan 02; 15 more in Plan 05A; 20 more in Plan 05D; ~45 remain: unPackList.R + 3 COMPLEX/deferred callers, mapLoopStr.R, aggDynamicMapdata.R, plotlyLayout.R, addMarkerText.R, setupDynamicMaps.R, and diagnostic/map files)
   - Create example dataset in data/
   - Write primary vignette
-  - Build test suite for core estimation and prediction
+  - [PARTIAL] Build test suite for core estimation and prediction — Plans 06A–06E complete
+    (19 test files, 60+ tests); Plan 06F (exported API) pending
 </priority>
 
 <priority level="3" label="Important but not blocking initial submission">
@@ -496,6 +502,64 @@ Completed all 6 tasks:
   - Task 06A-6: 3 surviving tests fixed (batch_mode removed from readParameters, readDesignMatrix,
     selectParmValues call signatures); readDesignMatrix fixture regenerated; 23 tests pass, 0 fail
   - R CMD check (_R_CHECK_FORCE_SUGGESTS_=false): 4 WARNINGs (pre-existing), 3 NOTEs; 0 test errors
+</plan>
+
+<plan id="06B" label="Network Topology Tests">
+Completed all 4 tasks. Completed 2026-03-07.
+  - test-hydseq.R (7 tests): hydseq() and rsparrow_hydseq() on mini_network; hydseq order,
+    headflag/termflag assignment, exported function returns named integer vector
+  - test-calcflags.R (4 tests): calcHeadflag and calcTermflag flag assignment on known topology;
+    headwater detection, terminal reach detection
+  - test-accumulateIncrArea.R (4 tests): accumulateIncrArea incremental→cumulative drainage area
+    accumulation; terminal reach cumulative area equals sum of all incremental areas
+  - Total: 15 tests, all pass; 0 fail
+</plan>
+
+<plan id="06C" label="Fortran Interface Tests">
+Completed all 3 tasks. Completed 2026-03-07.
+  - test-deliver.R (5 tests): deliver() → .Fortran("deliv_fraction"); returns length-nreach numeric;
+    incdecay=totdecay=1.0 → all fractions = 1.0; partial decay → fractions in (0,1); headwaters
+    < terminal delivery with decay; column-order guard test
+  - test-fortran-tnoder.R (6 tests): .Fortran("tnoder") via estimateFeval; residuals finite and
+    correct length; recycling behavior with 1 calibration site documented; ifadjust effects
+  - test-fortran-ptnoder.R (6 tests): predict_sparrow exercising ptnoder/mptnoder/deliv_fraction;
+    predmatrix 7×14, yldmatrix 7×10; terminal reach has max pload_total
+  - Key findings: incdecay/totdecay are multiplicative (1.0=no decay, NOT 0.0); predmatrix
+    has 14 cols, yldmatrix 10 cols for mini_network (jjsrc=1)
+  - Total: 17 tests, all pass; 0 fail
+</plan>
+
+<plan id="06D" label="Estimation Core Tests">
+Completed all 3 tasks. Completed 2026-03-07.
+  - test-setNLLSWeights.R (4 tests): setNLLSWeights() returns list with NLLS_weights, tiarea,
+    count, weight; default mode returns scalar 1.0; lnload/user modes use sitedata$weight
+  - test-estimateWeightedErrors.R (3 tests): estimateWeightedErrors() reads residuals CSV from
+    file, fits power-function NLS, returns numeric[nreaches]. Corrected plan assumption: this
+    is a per-reach weight function (not a scalar bias correction).
+  - test-estimateOptimize.R (4 tests): estimateOptimize() runs nlmrt::nlfb(); returns sparrowEsts
+    with coefficients, betamn/betamx bounds; optimized coefficients within bounds; terminates
+    in &lt;60 seconds on mini_network
+  - Bug fixed: Csites.weights.list was missing from estimateOptimize() signature and the
+    call site in estimate.R; fixed as part of Plan 06D
+  - Total: 11 tests, all pass; 0 fail
+</plan>
+
+<plan id="06E" label="Prediction Tests">
+Completed all 3 tasks. Completed 2026-03-08.
+  - test-predict-sparrow.R (9 tests): predict_sparrow() list structure, predmatrix/yldmatrix
+    dimensions, oparmlist/oyieldlist column-count consistency, non-negative total loads,
+    terminal reach accumulation, bootcorrection sensitivity, determinism, concentration
+    non-negativity
+  - test-predict-core.R (5 tests): .predict_core() required return fields, pload_total length,
+    Plan 05B regression guard — pload_total matches predict_sparrow predmatrix[,2] to 1e-10,
+    per-source load matches predmatrix[,3] to 1e-10, incdecay/totdecay non-negativity.
+    eval/parse hover-text test documented as skipped (no eval/parse in .predict_core itself).
+  - test-predictSensitivity.R (3 tests): returns numeric vector of nreach length, large
+    perturbation changes output, original estimates match predict_sparrow pload_total to 1e-10
+    (Plan 04B/05B cross-check). Note: predictSensitivity still contains local assign() for
+    pload_inc_src vars — known residual, does not affect return value.
+  - Plan 05B consolidation confirmed non-breaking: all regression tests pass to 1e-10
+  - Total: 17 tests (22 expectations), all pass; 0 fail
 </plan>
 
 </completed_plans>

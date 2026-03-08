@@ -1,4 +1,4 @@
-<plan id="06E" label="Prediction Tests" status="pending" blocked_by="06C">
+<plan id="06E" label="Prediction Tests" status="complete" blocked_by="06C">
 
 <objective>
 Write unit tests for the prediction layer: predict_sparrow (renamed from predict() in Plan 03),
@@ -29,7 +29,7 @@ the main prediction and sensitivity paths.
 
 <tasks>
 
-<task id="06E-1" status="pending">
+<task id="06E-1" status="complete">
 <subject>Write test-predict-sparrow.R — main prediction function</subject>
 <description>
 File: tests/testthat/test-predict-sparrow.R
@@ -96,9 +96,16 @@ Test 8: "concentration predictions are non-negative"
   - Total load accumulation at terminal reach verified
   - Reproducibility confirmed (test 7)
 </success_criteria>
+<completion_notes>
+Completed 2026-03-08. 9 test_that() blocks (plan spec extended by 1), 11 expectations pass.
+Tests added: list structure, row/column dimensions (2 each), oparmlist/oyieldlist length
+consistency (2 separate tests), non-negative pload_total, terminal reach accumulation,
+bootcorrection=2.0 sensitivity, determinism, concentration non-negativity.
+subdata sorted by hydseq (no-op for mini_network where hydseq==waterid order).
+</completion_notes>
 </task>
 
-<task id="06E-2" status="pending">
+<task id="06E-2" status="complete">
 <subject>Write test-predict-core.R — shared prediction kernel consistency</subject>
 <description>
 File: tests/testthat/test-predict-core.R
@@ -152,9 +159,19 @@ Test 5: "predict_core eval(parse) hover-text pattern produces valid strings"
   - predict_core and predict_sparrow agree to 1e-10 tolerance
   - Plan 05B consolidation verified to not break prediction math
 </success_criteria>
+<completion_notes>
+Completed 2026-03-08. 5 test_that() blocks, 7 expectations pass.
+Plan 05B regression confirmed: .predict_core$pload_total == predict_sparrow$predmatrix[,2]
+and per-source pload_src[[src]] == predmatrix[,3] both to 1e-10 tolerance.
+Test 5 (eval/parse hover-text): no eval(parse()) exists in .predict_core itself; the
+CLAUDE.md count of 1 for predict_core.R refers to a caller context from Plan 05D inlining.
+Test adapted: incdecay/totdecay non-negativity check substituted. Documented as skipped in file.
+Note: .predict_core does not return predmatrix/yldmatrix; tests compare raw load vectors
+(pload_total, pload_src) that feed predmatrix col 2/3 in predict_sparrow.
+</completion_notes>
 </task>
 
-<task id="06E-3" status="pending">
+<task id="06E-3" status="complete">
 <subject>Write test-predictSensitivity.R — parameter sensitivity predictions</subject>
 <description>
 File: tests/testthat/test-predictSensitivity.R
@@ -193,6 +210,16 @@ class.input.list, mapping.input.list, or file.output.list for output), either:
   - 3 tests pass, OR file documents why skipped with clear TODO for integration test
   - No crash from parameter access (direct $ access verified working after Plan 04C)
 </success_criteria>
+<completion_notes>
+Completed 2026-03-08. 3 test_that() blocks, 4 expectations pass.
+Actual signature confirmed: predictSensitivity(AEstimate, estimate.list, DataMatrix.list,
+  SelParmValues, subdata, dlvdsgn) — no estimate.input.list required.
+Returns pload_total numeric vector (length nreach), not a list.
+Test 3 (zero perturbation matches baseline): verified by passing oEstimate unchanged;
+  predictSensitivity and predict_sparrow agree to 1e-10 (both use ifadjust=0).
+Note: predictSensitivity still uses local assign() for pload_inc_src variables (lines 119-120);
+  this is a known residual but does not affect correctness of returned pload_total.
+</completion_notes>
 </task>
 
 </tasks>
@@ -210,20 +237,21 @@ class.input.list, mapping.input.list, or file.output.list for output), either:
 </notes>
 
 <success_criteria>
-<criterion>test-predict-sparrow.R: 8 tests — structure, dimensions, accumulation, reproducibility</criterion>
-<criterion>test-predict-core.R: 4+ tests — predict_core matches predict_sparrow to 1e-10</criterion>
-<criterion>test-predictSensitivity.R: 3 tests OR clearly documented skip</criterion>
-<criterion>All tests run in under 10 seconds total</criterion>
-<criterion>Plan 05B consolidation regression verified as non-breaking</criterion>
+<criterion status="met">test-predict-sparrow.R: 9 test_that blocks, 11 expectations pass</criterion>
+<criterion status="met">test-predict-core.R: 5 test_that blocks, 7 expectations pass — predict_core matches predict_sparrow to 1e-10</criterion>
+<criterion status="met">test-predictSensitivity.R: 3 test_that blocks, 4 expectations pass</criterion>
+<criterion status="met">All tests complete well under 10 seconds total</criterion>
+<criterion status="met">Plan 05B consolidation regression verified as non-breaking (1e-10 tolerance)</criterion>
 </success_criteria>
 
 <failure_criteria>
-<criterion>predict_core and predict_sparrow diverge by more than 1e-10 (Plan 05B regression)</criterion>
-<criterion>Terminal reach total load is not the maximum (accumulation bug)</criterion>
-<criterion>Predictions differ between two identical calls (hidden random state)</criterion>
+<criterion status="not_triggered">predict_core and predict_sparrow diverge by more than 1e-10 (Plan 05B regression)</criterion>
+<criterion status="not_triggered">Terminal reach total load is not the maximum (accumulation bug)</criterion>
+<criterion status="not_triggered">Predictions differ between two identical calls (hidden random state)</criterion>
 </failure_criteria>
 
-<estimated_test_count>15-16 new tests</estimated_test_count>
-<estimated_runtime>~5 seconds total</estimated_runtime>
+<actual_test_count>17 test_that blocks, 22 expectations</actual_test_count>
+<actual_runtime>&lt;5 seconds total</actual_runtime>
+<completed>2026-03-08</completed>
 
 </plan>
