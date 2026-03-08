@@ -51,10 +51,12 @@ the call site in estimate.R). estimateWeightedErrors corrected to file-based wei
 (not scalar bias correction as the plan assumed).
 </sub_plan>
 
-<sub_plan id="06E" file="PLAN_06E_PREDICTION_TESTS.md" status="pending" blocked_by="06C">
+<sub_plan id="06E" file="PLAN_06E_PREDICTION_TESTS.md" status="complete" blocked_by="06C">
 Prediction Tests — unit tests for predict_sparrow and predict_core with pre-built estimate.list
 fixtures; verify output list structure, matrix dimensions, and numeric values within tolerance.
-Estimated test runtime: &lt;10 seconds.
+Completed 2026-03-08: 17 new tests (9+5+3) across 3 files, all 22 expectations pass.
+Plan 05B regression guard confirmed: .predict_core and predict_sparrow agree to 1e-10.
+predictSensitivity pload_total matches predict_sparrow baseline to 1e-10.
 </sub_plan>
 
 <sub_plan id="06F" file="PLAN_06F_API_TESTS.md" status="pending" blocked_by="06A">
