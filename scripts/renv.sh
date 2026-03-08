@@ -8,7 +8,9 @@
 
 export R_LIBS=/home/kp/R/libs
 export _R_CHECK_FORCE_SUGGESTS_=false
+export PATH=/home/kp/R-4.4.0/bin:$PATH
 
 echo "R environment configured:"
 echo "  R_LIBS=$R_LIBS"
 echo "  _R_CHECK_FORCE_SUGGESTS_=$_R_CHECK_FORCE_SUGGESTS_"
+echo "  R=$(which R) ($(R --version 2>&1 | head -1))"

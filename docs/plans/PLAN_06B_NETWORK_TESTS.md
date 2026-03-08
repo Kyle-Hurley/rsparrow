@@ -158,7 +158,7 @@ Test 4: "calcHeadflag handles single-reach network"
 </completed>
 </task>
 
-<task id="06B-3" status="pending">
+<task id="06B-3" status="complete">
 <subject>Write test-accumulateIncrArea.R</subject>
 <description>
 File: tests/testthat/test-accumulateIncrArea.R
@@ -195,6 +195,16 @@ Test 3: "headwater reaches have demtarea == demiarea"
   - 3 tests pass (or skipped if Fortran not compiled)
   - Tests document expected drainage area accumulation behavior
 </success_criteria>
+<completed date="2026-03-07">
+  - 4 tests pass (8 expectations total) — pure R, no Fortran, no skip needed
+  - Signature confirmed: accumulateIncrArea(indata, accum_elements, accum_names)
+    where indata must have: waterid, fnode, tnode, frac, termflag, hydseq, + accum_elements columns
+  - Returns data.frame(waterid, <accum_names>) — rows match indata after termflag/fnode/tnode filter
+  - hydseq column added via rsparrow:::hydseq() merge in each test (helper function make_hydseq_network())
+  - Terminal reach (waterid=7) accumulates sum(demiarea)=27 as expected
+  - Headwaters (headflag==1, waterids 1-4) have demtarea == demiarea
+  - 4th structural test added (return type + column names + nrow) beyond plan's 3
+</completed>
 </task>
 
 </tasks>
