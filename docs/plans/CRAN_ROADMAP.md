@@ -43,6 +43,15 @@ mini_model_inputs.rda). 24 test files pass (0 fail):
   06F (exported API): 38 tests (1 skip) — rsparrow_hydseq, read_sparrow_data, all 7 S3
     methods, rsparrow_bootstrap/validate/scenario/model argument validation
 R CMD check: 4 WARNINGs (pre-existing dep-not-installed), 3 NOTEs; 0 test errors.
+Assessment (2026-03-08): Plans 01–06F are complete. The package builds and 98 tests
+pass. The 4 R CMD check WARNINGs have been diagnosed: (1) codoc mismatches in 3
+exported function Rd files (rsparrow_model 3 params missing, rsparrow_scenario param
+name mismatch, rsparrow_validate 2 params missing); (2) undeclared stringi/xfun
+imports used in legacy encoding files; (3) vignette build failure (knitr/VignetteBuilder
+not properly configured — no vignette exists yet); (4) layout() shape-argument warnings
++ predictSensitivity unused-argument warning during package installation.
+Critical path to CRAN submission: fix the 4 WARNINGs (see GH issues), add data/
+example dataset, write one introductory vignette.
 </executive_summary>
 
 <critical_requirements>
@@ -209,7 +218,13 @@ A second vignette on scenario analysis and bootstrapping can follow in a later r
   - [DONE] Add @return to all exported function documentation
   - [DONE] Add @examples to all exported functions
   - [DONE] Remove Windows-only code (shell.exec, Rscript.exe) — removed in Plan 04A Task 1
-  - Ensure R CMD check passes with 0 errors, 0 warnings, at most 1 note
+  - [OPEN] Ensure R CMD check passes with 0 errors, 0 warnings, at most 1 note:
+      - (a) Fix Rd codoc mismatches: rsparrow_model/rsparrow_scenario/rsparrow_validate
+            have parameter mismatches between @param tags and function signatures (GH #5)
+      - (b) Fix undeclared imports: stringi and xfun called but not in NAMESPACE (GH #6)
+      - (c) Fix layout() shape-argument errors + predictSensitivity unused-arg warning
+            that appear during installation (GH #7)
+      - (d) Add/configure vignette to resolve VignetteBuilder WARNING (GH #8 / part of vignette plan)
 </priority>
 
 <priority level="2" label="High-value - enables usability and maintainability">
@@ -226,8 +241,8 @@ A second vignette on scenario analysis and bootstrapping can follow in a later r
   - [DONE] Design and implement S3 class "rsparrow" with standard methods (all 13 exports implemented in Plans 04D-1 through 04D-4)
   - [DONE] Separate Shiny/GUI code into inst/shiny_dss/ (25 files moved in Plan 02)
   - [PARTIAL] Remove non-core functions (~44 removed in Plan 02; 15 more in Plan 05A; 20 more in Plan 05D; ~45 remain: unPackList.R + 3 COMPLEX/deferred callers, mapLoopStr.R, aggDynamicMapdata.R, plotlyLayout.R, addMarkerText.R, setupDynamicMaps.R, and diagnostic/map files)
-  - Create example dataset in data/
-  - Write primary vignette
+  - Create example dataset in data/ (GH #9)
+  - Write primary vignette (GH #8)
   - [DONE] Build test suite for core estimation, prediction, and exported API — Plans 06A–06F
     all complete (24 test files, 98 tests / 38+1 skip in 06F alone); 0 failures
 </priority>
