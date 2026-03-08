@@ -1,73 +1,86 @@
 <cran_roadmap>
 
 <executive_summary>
-Plans 01–05D are complete. The package has been renamed to `rsparrow` (v2.1.0), pre-compiled
+Plans 01–06F are complete. The package has been renamed to `rsparrow` (v2.1.0), pre-compiled
 DLLs removed, Fortran portability fixed (src/*.f), license resolved (CC0), DESCRIPTION
-modernized. Plan 02 separated 25 Shiny/GUI files to inst/shiny_dss/, deleted 19 legacy
-scaffolding files. Plan 03 defined a clean exported API: 13 functions exported (6 standalone +
-7 S3 methods), selective importFrom() only, 14 new Rd files. Plan 04A removed Windows-only
-code; refactored startModelRun/controlFileTasksModel (27 assign(.GlobalEnv) eliminated).
-Plan 04B eliminated all 51 assign(.GlobalEnv) from R/ (0 remain) and inlined 21
-specification-string eval(parse()) in 7 core math files. Plan 04C removed all actionable
-unPackList() calls from non-REMOVE files; replaced dynamic [[]] column access in 6 files.
-Plans 04D-1 through 04D-4 implemented all 13 exported function skeletons: print/summary/
-coef/residuals/vcov S3 bodies; read_sparrow_data(); rsparrow_model() orchestrating
-startModelRun(); predict.rsparrow(), rsparrow_bootstrap(), rsparrow_validate(),
-rsparrow_scenario(). Plan 05A deleted 15 dead-code files (error handling stubs, settings
-getters, mapping wrappers); inlined callers. Plan 05B consolidated three predict functions
-around shared predict_core.R (266 lines); merged estimateFevalNoadj.R into estimateFeval.R;
-eliminated 18 dynamic source variable eval(parse()); fixed latent dlvdsgn missing-param bug.
-Plan 05C eliminated 20 more eval(parse()) calls: markerList/markerText/plotTitles in
-4panel diagnostics (Strategy A); 9 S_ bare-variable patterns in predictScenariosPrep.R
-replaced with named lists (Strategy B); 4 inner eval/parse in applyUserModify.R replaced
-with assign()/mget()/get() (Strategy C); p16-p22 plotFunc calls inlined in sensitivity and
-spatial autocorrelation diagnostics, making them independent of create_diagnosticPlotList.R
-(Strategy D); createSubdataSorted.R hardened with tryCatch (Strategy E).
-Plan 05D deleted 20 REMOVE-list files: create_diagnosticPlotList.R (2132 lines),
-8 makeReport_*.R (HTML report infrastructure), 10 make_*.R (plot generation helpers), and
-render_report.R (orphaned). make_* functions inlined into their callers; HTML rendering path
-dropped (rmarkdown stays in Suggests). plot.rsparrow() fully implemented with type=
-parameter dispatching to "residuals" (→ diagnosticPlots_4panel_A/B), "sensitivity"
-(→ diagnosticSensitivity), and "spatial" (→ diagnosticSpatialAutoCorr). File count: 138→118.
-After Plan 05D: 49 eval(parse()) remain (27 COMPLEX/deferred from 05C, plus ~22 hardened
-hover-text patterns brought in from inlined make_* files — all non-arbitrary). R CMD build
-succeeds.
-Plans 06A–06F (test suite) are all complete: 8 broken makeReport_* test files deleted,
-testthat edition 3 configured, helper.R rewritten, fixtures created (mini_network.rda,
-mini_model_inputs.rda). 24 test files pass (0 fail):
-  06B (network): 15 tests — hydseq, calcHeadflag/Termflag, accumulateIncrArea
-  06C (Fortran):  17 tests — deliver(), tnoder/ptnoder/deliv_fraction Fortran wrappers
-  06D (estimation): 11 tests — setNLLSWeights, estimateWeightedErrors, estimateOptimize
-  06E (prediction): 17 tests — predict_sparrow, .predict_core, predictSensitivity
-    Plan 05B regression confirmed: .predict_core == predict_sparrow to 1e-10
-  06F (exported API): 38 tests (1 skip) — rsparrow_hydseq, read_sparrow_data, all 7 S3
-    methods, rsparrow_bootstrap/validate/scenario/model argument validation
-R CMD check: 4 WARNINGs (pre-existing dep-not-installed), 3 NOTEs; 0 test errors.
-Assessment (2026-03-08): Plans 01–06F are complete. The package builds and 98 tests
-pass. The 4 R CMD check WARNINGs have been diagnosed: (1) codoc mismatches in 3
-exported function Rd files (rsparrow_model 3 params missing, rsparrow_scenario param
-name mismatch, rsparrow_validate 2 params missing); (2) undeclared stringi/xfun
-imports used in legacy encoding files; (3) vignette build failure (knitr/VignetteBuilder
-not properly configured — no vignette exists yet); (4) layout() shape-argument warnings
-+ predictSensitivity unused-argument warning during package installation.
-Critical path to CRAN submission: fix the 4 WARNINGs (see GH issues), add data/
-example dataset, write one introductory vignette.
+modernized. 98 tests pass across 24 test files. R CMD check: 4 WARNINGs, 3 NOTEs, 0 ERRORs.
+
+However, a critical code review (2026-03-08) identified fundamental issues that must be
+addressed before CRAN submission. These go beyond the existing WARNINGs:
+
+BLOCKERS IDENTIFIED:
+  (B1)  Package lives in RSPARROW_master/ instead of repo root — breaks all devtools workflows
+  (B2)  Compiled .o/.so artifacts in src/ — immediate CRAN rejection
+  (B3)  Collate field lists all 118 files — unnecessary, creates maintenance burden
+  (B4)  Uncontrolled file I/O in estimation/prediction — CRAN policy violation
+  (B5)  <<- global assignment in rsparrow_model.R:380
+  (B6)  sink()/pdf() without on.exit() protection — 5 sink + 1 pdf instances
+  (B7)  options() modified without restoration — 5 locations
+  (B8)  assign(parent.frame()) anti-pattern — 7 locations
+  (B9)  cat() used for messaging instead of message() — 53 instances
+  (B10) No .Rbuildignore (was created in Plan 01 but not at RSPARROW_master/ level)
+  (B11) No example dataset in data/
+  (B12) 31 unreachable functions still in R/ (dead code)
+  (B13) Dynamic model infrastructure adds complexity for a feature users can replicate
+        themselves — 175 references across 20 files
+
+NEW PLAN SEQUENCE (Plan 07+):
+  Plan 07: Package restructuring — move to repo root, delete compiled artifacts, remove
+           Collate, create .Rbuildignore, delete compiled objects from src/
+  Plan 08: Remove dynamic model infrastructure — delete/archive dynamic-only files,
+           strip if_dynamic conditionals from 20 files
+  Plan 09: Archive unreachable code — move 31 dead functions to inst/archived/
+  Plan 10: Separate computation from I/O — refactor estimation/prediction to return objects,
+           move file writes to dedicated output functions
+  Plan 11: Fix CRAN compliance issues — on.exit() protection, cat()→message(),
+           <<- elimination, assign(parent.frame()) removal, options() restoration
+  Plan 12: Example dataset, vignette, and final R CMD check cleanup
 </executive_summary>
 
 <critical_requirements>
 
 <package_structure>
 <requirement status="done">Rename package from RSPARROW to `rsparrow` in DESCRIPTION (CRAN naming convention: lowercase, no underscores)</requirement>
-<requirement>Move package root from RSPARROW_master/ to repo root, or restructure so devtools::install() works from a standard path</requirement>
+<requirement status="open" gh="10">Move package root from RSPARROW_master/ to repo root — all devtools, usethis, roxygen2, and CRAN tooling assumes package root = repo root</requirement>
 <requirement status="done">Delete runRsparrow.R from R/ - moved to inst/legacy/; all files in R/ now define only functions, methods, or classes</requirement>
 <requirement status="done">Remove all pre-compiled DLLs (.dll) from src/; only .for source files remain</requirement>
+<requirement status="open" gh="11">Remove compiled .o and .so artifacts from src/ — CRAN requires source-only packages; R CMD INSTALL recompiles .f sources automatically</requirement>
 <requirement status="done">Remove bundled R-4.4.2.zip from repo root</requirement>
 <requirement status="done">Remove inst/sas/ directory (legacy SAS scripts)</requirement>
 <requirement status="done">Remove batch/ directory (Windows-only Rscript.exe batch execution)</requirement>
 <requirement status="done">Remove Thumbs.db and code.json from repo</requirement>
-<requirement status="done">Add .Rbuildignore to exclude non-package files (docs/, UserTutorial*, CRAN_PREPARATION_ROADMAP.md, etc.)</requirement>
+<requirement status="open" gh="10">Create .Rbuildignore at package root to exclude non-package files (docs/, UserTutorial*, inst/legacy/, inst/shiny_dss/, inst/tables/, inst/doc/)</requirement>
 <requirement status="done">Ensure DESCRIPTION has Version in x.y.z format (now 2.1.0)</requirement>
+<requirement status="open" gh="12">Remove Collate field from DESCRIPTION — unnecessary for S3 packages, creates maintenance burden on every file change</requirement>
 </package_structure>
+
+<code_quality>
+<requirement status="open" gh="13">Remove dynamic model infrastructure — the dynamic feature is temporal diagnostic stratification of a single unified model; users can replicate this by including temporal columns and subsetting results. Removes ~935 lines of dynamic-only code and simplifies 20 files with 175 if_dynamic references</requirement>
+<requirement status="open" gh="14">Archive 31 unreachable functions to inst/archived/ — these are not called from any exported function and add ~4,000 lines of dead code. Archive rather than delete to allow recovery if needed</requirement>
+<requirement status="open" gh="15">Separate computation from I/O — estimation/prediction functions must return R objects, not write files as side effects. Move file output to dedicated I/O functions that users call explicitly. Affected: estimate.R (~7 save + 10 dir.create), startModelRun.R (~5 save), estimateNLLStable.R (~20 fwrite + sink), controlFileTasksModel.R (~4 save + sink), predictScenarios.R (~2 save + dir.create), and ~10 other files</requirement>
+<requirement status="open" gh="16">Fix sink()/pdf() resource leaks — 5 sink() and 1 pdf() calls lack on.exit() protection:
+  - estimateOptimize.R: sink to log file — KEEP but add on.exit(); this is legitimate operational logging
+  - estimateNLLStable.R: sink to summary file — REFACTOR to return data, remove sink
+  - correlationMatrix.R: pdf+sink for correlation report — REFACTOR to return data, remove both
+  - predictScenariosOutCSV.R: sink for metadata — REMOVE text sink, keep CSV exports
+  - controlFileTasksModel.R: sink for spatial autocorr diagnostics — REMOVE, return data
+  - estimateWeightedErrors.R: pdf for weight plots — REMOVE (function is dead code candidate)</requirement>
+<requirement status="open" gh="17">Fix options() modifications without restoration — 5 locations modify options(width/warn/max.print) without on.exit() to restore:
+  - correlationMatrix.R:269,286
+  - predictScenariosPrep.R:165,175
+  - controlFileTasksModel.R:253
+  - estimateNLLStable.R:189
+  Only mod_read_utf8.R does it correctly</requirement>
+<requirement status="open" gh="18">Eliminate <<- and assign(parent.frame()) anti-patterns:
+  - rsparrow_model.R:380 — <<- used to extract predict.list from load() inside local(); should restructure to avoid global assignment
+  - diagnosticPlots_4panel_B.R:134 — assign to parent.frame
+  - upstream.R:52 — assign to parent.frame
+  - applyUserModify.R:40,43,45 — 3× assign to parent.frame
+  - checkBinaryMaps.R:35 — assign to parent.frame (likely dead code)
+  - unPackList.R:95,102 — assign to parent.frame (core anti-pattern)</requirement>
+<requirement status="open" gh="19">Replace cat() with message() for user-facing output — 53 instances across 15+ files. cat() should only be used in print/summary S3 methods for structured output. All informational messages must use message() so users can suppress them</requirement>
+<requirement status="open">Replace remaining eval(parse()) where feasible — 49 remain (27 COMPLEX/deferred + ~22 hardened hover-text). Some will be eliminated by archiving dead code (Plan 09) and removing dynamic infrastructure (Plan 08)</requirement>
+</code_quality>
 
 <documentation>
 <requirement status="done">Add @export roxygen2 tags to all user-facing functions (13 functions exported: 6 standalone + 7 S3 methods)</requirement>
@@ -76,7 +89,7 @@ example dataset, write one introductory vignette.
 <requirement>Remove manual "Executed By" / "Executes Routines" lists from roxygen headers - these are stale and non-standard</requirement>
 <requirement status="done">Regenerate all man/ pages via roxygen2 after adding proper tags (manual generation; roxygen2 unavailable)</requirement>
 <requirement status="done">Rewrite package-level documentation (?rsparrow) with a clear overview and quick-start example</requirement>
-<requirement>Rewrite vignette to demonstrate the refactored API (current vignette references the control-script workflow)</requirement>
+<requirement status="open" gh="8">Rewrite vignette to demonstrate the refactored API (current vignette references the control-script workflow)</requirement>
 </documentation>
 
 <testing_and_examples>
@@ -86,19 +99,13 @@ example dataset, write one introductory vignette.
 <requirement>All tests must complete within CRAN's 10-minute limit for R CMD check</requirement>
 <requirement status="done">Remove or rewrite the 7 makeReport_* test files that test Rmd report rendering — 8 broken test files deleted in Plan 06A (including makeReport_siteAttrMaps)</requirement>
 <requirement status="done">Add testthat edition 3 in DESCRIPTION (Suggests: testthat (>= 3.0.0), Config/testthat/edition: 3) — Plan 06A</requirement>
+<requirement status="open" gh="9">Include example dataset in data/ with roxygen documentation for runnable @examples</requirement>
 </testing_and_examples>
 
 <dependencies_and_portability>
 <requirement status="done">Remove Windows-only code: 21 shell.exec() calls across 15 files; Sys.which("Rscript.exe") paths; system() batch execution [DONE in Plan 04A Task 1]</requirement>
 <requirement status="done">Remove Fortran !GCC$ ATTRIBUTES DLLEXPORT directives from all .for files (Windows-specific, not portable)</requirement>
 <requirement status="done">Drop non-core Imports (final: 3 packages, down from 40 via Plans 02+03; target was ~10-12, exceeded):
-  - [DONE] REMOVED in Plan 02: shiny, shinyWidgets, shinycssloaders, rhandsontable, htmltools, htmlwidgets (Shiny/GUI)
-  - [DONE] REMOVED in Plan 02: rstan, OpenMx, inline (heavyweight; not used in core estimation)
-  - [DONE] REMOVED in Plan 02: svDialogs, svGUI, rstudioapi (interactive dialogs)
-  - [DONE] REMOVED in Plan 02: data.tree, evaluate, formatR, highr, roxygen2, gear (dev/report tools)
-  - [DONE] REMOVED in Plan 03: stringr, sp, leaflet.extras, tools, markdown (zero usage found), methods (from Depends)
-  - [DONE] MOVED to Suggests in Plan 03: sf, spdep, car, dplyr, ggplot2, magrittr, leaflet, mapview, plotly, gplots, gridExtra, plyr
-  - [DONE] REMOVED knitr/rmarkdown from Imports; added to Suggests
   - FINAL Imports: data.table, nlmrt, numDeriv (3 packages)</requirement>
 <requirement>Replace all .Platform$file.sep path construction with file.path()</requirement>
 <requirement>Test on macOS, Linux, and Windows; current README states "requires Windows"</requirement>
@@ -117,7 +124,7 @@ example dataset, write one introductory vignette.
 <requirement status="done">Fix Maintainer field: Kyle Hurley (khurley@usgs.gov) is sole maintainer (cre role)</requirement>
 <requirement status="done">Convert Author field to Authors@R using person() entries with roles (aut, cre)</requirement>
 <requirement>Add ORCID iDs if available for authors</requirement>
-<requirement>Update URL field - current URL (code.usgs.gov/water/stats/RSPARROW) may be stale; add BugReports field</requirement>
+<requirement>Update URL field - current URL (code.usgs.gov/water/stats/RSPARROW) may be stale; add BugReports field pointing to GitHub issues</requirement>
 </legal_and_administrative>
 
 </critical_requirements>
@@ -125,49 +132,34 @@ example dataset, write one introductory vignette.
 <architecture_recommendations>
 
 <code_organization>
-<recommendation>Eliminate unPackList.R entirely. Replace all 70+ call sites with explicit argument passing. This is the single most impactful refactoring task - it enables testability, parallelism, and standard R package behavior. Plan 04C targets this.</recommendation>
-<recommendation status="done">Remove all assign(..., envir = .GlobalEnv) calls. All 51 occurrences eliminated: 28 in Plan 04A (startModelRun.R + controlFileTasksModel.R), 23 in Plan 04B (13 remaining files). Zero assign(.GlobalEnv) remain in R/.</recommendation>
-<recommendation>Replace remaining ~318 eval(parse(text = ...)) calls with proper R idioms (21 specification-string calls already inlined in Plan 04B):
-  - Dynamic column access: use data[[varname]] instead of eval(parse(text=paste0("data$",varname)))
-  - Model specifications: pre-parse user formulas into function objects at setup time
-  - Dynamic assignment: use list assignment instead of eval(parse(text=paste0(n,"<-",v)))</recommendation>
-<recommendation status="done">Merge duplicate prediction functions: predict_core.R (266 lines) created as shared kernel in Plan 05B. predict.R: 574→291, predictBoot.R: 475→190, predictScenarios.R: 842→523. ~900 lines removed.</recommendation>
-<recommendation status="done">Merge estimateFeval.R and estimateFevalNoadj.R (differ only in ifadjust flag). Done in Plan 05B: estimateFevalNoadj.R deleted; estimateFeval.R now accepts ifadjust=1L/0L with backward-compatible wrapper.</recommendation>
+<recommendation status="partial">Eliminate unPackList.R entirely. Replace all call sites with explicit argument passing. 3 COMPLEX/deferred callers remain (mapLoopStr.R, replaceNAs.R, applyUserModify.R) — these may be archived in Plan 09.</recommendation>
+<recommendation status="done">Remove all assign(..., envir = .GlobalEnv) calls. All 51 occurrences eliminated (Plans 04A + 04B). Zero remain in R/.</recommendation>
+<recommendation status="partial">Replace remaining eval(parse(text = ...)) with proper R idioms. 49 remain after Plans 04B/05B/05C/05D. Some will be eliminated by archiving dead code and removing dynamic infrastructure.</recommendation>
+<recommendation status="done">Merge duplicate prediction functions: predict_core.R (266 lines) created in Plan 05B.</recommendation>
+<recommendation status="done">Merge estimateFeval.R and estimateFevalNoadj.R. Done in Plan 05B.</recommendation>
 <recommendation>Decompose monolithic functions:
-  - estimate.R (889 lines) -> separate estimation, diagnostics, validation, output
-  - estimateNLLSmetrics.R (832 lines) -> separate metric computation functions
-  - estimateNLLStable.R (692 lines) -> return structured data; let caller handle file I/O
-  - predictScenarios.R (821 lines) -> extract core scenario logic from Shiny coupling</recommendation>
-<recommendation status="done">Move all Shiny/GUI files to a separate directory. [DONE in Plan 02: 25 files moved to inst/shiny_dss/, excluded from build via .Rbuildignore. These become a future companion package.]</recommendation>
-<recommendation status="partial">Remove ~40 infrastructure/scaffolding files that exist only to support the control-script workflow. [PARTIAL: 19 files deleted in Plan 02 (executeRSPARROW, findControlFiles, generateInputLists, makePaths, createDirs, setupMaps, testSettings, setMapDefaults, isScriptSaved, openDesign/Parameters/Varnames, removeObjects, deleteFiles, RSPARROW_objects, copyPriorModelFiles, findScriptName, executionTree, findCodeStr). Remaining: exitRSPARROW.R, unPackList.R, get*Sett.R (5), outputSettings.R, importCSVcontrol.R, errorOccurred.R, modelCompare.R (~10 files). runRsparrow.R moved to inst/legacy/ in Plan 01.]</recommendation>
-<recommendation status="done">Remove interactive map/report generators (~20 files): diagnosticMaps.R, mapSiteAttributes.R, predictMaps.R, predictMaps_single.R deleted in Plan 05A. makeReport_*.R (8 files), make_*.R (10 files), create_diagnosticPlotList.R, render_report.R deleted in Plan 05D. HTML diagnostic reports removed from core package; plot.rsparrow() S3 method provides programmatic access instead.</recommendation>
+  - estimate.R (889 lines) -> separate estimation from diagnostics/validation/output
+  - estimateNLLSmetrics.R (835 lines) -> separate metric computation functions
+  - estimateNLLStable.R (763 lines) -> return structured data; eliminate sink() file I/O
+  - predictScenarios.R (523 lines) -> extract core logic from Shiny coupling</recommendation>
+<recommendation status="done">Move all Shiny/GUI files to inst/shiny_dss/ (Plan 02).</recommendation>
+<recommendation status="partial">Remove non-core functions. ~79 deleted across Plans 02/05A/05D. ~31 unreachable functions remain — to be archived in Plan 09.</recommendation>
+<recommendation status="done">Remove interactive map/report generators. Done in Plans 05A/05D.</recommendation>
 <recommendation>Replace all "yes"/"no" string settings with logical TRUE/FALSE throughout. ~50 occurrences.</recommendation>
-<recommendation>Replace all sink() file output with explicit writeLines() or cat(file=) wrapped in on.exit(sink()) for safety.</recommendation>
+<recommendation>Separate computation from I/O. Core functions return R objects; file output is opt-in via dedicated I/O functions.</recommendation>
 </code_organization>
 
 <api_design>
-<recommendation>Define a clean, minimal exported API (~10-15 functions). Suggested public surface:
-  - rsparrow_model() or sparrow() - Main entry point: reads data, estimates, returns model object
-  - predict.rsparrow() - S3 predict method for rsparrow model objects
-  - summary.rsparrow() - S3 summary method
-  - print.rsparrow() - S3 print method
-  - coef.rsparrow() - Extract coefficients
-  - residuals.rsparrow() - Extract residuals
-  - rsparrow_scenario() - Run scenario predictions with modified sources
-  - rsparrow_bootstrap() - Bootstrap uncertainty estimation
-  - rsparrow_hydseq() - Compute hydrological sequencing (useful standalone)
-  - rsparrow_validate() - Cross-validation diagnostics
-  - plot.rsparrow() - S3 plot method for diagnostic plots
-  - read_sparrow_data() - Read and validate input data files</recommendation>
-<recommendation>Return S3 objects with class "rsparrow" from estimation. This enables method dispatch (predict, summary, plot, coef, residuals) and follows R conventions users expect.</recommendation>
+<recommendation status="done">Define clean exported API: 13 functions exported (6 standalone + 7 S3 methods).</recommendation>
+<recommendation status="done">Return S3 objects with class "rsparrow" from estimation.</recommendation>
 <recommendation>All functions must accept data as arguments, not read from global state. The user passes a data.frame and parameter specifications; the function returns results.</recommendation>
 <recommendation>Separate computation from I/O. Core functions return R objects; optional convenience functions write CSV/plots. Never write files as a side effect of computation.</recommendation>
 </api_design>
 
 <data_handling>
-<recommendation>Include a small example dataset in data/ (subset of UserTutorial, ~100 reaches) for examples and tests. Document with a data.R file containing roxygen2 @docType data blocks.</recommendation>
-<recommendation>Move UserTutorial/ and UserTutorialDynamic/ out of the package entirely. Reference them in vignettes as external downloads or separate data packages.</recommendation>
-<recommendation>Keep CSV-based input (parameters.csv, design_matrix.csv, dataDictionary.csv) as the user interface for model specification, but provide helper functions to validate and load them rather than relying on global-state scripts.</recommendation>
+<recommendation status="open" gh="9">Include a small example dataset in data/ (~50-100 reaches) for examples and tests.</recommendation>
+<recommendation>Move UserTutorial/ and UserTutorialDynamic/ out of the package entirely.</recommendation>
+<recommendation>Keep CSV-based input (parameters.csv, design_matrix.csv, dataDictionary.csv) as the user interface for model specification.</recommendation>
 </data_handling>
 
 </architecture_recommendations>
@@ -182,14 +174,11 @@ documentation. Generate NAMESPACE and man/ entirely from roxygen2 - never hand-e
 </documentation_strategy>
 
 <testing_strategy>
-Use testthat (>= 3.0.0) with edition 3. Priority order:
-1. Capture golden reference outputs from UserTutorial before any code changes
-2. Unit test estimateFeval with known inputs/outputs (the mathematical core)
-3. Unit test hydseq with small synthetic network
-4. Unit test Fortran wrappers (tnoder, ptnoder, deliv_fraction) with minimal inputs
-5. Integration test: data -> estimate -> predict pipeline on example dataset
-6. Test predict/bootstrap/scenario give consistent results after merging duplicates
-7. Edge cases: single-reach network, all-headwater network, missing monitoring data
+Use testthat (>= 3.0.0) with edition 3. Plans 06A–06F complete (98 tests, 24 files).
+Remaining:
+- Integration test: data -> estimate -> predict pipeline on example dataset
+- Edge cases: single-reach network, all-headwater network, missing monitoring data
+- Test refactored I/O functions separately from computation functions
 Target: >80% coverage on exported functions. All tests under 10 minutes total.
 </testing_strategy>
 
@@ -197,7 +186,6 @@ Target: >80% coverage on exported functions. All tests under 10 minutes total.
 Create one primary vignette: "Introduction to rsparrow" demonstrating the full workflow
 (read data -> specify model -> estimate -> predict -> diagnose) using the bundled example
 dataset. Keep computation lightweight (\donttest{} or pre-computed results for slow steps).
-A second vignette on scenario analysis and bootstrapping can follow in a later release.
 </vignettes_and_tutorials>
 
 </quality_and_maintainability>
@@ -218,54 +206,50 @@ A second vignette on scenario analysis and bootstrapping can follow in a later r
   - [DONE] Add @return to all exported function documentation
   - [DONE] Add @examples to all exported functions
   - [DONE] Remove Windows-only code (shell.exec, Rscript.exe) — removed in Plan 04A Task 1
-  - [OPEN] Ensure R CMD check passes with 0 errors, 0 warnings, at most 1 note:
-      - (a) Fix Rd codoc mismatches: rsparrow_model/rsparrow_scenario/rsparrow_validate
-            have parameter mismatches between @param tags and function signatures (GH #5)
-      - (b) Fix undeclared imports: stringi and xfun called but not in NAMESPACE (GH #6)
-      - (c) Fix layout() shape-argument errors + predictSensitivity unused-arg warning
-            that appear during installation (GH #7)
-      - (d) Add/configure vignette to resolve VignetteBuilder WARNING (GH #8 / part of vignette plan)
+  - [OPEN] GH #10: Move package root to repo root; create .Rbuildignore
+  - [OPEN] GH #11: Delete compiled .o/.so artifacts from src/
+  - [OPEN] GH #12: Remove Collate field from DESCRIPTION
+  - [OPEN] GH #15: Separate computation from I/O in estimation/prediction
+  - [OPEN] GH #16: Fix sink()/pdf() resource leaks with on.exit() or removal
+  - [OPEN] GH #17: Fix options() without restoration
+  - [OPEN] GH #18: Eliminate <<- and assign(parent.frame()) anti-patterns
+  - [OPEN] GH #19: Replace cat() with message() for user-facing output
+  - [OPEN] GH #5: Fix Rd codoc mismatches in rsparrow_model/rsparrow_scenario/rsparrow_validate
+  - [OPEN] GH #6: Fix undeclared stringi/xfun imports
+  - [OPEN] GH #7: Fix layout() shape-argument + predictSensitivity unused-arg warnings
 </priority>
 
 <priority level="2" label="High-value - enables usability and maintainability">
-  - [PARTIAL] Eliminate unPackList() and all assign(.GlobalEnv) — all 51 assign(.GlobalEnv) eliminated (Plans 04A+04B; zero remain). All actionable unPackList() calls removed from non-REMOVE files (Plan 04C; 05C removed the last inner call from applyUserModify.R's generated string). unPackList.R itself deferred to Plan 05D (13 non-REMOVE files still call it via diagnostic/make_* chains).
-  - [PARTIAL] Replace eval(parse()) with proper R idioms — 21 inlined 04B; 18 source-var 05B;
-    20 plotly/scenario/dynamic-function 05C. After Plan 05D: 49 remain (27 COMPLEX/deferred +
-    ~22 hardened hover-text from inlined make_* files). COMPLEX: mapLoopStr.R (11),
-    plotlyLayout.R (8), aggDynamicMapdata.R (5), diagnosticSpatialAutoCorr.R (5),
-    predictScenariosPrep.R (4), applyUserModify.R (2), replaceNAs.R (1), unPackList.R (1),
-    naOmitFuncStr.R (1), createSubdataSorted.R (1). Hardened: diagnosticPlotsNLLS.R (3),
-    diagnosticPlotsNLLS_dyn.R (2), diagnosticPlotsNLLS_timeSeries.R (2),
-    checkDrainageareaErrors.R (1), predict_core.R (1).
-  - [DONE] Merge duplicate predict functions (Plan 05B: predict_core.R created, ~900 lines removed)
-  - [DONE] Design and implement S3 class "rsparrow" with standard methods (all 13 exports implemented in Plans 04D-1 through 04D-4)
-  - [DONE] Separate Shiny/GUI code into inst/shiny_dss/ (25 files moved in Plan 02)
-  - [PARTIAL] Remove non-core functions (~44 removed in Plan 02; 15 more in Plan 05A; 20 more in Plan 05D; ~45 remain: unPackList.R + 3 COMPLEX/deferred callers, mapLoopStr.R, aggDynamicMapdata.R, plotlyLayout.R, addMarkerText.R, setupDynamicMaps.R, and diagnostic/map files)
-  - Create example dataset in data/ (GH #9)
-  - Write primary vignette (GH #8)
-  - [DONE] Build test suite for core estimation, prediction, and exported API — Plans 06A–06F
-    all complete (24 test files, 98 tests / 38+1 skip in 06F alone); 0 failures
+  - [OPEN] GH #13: Remove dynamic model infrastructure (175 references across 20 files)
+  - [OPEN] GH #14: Archive 31 unreachable functions to inst/archived/
+  - [OPEN] GH #9: Create example dataset in data/
+  - [OPEN] GH #8: Write primary vignette
+  - [PARTIAL] Eliminate unPackList.R — 3 COMPLEX/deferred callers remain (may be archived)
+  - [PARTIAL] Replace eval(parse()) — 49 remain, some eliminated by archiving/dynamic removal
+  - [DONE] Merge duplicate predict functions (Plan 05B)
+  - [DONE] Design and implement S3 class "rsparrow" (Plans 04D-1 through 04D-4)
+  - [DONE] Separate Shiny/GUI code (Plan 02)
+  - [DONE] Build test suite (Plans 06A–06F: 98 tests, 0 failures)
 </priority>
 
 <priority level="3" label="Important but not blocking initial submission">
   - Decompose monolithic functions (estimate.R, estimateNLLSmetrics.R, etc.)
   - Replace "yes"/"no" strings with logical TRUE/FALSE
   - Standardize naming conventions (camelCase vs dot.separated vs underscore)
-  - Replace sink() with safe file-writing patterns
   - Replace hardcoded path construction with file.path()
   - Add input validation to Fortran interface calls
-  - Add spatial autocorrelation diagnostics as optional feature
   - Pursue >80% test coverage on exported functions
   - Write second vignette on scenarios and bootstrapping
+  - Consider lowering R >= 4.4.0 requirement (only %||% needs 4.4.0; pipe |> needs 4.1.0)
 </priority>
 
 </prioritized_actions>
 
 <cran_checklist>
 <item status="pass">R CMD build produces a valid tarball (rsparrow_2.1.0.tar.gz)</item>
-<item status="fail">R CMD check --as-cran returns 0 errors, 0 warnings</item>
+<item status="fail">R CMD check --as-cran returns 0 errors, 0 warnings — currently 4 WARNINGs, 3 NOTEs</item>
 <item status="pass">All files in R/ contain only function/method/class definitions</item>
-<item status="pass">No pre-compiled binaries in src/</item>
+<item status="fail">No pre-compiled binaries in src/ — .o and .so files still present (GH #11)</item>
 <item status="pass">Fortran source compiles on all platforms (no Windows-specific directives)</item>
 <item status="pass">NAMESPACE has explicit exports (6 export() + 7 S3method())</item>
 <item status="pass">NAMESPACE uses importFrom instead of blanket import (selective importFrom() only)</item>
@@ -273,19 +257,151 @@ A second vignette on scenario analysis and bootstrapping can follow in a later r
 <item status="pass">DESCRIPTION uses Authors@R with person() entries</item>
 <item status="pass">DESCRIPTION License matches actual license terms</item>
 <item status="pass">DESCRIPTION Version is x.y.z format</item>
+<item status="fail">DESCRIPTION has no unnecessary Collate field (GH #12)</item>
 <item status="pass">All exported functions have complete roxygen2 documentation</item>
 <item status="pass">All exported functions have @examples</item>
 <item status="pass">All exported functions have @return</item>
-<item status="pass">No .GlobalEnv modifications at package load or runtime (all 51 assign(.GlobalEnv) eliminated: Plans 04A + 04B)</item>
-<item status="partial">No eval(parse()) in exported functions (21 spec-string inlined 04B; 18 source-var 05B; 20 plotly/scenario 05C; 49 remain in internal functions — 27 COMPLEX/deferred, ~22 hardened hover-text from inlined make_* files)</item>
-<item status="pass">No shell.exec() or Windows-only system calls (removed in Plan 04A Task 1)</item>
+<item status="pass">No .GlobalEnv modifications via assign(.GlobalEnv) (eliminated Plans 04A+04B)</item>
+<item status="fail">No <<- or assign(parent.frame()) anti-patterns (GH #18)</item>
+<item status="fail">No unprotected sink()/pdf()/options() side effects (GH #16, #17)</item>
+<item status="fail">User messaging uses message() not cat() (GH #19)</item>
+<item status="fail">Computation separated from I/O — no file writes as side effects (GH #15)</item>
+<item status="partial">No eval(parse()) in exported functions — 49 remain in internal functions</item>
+<item status="pass">No shell.exec() or Windows-only system calls</item>
+<item status="fail">Package root at repo root (GH #10)</item>
+<item status="fail">Example dataset included in data/ (GH #9)</item>
+<item status="fail">At least one vignette demonstrating core workflow (GH #8)</item>
 <item status="fail">Package installs and loads on macOS, Linux, and Windows</item>
 <item status="fail">Total R CMD check time under 10 minutes</item>
-<item status="fail">Example dataset included in data/ with documentation</item>
-<item status="fail">At least one vignette demonstrating core workflow</item>
 <item status="fail">testthat tests pass on all platforms</item>
 <item status="unchecked">CRAN submission via devtools::submit_cran() accepted</item>
 </cran_checklist>
+
+<upcoming_plans>
+
+<plan id="07" label="Package Restructuring">
+Status: NOT STARTED
+Scope:
+  - Move package contents from RSPARROW_master/ to repo root
+  - Delete compiled .o and .so artifacts from src/
+  - Remove Collate field from DESCRIPTION
+  - Create proper .Rbuildignore at package root
+  - Update all paths in scripts/, docs/, Makefile, CLAUDE.md
+  - Verify R CMD build and R CMD check still work from new structure
+  - Update GitHub Actions / CI if applicable
+Dependencies: None (do this first — all subsequent plans work from new structure)
+GH Issues: #10, #11, #12
+</plan>
+
+<plan id="08" label="Remove Dynamic Model Infrastructure">
+Status: NOT STARTED
+Scope:
+  - Archive dynamic-only files to inst/archived/dynamic/:
+    diagnosticPlotsNLLS_dyn.R (935 lines), checkDynamic.R (50 lines),
+    aggDynamicMapdata.R (226 lines), setupDynamicMaps.R (190 lines),
+    diagnosticPlotsNLLS_timeSeries.R (200 lines), readForecast.R (306 lines)
+  - Strip if_dynamic conditionals from ~14 remaining files (175 references across 20 files):
+    estimateNLLSmetrics.R (38 refs), estimateNLLStable.R (24 refs), estimate.R (21 refs),
+    diagnosticPlotsNLLS.R (8 refs), diagnosticSpatialAutoCorr.R (6 refs),
+    predictScenariosPrep.R (5 refs), controlFileTasksModel.R (3 refs),
+    startModelRun.R (2 refs), rsparrow_model.R (2 refs), diagnosticSensitivity.R (2 refs),
+    checkDrainageareaMapPrep.R (2 refs), hline.R (2 refs), replaceNAs.R (1 ref),
+    hydseq.R (1 ref)
+  - Remove model_type parameter from rsparrow_model() (or make it internal-only)
+  - Remove map_years, map_seasons, diagnosticPlots_timestep, diagnostic_timeSeriesPlots
+    settings from file.output.list
+  - Update tests, documentation, DESCRIPTION Collate (if not yet removed)
+Dependencies: Plan 07 (new package root)
+GH Issues: #13
+Estimated line reduction: ~1,900 lines archived + ~200 lines of conditionals removed
+</plan>
+
+<plan id="09" label="Archive Unreachable Code">
+Status: NOT STARTED
+Scope:
+  - Move 31 unreachable functions to inst/archived/ with categorized subdirectories:
+    Category 1 — Legacy data import (12 files):
+      addVars.R, calcDemtareaClass.R, calcHeadflag.R, calcIncremLandUse.R,
+      checkData1NavigationVars.R, checkDupVarnames.R, checkMissingData1Vars.R,
+      createInitialDataDictionary.R, createVerifyReachAttr.R, dataInputPrep.R,
+      replaceData1Names.R, startEndmodifySubdata.R
+    Category 2 — Mapping/visualization (9 files):
+      checkBinaryMaps.R, checkDrainageareaErrors.R, checkDrainageareaMapPrep.R,
+      g_legend.R, mapBreaks.R, mapLoopStr.R, set_unique_breaks.R,
+      setupDynamicMaps.R (if not archived in Plan 08), verifyDemtarea.R
+    Category 3 — Deferred utilities (7 files):
+      unPackList.R, naOmitFuncStr.R, aggDynamicMapdata.R (if not archived in Plan 08),
+      test_addPlotlyvars.R, syncVarNames.R, estimateWeightedErrors.R, copyStructure.R
+    Category 4 — Plotting utilities (3 files):
+      hline.R, makeAESvector.R, areColors.R
+  - Remove archived files from DESCRIPTION Collate (if not yet removed)
+  - Verify no exported function breaks after archival
+  - Create inst/archived/README.md documenting what was archived and why
+Dependencies: Plans 07, 08 (some files overlap with dynamic removal)
+GH Issues: #14
+Note: Archive rather than delete. Some of these functions may be needed for future features.
+</plan>
+
+<plan id="10" label="Separate Computation from I/O">
+Status: NOT STARTED
+Scope:
+  - Refactor estimation functions to return R objects instead of writing files:
+    estimate.R: Remove ~7 save() + 10 dir.create(); return estimate.list directly
+    estimateNLLSmetrics.R: Remove save(); return metrics list
+    estimateNLLStable.R: Remove sink() + ~20 fwrite(); return summary data as list/data.frame
+    estimateOptimize.R: Add on.exit(sink()) protection; keep logging but make it optional
+    correlationMatrix.R: Remove pdf() + sink(); return correlation data only
+  - Refactor prediction functions:
+    controlFileTasksModel.R: Remove ~4 save() + sink(); pass results via return values
+    predictScenarios.R: Remove ~2 save() + dir.create(); return predictions
+    predictScenariosOutCSV.R: Remove metadata sink(); keep as explicit I/O function
+    predictBootstraps.R: Remove save(); return bootstrap results
+  - Refactor startModelRun.R: Remove ~5 save(); accumulate in sparrow_state return
+  - Create optional write_rsparrow_results() or similar convenience function for users
+    who want CSV/file output — this is where all file I/O belongs
+  - Fix rsparrow_model.R:380 <<- anti-pattern: restructure predict.list loading to
+    avoid global assignment (return from controlFileTasksModel instead of load from file)
+Dependencies: Plans 07, 08, 09 (cleaner codebase to refactor)
+GH Issues: #15, #18
+</plan>
+
+<plan id="11" label="CRAN Compliance Fixes">
+Status: NOT STARTED
+Scope:
+  - Fix remaining sink()/pdf() issues (GH #16):
+    Any sink() that survives Plan 10 gets on.exit(sink()) protection
+    Any pdf() that survives gets on.exit(dev.off()) protection
+  - Fix options() without restoration (GH #17):
+    Add on.exit(options(old_opts)) pattern to all 5 locations
+  - Eliminate remaining assign(parent.frame()) (GH #18):
+    diagnosticPlots_4panel_B.R:134, upstream.R:52, applyUserModify.R:40/43/45
+    (checkBinaryMaps.R:35 and unPackList.R likely archived in Plan 09)
+  - Replace cat() with message() (GH #19):
+    53 instances across 15+ files; keep cat() only in print/summary S3 methods
+  - Fix existing R CMD check WARNINGs:
+    GH #5: Rd codoc mismatches in rsparrow_model/rsparrow_scenario/rsparrow_validate
+    GH #6: Undeclared stringi/xfun imports (in legacy encoding files — likely archived)
+    GH #7: layout() shape-argument + predictSensitivity unused-arg warnings
+  - Fix R CMD check NOTEs
+Dependencies: Plans 07–10
+GH Issues: #5, #6, #7, #16, #17, #18, #19
+</plan>
+
+<plan id="12" label="Example Dataset, Vignette, and Final Polish">
+Status: NOT STARTED
+Scope:
+  - Create example dataset in data/ (~50-100 reaches, synthetic or UserTutorial subset)
+  - Document dataset with R/data.R containing roxygen2 @docType data blocks
+  - Update @examples in all 13 exported functions to use bundled dataset
+  - Write introductory vignette: read data → estimate → predict → diagnose
+  - Update URL and BugReports fields in DESCRIPTION
+  - Final R CMD check --as-cran: target 0 ERRORs, 0 WARNINGs, ≤1 NOTE
+  - Cross-platform testing (Linux, macOS, Windows)
+Dependencies: Plans 07–11
+GH Issues: #8, #9
+</plan>
+
+</upcoming_plans>
 
 <completed_plans>
 
@@ -342,271 +458,68 @@ Completed all 8 tasks:
 
 <plan id="04A" label="Windows Code Removal and Core State Refactoring">
 Completed all 3 tasks:
-  - Task 1: Removed all Windows-only code (shell.exec, Rscript.exe, batch_mode) from non-REMOVE files
-    Files modified: startModelRun.R, controlFileTasksModel.R, createInitialParameterControls.R,
-    createInitialDataDictionary.R, addVars.R, estimate.R, estimateBootstraps.R, predictBootstraps.R
+  - Task 1: Removed all Windows-only code (shell.exec, Rscript.exe, batch_mode)
   - Task 2: Eliminated 27 assign(.GlobalEnv) from startModelRun.R
-    Replaced unPackList with direct $ extractions; added sparrow_state accumulator and return;
-    removed enable_ShinyApp parameter (Shiny separated in Plan 02)
   - Task 3: Refactored controlFileTasksModel.R
-    Removed primary unPackList and 1 assign(.GlobalEnv); added min.sites.list parameter;
-    replaced bare-name access with direct $-extraction from input lists
-  - R CMD build succeeds: rsparrow_2.1.0.tar.gz produced
-  - Current counts: 23 assign(.GlobalEnv) remaining across 13 files (down from 74)
-  - 0 shell.exec/Rscript.exe in code (1 comment in controlFileTasksModel.R)
+  - R CMD build succeeds
 </plan>
 
 <plan id="04B" label="Remaining GlobalEnv and Specification-String Elimination">
 Completed all tasks:
-  - Task 4: Eliminated 23 assign(.GlobalEnv) from 13 files:
-    - predict.R, correlationMatrix.R, diagnosticSensitivity.R, estimateWeightedErrors.R,
-      setNLLSWeights.R, estimateBootstraps.R: simple removal (already returning value)
-    - predictBootstraps.R (2 assigns), predictScenarios.R (2 assigns): removed
-    - checkDrainageareaMapPrep.R (2 assigns): removed (only caller on REMOVE list)
-    - findMinMaxLatLon.R (4 assigns): now returns list(sitegeolimits, mapping.input.list); caller updated
-    - replaceData1Names.R (1 assign): now returns list(data1, data_names); caller updated
-    - dataInputPrep.R (2 assigns): now returns list(data1, data_names)
-    - estimate.R (4 assigns): removed all GlobalEnv assigns; preserved file save logic
-  - Task 5: Replaced 21 specification-string eval(parse()) in 7 core math files:
-    - estimateFeval.R, estimateFevalNoadj.R, validateFevalNoadj.R (3 each)
-    - predict.R, predictBoot.R, predictSensitivity.R, predictScenarios.R (3 each)
-    - Inlined: reach_decay, reservoir_decay, incr_delivery expressions
-    - Removed 3 spec-string vars from getCharSett.R, getShortSett.R, estimateOptimize.R
-    - Removed spec-string params from predictSensitivity() signature + callers
-    - Removed dead spec-string extractions from startModelRun.R
-  - Fixed stale predict() call in estimate.R -> predict_sparrow() (missed in Plan 03)
-  - R CMD build succeeds: rsparrow_2.1.0.tar.gz produced
-  - Final counts: 0 assign(.GlobalEnv) in R/; ~318 eval(parse()) remain (dynamic column access)
+  - Task 4: Eliminated 23 assign(.GlobalEnv) from 13 files
+  - Task 5: Replaced 21 specification-string eval(parse()) in 7 core math files
+  - Final counts: 0 assign(.GlobalEnv) in R/
 </plan>
-
 
 <plan id="04C" label="unPackList Removal and eval(parse) Dynamic Column Cleanup">
 Completed all tasks:
-  - All actionable unPackList() calls removed from non-REMOVE files (3 files refactored:
-    predictSensitivity.R, diagnosticSensitivity.R, checkDrainageareaMapPrep.R)
-  - Dynamic column eval(parse()) replaced with [[]] in 6 files:
-    checkingMissingVars.R, createSubdataSorted.R, replaceData1Names.R, setNAdf.R,
-    readForecast.R, validateFevalNoadj.R
-  - Roxygen \item unPackList.R references cleaned from ~48 non-REMOVE files
-  - .GlobalEnv rm() calls removed from predictScenariosPrep.R
-  - replaceNAs.R parent.frame() injection antipattern flagged TODO Plan 05
-  - 1 unPackList call in applyUserModify.R inside dynamic string deferred to Plan 05C
-  - R CMD build succeeds: rsparrow_2.1.0.tar.gz produced
+  - All actionable unPackList() calls removed from non-REMOVE files
+  - Dynamic column eval(parse()) replaced with [[]] in 6 files
+  - Roxygen references cleaned from ~48 files
 </plan>
 
 <plan id="04D" label="Exported API Implementation (all 4 sub-sessions)">
-Sub-session 04D-1 (S3 method bodies):
-  - print/summary/coef/residuals/vcov.rsparrow() bodies implemented
-  - plot.rsparrow() stub with informative stop() (→Plan 05D)
-  - print.summary.rsparrow registered in NAMESPACE
-Sub-session 04D-2 (read_sparrow_data()):
-  - read_sparrow_data() implemented with explicit path config
-  - path_results must end with .Platform$file.sep; dataDictionary.csv copied with run_id prefix
-  - Imports data1 CSV, parameters.csv, design_matrix.csv, dataDictionary.csv
-Sub-session 04D-3 (rsparrow_model()):
-  - rsparrow_model() implemented: orchestrates read_sparrow_data() → startModelRun()
-  - One-line patch to startModelRun.R:484 exposes estimate.list in sparrow_state
-  - estimate.input.list extended with ConcFactor/loadUnits/yieldUnits/ConcUnits
-Sub-session 04D-4 (predict wrappers):
-  - predict.rsparrow() calls predict_sparrow() (7-arg signature including dlvdsgn)
-  - rsparrow_bootstrap() calls estimateBootstraps(); uses seed %||% sample.int()
-  - rsparrow_validate() calls validateMetrics(); requires if_validate="yes" at estimation
-  - rsparrow_scenario() calls predictScenarios(Rshiny=FALSE); translates source_changes
-  - model$data extended with estimate.list, data_names, mapping.input.list, Vsites.list, classvar
-  - R CMD build succeeds: rsparrow_2.1.0.tar.gz produced
+Sub-sessions 04D-1 through 04D-4: All 13 exported functions fully implemented.
 </plan>
 
 <plan id="05A" label="Dead Code Removal">
-Completed:
-  - 15 files deleted from R/: errorOccurred.R, exitRSPARROW.R, importCSVcontrol.R,
-    outputSettings.R, modelCompare.R, getCharSett.R, getNumSett.R, getOptionSett.R,
-    getShortSett.R, getSpecialSett.R, getYesNoSett.R, diagnosticMaps.R, mapSiteAttributes.R,
-    predictMaps.R, predictMaps_single.R
-  - Callers updated: errorOccurred→stop(), exitRSPARROW→stop(), importCSVcontrol→inline fread
-    in 5 callers, outputSettings/modelCompare calls removed from startModelRun.R/controlFileTasksModel.R
-  - Dead batch-mapping block deleted from controlFileTasksModel.R and predictScenarios.R
-  - createMasterDataDictionary.R, createInitialParameterControls.R inlined (missed in plan)
-  - Side-fixes: stub returns in mapLoopStr.R, make_residMaps.R, make_siteAttrMaps.R
-  - diagnosticPlotsNLLS_dyn.R unPackList fixed (path_results extracted directly)
-  - DEFERRED: unPackList.R — 13 non-REMOVE files still call it; delete with diagnostics in 05D
-  - R CMD build succeeds: rsparrow_2.1.0.tar.gz produced; R file count: 152→138 (net -14)
+Completed: 15 files deleted from R/.
 </plan>
 
 <plan id="05B" label="Predict Consolidation">
-Completed:
-  - predict_core.R (266 lines) created as shared prediction kernel
-  - predict.R: 574→291 lines; predictBoot.R: 475→190; predictScenarios.R: 842→523
-  - estimateFevalNoadj.R (133 lines) deleted; merged into estimateFeval.R via ifadjust=1L/0L
-    parameter with backward-compatible estimateFevalNoadj wrapper function at bottom
-  - dlvdsgn added as explicit parameter to predictScenarios() — was implicit via global env
-    (pre-existing missing-param bug fixed); callers updated (controlFileTasksModel.R, rsparrow_scenario.R)
-  - All 18 dynamic source variable eval(parse()) eliminated; pload_src named lists replace assign+eval
-  - Total eval(parse()) count reduced: 65→47 across 11 non-REMOVE files
-  - R CMD build succeeds: rsparrow_2.1.0.tar.gz produced
+Completed: predict_core.R created; ~900 lines removed; estimateFevalNoadj.R merged.
 </plan>
 
 <plan id="05C" label="Remaining eval(parse()) Elimination">
-Completed:
-  - Strategy A: diagnosticPlots_4panel_A/B.R → 0 eval/parse each
-    markerList replaced with direct R list; plotTitles gsub-stripped; markerText as.formula()
-    All make_*.R callers updated to pass markerList as R list, not paste0 string
-  - Strategy B: predictScenariosPrep.R → 3 remain (all Shiny DSS, guarded by Rshiny=TRUE)
-    9 S_ bare-variable eval(parse()) replaced with scenario_mods / lc_mods named lists
-    Bridge added after selectFuncs loop to copy Shiny S_ vars into named lists
-    cfFuncs guarded with if(Rshiny &&...); S__CF access via get()
-  - Strategy C: applyUserModify.R → 1 remain (unavoidable outer eval(parse(text=userMod)))
-    unPackList() removed from generated top string; replaced with assign() loops
-    3 inner eval/parse in bottom string replaced with mget()/get()/[[]] access
-  - Strategy D: diagnosticSensitivity.R → 0 eval/parse; fully independent of create_diagnosticPlotList.R
-    p16/p17/p18 plotFuncs inlined; computation loop restructured before plotting;
-    renamed plot vars (xmed_p, xiqr_p etc.) to preserve originals for sensitivities.list
-    diagnosticSpatialAutoCorr.R → 0 eval/parse (still calls create_diagnosticPlotList()$pNN$plotFunc
-    for p19–p22 without eval — dependency removed in Plan 05D)
-    showPlotGrid added to both files
-  - Strategy E: createSubdataSorted.R hardened with tryCatch + informative error message
-  - Total eval(parse()) across non-REMOVE files: 47→~27 (all remaining COMPLEX/deferred)
-  - R CMD build succeeds: rsparrow_2.1.0.tar.gz produced
+Completed: 20 more eval(parse()) eliminated. Total 47→~27 remaining.
 </plan>
 
 <plan id="05D" label="Diagnostic Plot Infrastructure Removal">
-Completed:
-  - 20 REMOVE-list files deleted from R/ (net: 138→118 R files):
-    create_diagnosticPlotList.R (2132 lines)
-    8 makeReport_*.R: makeReport_diagnosticPlotsNLLS.R, makeReport_drainageAreaErrorsPlot.R,
-      makeReport_header.R, makeReport_modelEstPerf.R, makeReport_modelSimPerf.R,
-      makeReport_outputMaps.R, makeReport_residMaps.R, makeReport_siteAttrMaps.R
-    10 make_*.R: make_diagnosticPlotsNLLS_timeSeries.R, make_drainageAreaErrorsMaps.R,
-      make_drainageAreaErrorsPlot.R, make_dyndiagnosticPlotsNLLS.R,
-      make_dyndiagnosticPlotsNLLS_corrPlots.R, make_dyndiagnosticPlotsNLLS_sensPlots.R,
-      make_modelEstPerfPlots.R, make_modelSimPerfPlots.R, make_residMaps.R, make_siteAttrMaps.R
-    render_report.R (orphaned)
-  - diagnosticPlotsNLLS_dyn.R refactored:
-    unPackList() call removed (pre-condition fix)
-    create_diagnosticPlotList() filtering replaced with hardcoded plot_names
-    three make_dyn* functions inlined as dyn_diagPlotsNLLS/dyn_sensPlots/dyn_corrPlots helpers
-    makeReport_header/render_report HTML rendering calls removed
-  - diagnosticPlotsNLLS.R refactored:
-    make_modelEstPerfPlots (p1-p8) inlined with direct $ extractions
-    make_modelSimPerfPlots (p9-p15) inlined with direct $ extractions
-    make_residMaps/make_siteAttrMaps replaced with NULL (map rendering disabled since Plan 05A)
-  - checkDrainageareaErrors.R: make_drainageAreaErrorsPlot inlined; make_drainageAreaErrorsMaps removed
-  - diagnosticPlotsNLLS_timeSeries.R: make_diagnosticPlotsNLLS_timeSeries already inlined (prior session)
-  - plot.rsparrow() fully implemented with type= dispatch:
-    "residuals" → .rsparrow_plot_residuals() → diagnosticPlots_4panel_A/B
-    "sensitivity" → .rsparrow_plot_sensitivity() → diagnosticSensitivity()
-    "spatial" → .rsparrow_plot_spatial() → diagnosticSpatialAutoCorr()
-  - plot.rsparrow.Rd updated with type= parameter, @param, @return, @examples
-  - DESCRIPTION Collate: 20 entries removed
-  - eval(parse()) count: ~27 (post-05C) → 49 total (27 COMPLEX/deferred unchanged;
-    ~22 hardened hover-text patterns from inlined make_* files brought into REFACTOR files)
-  - HTML diagnostic report generation removed from core package; rmarkdown stays in Suggests
-  - R CMD build succeeds: rsparrow_2.1.0.tar.gz produced; R file count: 138→118
+Completed: 20 REMOVE-list files deleted. plot.rsparrow() fully implemented. File count: 138→118.
 </plan>
 
-
 <plan id="06A" label="Test Infrastructure Setup">
-Completed all 6 tasks:
-  - Task 06A-1: DESCRIPTION updated — testthat (>= 3.0.0) in Suggests; Config/testthat/edition: 3 added
-  - Task 06A-2: 8 broken makeReport_* test files deleted (plan said 7; makeReport_siteAttrMaps.R was
-    also broken and deleted); tests/testthat.R fixed (was loading RSPARROW instead of rsparrow)
-  - Task 06A-3: helper.R rewritten with 3 shared utilities: expect_numeric_close, expect_names_present,
-    make_mock_rsparrow; old check_chunks_enclosed() removed
-  - Task 06A-4: fixtures/mini_network.rda created — 7-row Y-shaped network; helper-build-fixtures.R
-    created with if(FALSE) guard for future regeneration
-  - Task 06A-5: fixtures/mini_model_inputs.rda created — DataMatrix.list (7×10 numeric matrix),
-    SelParmValues (bcols=3L), dlvdsgn (1×1 matrix), hand-coded estimate.list; bundled as mini_inputs
-  - Task 06A-6: 3 surviving tests fixed (batch_mode removed from readParameters, readDesignMatrix,
-    selectParmValues call signatures); readDesignMatrix fixture regenerated; 23 tests pass, 0 fail
-  - R CMD check (_R_CHECK_FORCE_SUGGESTS_=false): 4 WARNINGs (pre-existing), 3 NOTEs; 0 test errors
+Completed: testthat edition 3, fixtures created, 23 tests pass.
 </plan>
 
 <plan id="06B" label="Network Topology Tests">
-Completed all 4 tasks. Completed 2026-03-07.
-  - test-hydseq.R (7 tests): hydseq() and rsparrow_hydseq() on mini_network; hydseq order,
-    headflag/termflag assignment, exported function returns named integer vector
-  - test-calcflags.R (4 tests): calcHeadflag and calcTermflag flag assignment on known topology;
-    headwater detection, terminal reach detection
-  - test-accumulateIncrArea.R (4 tests): accumulateIncrArea incremental→cumulative drainage area
-    accumulation; terminal reach cumulative area equals sum of all incremental areas
-  - Total: 15 tests, all pass; 0 fail
+Completed 2026-03-07. 15 tests, all pass.
 </plan>
 
 <plan id="06C" label="Fortran Interface Tests">
-Completed all 3 tasks. Completed 2026-03-07.
-  - test-deliver.R (5 tests): deliver() → .Fortran("deliv_fraction"); returns length-nreach numeric;
-    incdecay=totdecay=1.0 → all fractions = 1.0; partial decay → fractions in (0,1); headwaters
-    < terminal delivery with decay; column-order guard test
-  - test-fortran-tnoder.R (6 tests): .Fortran("tnoder") via estimateFeval; residuals finite and
-    correct length; recycling behavior with 1 calibration site documented; ifadjust effects
-  - test-fortran-ptnoder.R (6 tests): predict_sparrow exercising ptnoder/mptnoder/deliv_fraction;
-    predmatrix 7×14, yldmatrix 7×10; terminal reach has max pload_total
-  - Key findings: incdecay/totdecay are multiplicative (1.0=no decay, NOT 0.0); predmatrix
-    has 14 cols, yldmatrix 10 cols for mini_network (jjsrc=1)
-  - Total: 17 tests, all pass; 0 fail
+Completed 2026-03-07. 17 tests, all pass.
 </plan>
 
 <plan id="06D" label="Estimation Core Tests">
-Completed all 3 tasks. Completed 2026-03-07.
-  - test-setNLLSWeights.R (4 tests): setNLLSWeights() returns list with NLLS_weights, tiarea,
-    count, weight; default mode returns scalar 1.0; lnload/user modes use sitedata$weight
-  - test-estimateWeightedErrors.R (3 tests): estimateWeightedErrors() reads residuals CSV from
-    file, fits power-function NLS, returns numeric[nreaches]. Corrected plan assumption: this
-    is a per-reach weight function (not a scalar bias correction).
-  - test-estimateOptimize.R (4 tests): estimateOptimize() runs nlmrt::nlfb(); returns sparrowEsts
-    with coefficients, betamn/betamx bounds; optimized coefficients within bounds; terminates
-    in &lt;60 seconds on mini_network
-  - Bug fixed: Csites.weights.list was missing from estimateOptimize() signature and the
-    call site in estimate.R; fixed as part of Plan 06D
-  - Total: 11 tests, all pass; 0 fail
+Completed 2026-03-07. 11 tests, all pass.
 </plan>
 
 <plan id="06E" label="Prediction Tests">
-Completed all 3 tasks. Completed 2026-03-08.
-  - test-predict-sparrow.R (9 tests): predict_sparrow() list structure, predmatrix/yldmatrix
-    dimensions, oparmlist/oyieldlist column-count consistency, non-negative total loads,
-    terminal reach accumulation, bootcorrection sensitivity, determinism, concentration
-    non-negativity
-  - test-predict-core.R (5 tests): .predict_core() required return fields, pload_total length,
-    Plan 05B regression guard — pload_total matches predict_sparrow predmatrix[,2] to 1e-10,
-    per-source load matches predmatrix[,3] to 1e-10, incdecay/totdecay non-negativity.
-    eval/parse hover-text test documented as skipped (no eval/parse in .predict_core itself).
-  - test-predictSensitivity.R (3 tests): returns numeric vector of nreach length, large
-    perturbation changes output, original estimates match predict_sparrow pload_total to 1e-10
-    (Plan 04B/05B cross-check). Note: predictSensitivity still contains local assign() for
-    pload_inc_src vars — known residual, does not affect return value.
-  - Plan 05B consolidation confirmed non-breaking: all regression tests pass to 1e-10
-  - Total: 17 tests (22 expectations), all pass; 0 fail
+Completed 2026-03-08. 17 tests, all pass.
 </plan>
 
-
 <plan id="06F" label="Exported API Tests">
-Completed all 5 tasks. Completed 2026-03-08.
-  - test-rsparrow-hydseq.R (6 tests): exported rsparrow_hydseq() — existence/callability,
-    returns data.frame with hydseq column, custom from_col/to_col names preserved,
-    error on non-data.frame input, error on missing from_col, error on missing waterid column.
-    Note: test data must include termflag, frac, demiarea (required by internal hydseq()).
-  - test-read-sparrow-data.R (5 tests): returns list with file.output.list/data1/data_names,
-    error for nonexistent path_main, error for missing parameters.csv, run_id-prefixed
-    dataDictionary.csv created at results/run1/run1_dataDictionary.csv. Uses make_minimal_sparrow_dir()
-    helper with 5-column dataDictionary (varType, sparrowNames, data1UserNames, varunits, explanation).
-  - test-s3-methods.R (11 tests): print.rsparrow returns invisible x; output contains coefficient
-    names; summary.rsparrow returns summary.rsparrow class; summary output contains R2/RMSE;
-    coef() returns named numeric matching coefficients; residuals() returns numeric vector;
-    vcov() returns NULL when ifHess="no"; vcov() returns matrix when available; print does not
-    modify object; all 5 S3 methods registered (verified via methods(), not isS3method()).
-  - test-plot-rsparrow.R (6 tests): plot.rsparrow registered as S3 method; invalid type stops
-    with error mentioning valid types; valid types ("residuals","sensitivity","spatial") pass
-    dispatch without "invalid type" error (deeper data-missing errors are acceptable); ...
-    forwarded through dispatch.
-  - test-rsparrow-wrappers.R (10+1 skip tests): rsparrow_bootstrap formal args (object, n_boot,
-    seed); class check errors for all three wrappers; rsparrow_validate detects missing
-    Vsites.list; rsparrow_scenario requires rsparrow class; rsparrow_model has 6 required args;
-    rsparrow_model stops for nonexistent path_main; rsparrow_model validates model_type via
-    match.arg before calling read_sparrow_data. 1 skip: reproducibility test requires fitted model.
-  - Key implementation notes: isS3method() does not work for base S3 — use
-    "method.class" %in% as.character(methods("generic")) instead; rsparrow_bootstrap
-    API is (object, n_boot, seed) not (model, biters, iseed) as the plan doc assumed.
-  - Total: 38 tests (1 skip), all pass; 0 fail
+Completed 2026-03-08. 38 tests (1 skip), all pass.
 </plan>
 
 </completed_plans>
