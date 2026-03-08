@@ -28,25 +28,27 @@ network fixture and shared helper utilities. Must complete before all other sub-
 Completed 2026-02-23: 23 tests pass, 0 fail. testthat edition 3 active.
 </sub_plan>
 
-<sub_plan id="06B" file="PLAN_06B_NETWORK_TESTS.md" status="in_progress" blocked_by="06A">
+<sub_plan id="06B" file="PLAN_06B_NETWORK_TESTS.md" status="complete" blocked_by="06A">
 Network Topology Tests — unit tests for hydseq, rsparrow_hydseq (exported), calcHeadflag,
 calcTermflag, accumulateIncrArea. Uses mini_network fixture from 06A.
-Estimated test runtime: &lt;5 seconds.
-Task 06B-1 complete (2026-03-07): test-hydseq.R, 7 tests passing.
-Tasks 06B-2 (test-calcflags.R) and 06B-3 (test-accumulateIncrArea.R) pending.
+Completed 2026-03-07: 15 new tests (7+4+4) across 3 files, all pass.
 </sub_plan>
 
-<sub_plan id="06C" file="PLAN_06C_FORTRAN_TESTS.md" status="pending" blocked_by="06A">
+<sub_plan id="06C" file="PLAN_06C_FORTRAN_TESTS.md" status="complete" blocked_by="06A">
 Fortran Interface Tests — unit tests for deliver(), and the tnoder/ptnoder/deliv_fraction
 Fortran subroutines exercised via estimateFeval and predict_sparrow stubs with minimal
 inputs. Requires compiled package.
-Estimated test runtime: &lt;5 seconds.
+Completed 2026-03-07: 17 new tests (5+6+6) across 3 files, all pass.
+Key findings: incdecay/totdecay are multiplicative (1.0=no decay); tnoder recycling behavior
+with 1 monitoring site documented; predmatrix is 7×14 cols, yldmatrix 7×10 cols.
 </sub_plan>
 
-<sub_plan id="06D" file="PLAN_06D_ESTIMATION_TESTS.md" status="pending" blocked_by="06C">
-Estimation Core Tests — unit tests for estimateFeval (ifadjust=1 and 0), estimateWeightedErrors,
-setNLLSWeights. A short-run estimateOptimize test verifying convergence structure.
-Estimated test runtime: &lt;30 seconds.
+<sub_plan id="06D" file="PLAN_06D_ESTIMATION_TESTS.md" status="complete" blocked_by="06C">
+Estimation Core Tests — unit tests for setNLLSWeights, estimateWeightedErrors, estimateOptimize.
+Completed 2026-03-07: 11 new tests (4+3+4) across 3 files, all pass.
+Bug fixed: Csites.weights.list was missing from estimateOptimize() signature (also fixed
+the call site in estimate.R). estimateWeightedErrors corrected to file-based weight function
+(not scalar bias correction as the plan assumed).
 </sub_plan>
 
 <sub_plan id="06E" file="PLAN_06E_PREDICTION_TESTS.md" status="pending" blocked_by="06C">

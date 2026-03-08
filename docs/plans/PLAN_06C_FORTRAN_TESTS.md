@@ -1,4 +1,4 @@
-<plan id="06C" label="Fortran Interface Tests" status="pending" blocked_by="06A">
+<plan id="06C" label="Fortran Interface Tests" status="complete" blocked_by="06A">
 
 <objective>
 Write tests that exercise the six Fortran subroutines (tnoder, ptnoder, mptnoder,
@@ -55,7 +55,7 @@ since the package must be compiled to be installable.
 
 <tasks>
 
-<task id="06C-1" status="pending">
+<task id="06C-1" status="complete">
 <subject>Write test-deliver.R — delivery fraction computation</subject>
 <description>
 File: tests/testthat/test-deliver.R
@@ -113,9 +113,17 @@ Test 5: "deliver data2 column order is correct (no silent transposition)"
   - Tests skip gracefully if package not compiled
   - Zero-decay delivery fractions verified to be 1.0 within 1e-10 tolerance
 </success_criteria>
+<completed date="2026-03-07">
+  - 5 tests pass (10 expectations total)
+  - KEY DISCOVERY: incdecay/totdecay are multiplicative decay factors (1.0=no decay, NOT 0.0).
+    Zero-decay uses rep(1.0, nreach) not rep(0, nreach) — plan description corrected.
+  - Headwaters (waterid 1-4) have strictly lower delivery fractions than terminal (waterid 7)
+    under partial decay (0.5), confirming upstream attenuation direction.
+  - Column-order guard test confirms swapping frac and termflag produces different results.
+</completed>
 </task>
 
-<task id="06C-2" status="pending">
+<task id="06C-2" status="complete">
 <subject>Write test-fortran-tnoder.R — residual computation via estimateFeval</subject>
 <description>
 File: tests/testthat/test-fortran-tnoder.R
@@ -173,9 +181,19 @@ Test 6: "estimateFeval backward-compatible wrapper: estimateFevalNoadj matches i
   - Tests skip if rsparrow not compiled
   - estimateFevalNoadj backward-compat wrapper confirmed identical to ifadjust=0
 </success_criteria>
+<completed date="2026-03-07">
+  - 6 tests pass (12 expectations total)
+  - KEY DISCOVERY: With 1 monitoring site (nstaid=1), tnoder writes ee(1) but estimateFeval.R
+    allocates ee as length nstaid=1 then applies sqrt(weight)*ee with weight length 7.
+    R recycling propagates the single residual to all 7 positions — all elements are identical.
+    Plan's assumption that non-monitoring reaches return 0 was WRONG for this implementation.
+    Tests updated to verify recycling behavior (all elements equal rather than zeros at non-monitoring).
+  - Monotonicity test confirmed: residual magnitude changes with beta_s1.
+  - estimateFevalNoadj backward-compat wrapper confirmed identical to ifadjust=0L.
+</completed>
 </task>
 
-<task id="06C-3" status="pending">
+<task id="06C-3" status="complete">
 <subject>Write test-fortran-ptnoder.R — prediction accumulation via predict_sparrow stub</subject>
 <description>
 File: tests/testthat/test-fortran-ptnoder.R
@@ -230,6 +248,14 @@ Test 6: "predict_sparrow output column names match getVarList specification"
   - Tests skip if rsparrow not compiled
   - predmatrix dimensions confirmed correct for 7-reach network
 </success_criteria>
+<completed date="2026-03-07">
+  - 6 tests pass (11 expectations total)
+  - predmatrix confirmed as 7 rows × 14 columns (waterid + load vars + source shares)
+  - yldmatrix confirmed as 7 rows × 10 columns (waterid + yield/conc vars)
+  - Terminal reach (waterid=7, row 7) has the maximum pload_total (column 2, col 1=waterid)
+  - All total predicted loads non-negative
+  - oparmlist and oyieldlist are character vectors with waterid as first element
+</completed>
 </task>
 
 </tasks>

@@ -1,4 +1,4 @@
-<plan id="06B" label="Network Topology Tests" status="pending" blocked_by="06A">
+<plan id="06B" label="Network Topology Tests" status="complete" blocked_by="06A">
 
 <objective>
 Write unit tests for hydrological network functions: hydseq (internal), rsparrow_hydseq
