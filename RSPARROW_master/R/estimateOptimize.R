@@ -23,7 +23,7 @@
 
 
 estimateOptimize <- function(file.output.list, SelParmValues, estimate.input.list,
-                             DataMatrix.list, dlvdsgn) {
+                             DataMatrix.list, dlvdsgn, Csites.weights.list) {
   path_results <- file.output.list$path_results
   run_id <- file.output.list$run_id
 

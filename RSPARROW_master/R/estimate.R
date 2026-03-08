@@ -112,7 +112,7 @@ estimate <- function(if_estimate, if_predict, file.output.list,
     message("Running estimation...")
     sparrowEsts <- estimateOptimize(
       file.output.list, SelParmValues, estimate.input.list,
-      DataMatrix.list, dlvdsgn
+      DataMatrix.list, dlvdsgn, Csites.weights.list
     )
 
     #   Resids <- sparrowEsts$resid / sqrt(Csites.weights.list$weight)  # re-express residuals in original units
