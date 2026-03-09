@@ -3,8 +3,8 @@
 rsparrow is an R implementation of the USGS SPARROW water-quality model that uses spatially
 referenced regression to relate water measurements to watershed attributes. Version 2.1.0
 contains 118 R files (105 internal + 13 exported), 6 Fortran subroutines, and 3
-Imports (data.table, nlmrt, numDeriv). The package currently lives in RSPARROW_master/ (to be
-moved to repo root in Plan 07) and is undergoing refactoring for CRAN submission.
+Imports (data.table, nlmrt, numDeriv). The package lives at the repo root (moved from
+RSPARROW_master/ in Plan 07) and is undergoing refactoring for CRAN submission.
 
 Plans 01–06F are complete: package structure, non-core code separation, API design,
 GlobalEnv/eval elimination, all 13 exported functions implemented, dead-code removal, predict
@@ -62,16 +62,16 @@ CRITICAL ISSUES (Plans 07–12):
 </architecture>
 
 <critical_files>
-<file path="RSPARROW_master/R/estimateFeval.R">NLLS objective function; core SPARROW math</file>
-<file path="RSPARROW_master/R/estimateOptimize.R">NLLS optimization via nlmrt::nlfb()</file>
-<file path="RSPARROW_master/R/predict.R">Reach-level load/yield predictions</file>
-<file path="RSPARROW_master/R/estimate.R">Estimation orchestrator (~890 lines); needs I/O separation</file>
-<file path="RSPARROW_master/R/deliver.R">Delivery fraction calculation (Fortran wrapper)</file>
-<file path="RSPARROW_master/R/hydseq.R">Hydrological sequencing of reach network</file>
-<file path="RSPARROW_master/R/controlFileTasksModel.R">Master task dispatcher; needs I/O separation</file>
-<file path="RSPARROW_master/R/startModelRun.R">Data prep and calibration site setup; needs I/O separation</file>
-<file path="RSPARROW_master/R/rsparrow_model.R">Main exported function; has <<- anti-pattern at line 380</file>
-<file path="RSPARROW_master/src/tnoder.f">Fortran load accumulation for estimation</file>
+<file path="R/estimateFeval.R">NLLS objective function; core SPARROW math</file>
+<file path="R/estimateOptimize.R">NLLS optimization via nlmrt::nlfb()</file>
+<file path="R/predict.R">Reach-level load/yield predictions</file>
+<file path="R/estimate.R">Estimation orchestrator (~890 lines); needs I/O separation</file>
+<file path="R/deliver.R">Delivery fraction calculation (Fortran wrapper)</file>
+<file path="R/hydseq.R">Hydrological sequencing of reach network</file>
+<file path="R/controlFileTasksModel.R">Master task dispatcher; needs I/O separation</file>
+<file path="R/startModelRun.R">Data prep and calibration site setup; needs I/O separation</file>
+<file path="R/rsparrow_model.R">Main exported function; has <<- anti-pattern at line 380</file>
+<file path="src/tnoder.f">Fortran load accumulation for estimation</file>
 </critical_files>
 
 <data_structures>
@@ -97,10 +97,7 @@ R >= 4.4.0 (pipe |> syntax detected in 10 files; %||% available from base R)
 </dependencies>
 
 <technical_debt>
-Remaining issues (post-Plan 06F review):
-- PACKAGE ROOT: Package in RSPARROW_master/ instead of repo root (GH #10)
-- COMPILED ARTIFACTS: .o/.so files in src/ (GH #11)
-- COLLATE: Unnecessary Collate field in DESCRIPTION (GH #12)
+Remaining issues (post-Plan 07):
 - DYNAMIC: 175 dynamic model references across 20 files (GH #13)
 - DEAD CODE: 31 unreachable functions still in R/ (GH #14)
 - I/O COUPLING: ~35 dir.create, ~22 save, ~22 fwrite in computation functions (GH #15)
@@ -121,7 +118,7 @@ Legacy usage: User sets paths in sparrow_control.R, sources it in RStudio, which
 runRsparrow.R (now in inst/legacy/). Package builds successfully via R CMD build (--no-build-
 vignettes due to missing deps). Tests exist at tests/testthat/ (98 tests, 24 files, 0 failures).
 Tutorial models in UserTutorial/ (static TN) and UserTutorialDynamic/ (dynamic TP).
-Build: R CMD build --no-build-vignettes RSPARROW_master/ -> rsparrow_2.1.0.tar.gz
+Build: R CMD build --no-build-vignettes . -> rsparrow_2.1.0.tar.gz
 
 Git and GitHub workflow:
 - Remote: https://github.com/Kyle-Hurley/rsparrow (branch: main)
@@ -141,20 +138,21 @@ Common commands (working directory: repo root rsparrow-master/; source scripts/r
   # or prefix commands with: R_LIBS=/home/kp/R/libs _R_CHECK_FORCE_SUGGESTS_=false
 
   # R CMD check (CRAN compliance + tests)
-  R_LIBS=/home/kp/R/libs _R_CHECK_FORCE_SUGGESTS_=false R CMD check --no-build-vignettes RSPARROW_master/
+  R CMD build --no-build-vignettes .
+  R_LIBS=/home/kp/R/libs _R_CHECK_FORCE_SUGGESTS_=false R CMD check --no-build-vignettes rsparrow_2.1.0.tar.gz
 
   # Build package tarball
-  R CMD build --no-build-vignettes RSPARROW_master/
+  R CMD build --no-build-vignettes .
 
   # Run testthat tests (after install)
-  R_LIBS=/home/kp/R/libs R CMD INSTALL --no-multiarch RSPARROW_master/
+  R_LIBS=/home/kp/R/libs R CMD INSTALL --no-multiarch .
   R_LIBS=/home/kp/R/libs Rscript -e "testthat::test_package('rsparrow')"
 
   # Run a single test file
-  R_LIBS=/home/kp/R/libs Rscript -e "testthat::test_file('RSPARROW_master/tests/testthat/<file>.R')"
+  R_LIBS=/home/kp/R/libs Rscript -e "testthat::test_file('tests/testthat/<file>.R')"
 
   # Rebuild roxygen docs + NAMESPACE
-  R_LIBS=/home/kp/R/libs Rscript -e "roxygen2::roxygenise('RSPARROW_master/')"
+  R_LIBS=/home/kp/R/libs Rscript -e "roxygen2::roxygenise('.')"
 
   # Or use Make targets: check | test | build | document | install | clean
   make check

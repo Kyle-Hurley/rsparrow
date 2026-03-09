@@ -1,0 +1,15 @@
+^docs$
+^scripts$
+^UserTutorial$
+^UserTutorialDynamic$
+^Makefile$
+^CLAUDE\.md$
+^walkthrough\.R$
+^\.github$
+^\.gitlab$
+^DISCLAIMER\.md$
+^README\.md$
+^.*\.tar\.gz$
+^.*\.Rcheck$
+^\.vscode$
+^\.claude$

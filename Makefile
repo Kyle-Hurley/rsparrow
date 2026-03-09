@@ -3,7 +3,7 @@
 
 R_LIBS_USER  = /home/kp/R/libs
 CHECK_ENV    = R_LIBS=$(R_LIBS_USER) _R_CHECK_FORCE_SUGGESTS_=false
-PKG_DIR      = RSPARROW_master
+PKG_DIR      = .
 PKG_NAME     = rsparrow
 PKG_VERSION  = 2.1.0
 TARBALL      = $(PKG_NAME)_$(PKG_VERSION).tar.gz
@@ -20,8 +20,8 @@ help:
 	@echo "  make clean     — Remove build artifacts"
 
 ## Run R CMD check with correct environment and flags
-check:
-	$(CHECK_ENV) R CMD check --no-build-vignettes $(PKG_DIR)/
+check: build
+	$(CHECK_ENV) R CMD check --no-build-vignettes $(TARBALL)
 
 ## Run testthat tests (installs package first)
 test: install
@@ -29,11 +29,11 @@ test: install
 
 ## Build package tarball (--no-build-vignettes: some Suggests may be absent)
 build:
-	R CMD build --no-build-vignettes $(PKG_DIR)/
+	R CMD build --no-build-vignettes $(PKG_DIR)
 
 ## Rebuild roxygen2 documentation and NAMESPACE
 document:
-	R_LIBS=$(R_LIBS_USER) Rscript -e "roxygen2::roxygenise('$(PKG_DIR)/')"
+	R_LIBS=$(R_LIBS_USER) Rscript -e "roxygen2::roxygenise('$(PKG_DIR)')"
 
 ## Install package to R_LIBS_USER
 install: build

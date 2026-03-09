@@ -2,13 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
-RSPARROW_master/batch/batch.RData
-RSPARROW_master/batch/shinyBatch.RData
 rsparrow-development.Rproj
 errorDump.rda
 .zip
-RSPARROW_master/.Rbuildignore
-RSPARROW_master/.Rprofile
 
 # Tutorial data (too large for source repo, regenerable)
 UserTutorial/
@@ -17,6 +13,9 @@ UserTutorialDynamic/
 # R build artifacts
 *.tar.gz
 *.Rcheck/
+src/*.o
+src/*.so
+src/*.so.dSYM
 
 # IDE / local tooling
 .vscode/

@@ -1,0 +1,43 @@
+Package: rsparrow
+Type: Package
+Title: SPARROW Water-Quality Modeling
+Version: 2.1.0
+Date: 2025-01-31
+Authors@R: c(
+    person("Lillian", "Gorman Sanisaca",
+           email = "lgormansanisaca@usgs.gov", role = "aut"),
+    person("Kyle", "Hurley",
+           email = "khurley@usgs.gov", role = c("aut", "cre")),
+    person("Richard", "Alexander",
+           email = "ralex@usgs.gov", role = "aut"))
+Description: Setup and execution of the USGS SPARROW (SPAtially Referenced
+    Regressions On Watershed attributes) water-quality model for a
+    user-defined domain.
+Roxygen: list(markdown=TRUE)
+VignetteBuilder: knitr
+Depends:
+    R(>= 4.4.0)
+Imports:
+    data.table (>= 1.13.2),
+    nlmrt (>= 2016.3.2),
+    numDeriv (>= 2016.8-1.1)
+Suggests:
+    car (>= 3.0-10),
+    dplyr (>= 1.0.2),
+    ggplot2 (>= 3.3.2),
+    gplots (>= 3.1.0),
+    gridExtra (>= 2.3),
+    knitr (>= 1.30),
+    leaflet (>= 2.0.3),
+    magrittr (>= 1.5),
+    mapview (>= 2.9.0),
+    plotly (>= 4.9.2.1),
+    plyr (>= 1.8.6),
+    rmarkdown (>= 2.5),
+    sf (>= 0.9-6),
+    spdep (>= 1.1-5),
+    testthat (>= 3.0.0)
+License: CC0
+URL: https://code.usgs.gov/water/stats/RSPARROW
+RoxygenNote: 7.3.2
+Config/testthat/edition: 3
