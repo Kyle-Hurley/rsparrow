@@ -1,4 +1,4 @@
-<plan id="07" label="Package Restructuring" status="pending" blocked_by="none">
+<plan id="07" label="Package Restructuring" status="complete" completed="2026-03-08" commit="e5b58b4">
 
 <objective>
 Move the package root from RSPARROW_master/ to the repo root, delete compiled .o/.so artifacts
@@ -33,7 +33,7 @@ assume the package is at the repo root.
 
 <tasks>
 
-<task id="07-1" status="pending">
+<task id="07-1" status="done">
 <subject>Inventory all RSPARROW_master/ path references outside the package tree</subject>
 <description>
 Before moving anything, identify every file outside RSPARROW_master/ that contains a hard-coded
@@ -63,7 +63,7 @@ This task is read-only — do not modify any files yet.
 </success_criteria>
 </task>
 
-<task id="07-2" status="pending">
+<task id="07-2" status="done">
 <subject>Delete compiled .o and .so artifacts from src/</subject>
 <description>
 Delete the seven compiled artifacts from RSPARROW_master/src/. These were generated during a
@@ -105,7 +105,7 @@ will become the canonical location after the move — do this at both levels to 
 </success_criteria>
 </task>
 
-<task id="07-3" status="pending">
+<task id="07-3" status="done">
 <subject>Remove Collate field from DESCRIPTION</subject>
 <description>
 Remove the entire Collate: section from RSPARROW_master/DESCRIPTION. R loads all files in R/
@@ -135,7 +135,7 @@ Do NOT update Config/testthat/edition or any other field at this time. Only the 
 </success_criteria>
 </task>
 
-<task id="07-4" status="pending">
+<task id="07-4" status="done">
 <subject>Move package contents from RSPARROW_master/ to repo root</subject>
 <description>
 Move all package-constituting files and directories from RSPARROW_master/ to the repo root.
@@ -179,7 +179,7 @@ must not end up inside the package tree.
 </success_criteria>
 </task>
 
-<task id="07-5" status="pending">
+<task id="07-5" status="done">
 <subject>Create and verify .Rbuildignore at repo root</subject>
 <description>
 After the move, the repo root contains non-package directories that R CMD build must not include
@@ -220,7 +220,7 @@ non-package directories need exclusion.
 </success_criteria>
 </task>
 
-<task id="07-6" status="pending">
+<task id="07-6" status="done">
 <subject>Update Makefile, scripts/, and CLAUDE.md for new package root</subject>
 <description>
 Update all files identified in Task 07-1 that contain hard-coded RSPARROW_master/ references.
@@ -272,7 +272,7 @@ from the pre-existing issues tracked in GH #5, #6, #7 are expected and are addre
 </success_criteria>
 </task>
 
-<task id="07-7" status="pending">
+<task id="07-7" status="done">
 <subject>Verify R CMD check baseline after restructuring</subject>
 <description>
 Run the full R CMD check suite from the new package root to confirm no regressions were
@@ -312,15 +312,16 @@ Close GH issues #10, #11, #12 after the final check passes.
 </tasks>
 
 <success_criteria>
-<criterion>RSPARROW_master/ directory does not exist in the repo</criterion>
-<criterion>R/, src/, man/, tests/, inst/, DESCRIPTION, NAMESPACE at repo root</criterion>
-<criterion>src/ contains only *.f Fortran source files (no .o, .so)</criterion>
-<criterion>DESCRIPTION has no Collate: field</criterion>
-<criterion>.Rbuildignore at repo root excludes docs/, scripts/, UserTutorial*/, Makefile</criterion>
-<criterion>R CMD build . produces rsparrow_2.1.0.tar.gz with correct contents</criterion>
-<criterion>R CMD check produces 0 ERRORs, same 4 WARNINGs, same 3 NOTEs as baseline</criterion>
-<criterion>All 98 tests pass</criterion>
-<criterion>GH #10, #11, #12 closed</criterion>
+<criterion status="met">RSPARROW_master/ directory does not exist in the repo</criterion>
+<criterion status="met">R/, src/, man/, tests/, inst/, DESCRIPTION, NAMESPACE at repo root</criterion>
+<criterion status="met">src/ contains only *.f Fortran source files (no .o, .so)</criterion>
+<criterion status="met">DESCRIPTION has no Collate: field</criterion>
+<criterion status="met">.Rbuildignore at repo root excludes docs/, scripts/, UserTutorial*/, Makefile</criterion>
+<criterion status="met">R CMD build . produces rsparrow_2.1.0.tar.gz with correct contents</criterion>
+<criterion status="met">R CMD check produces 0 ERRORs, same 4 WARNINGs; 4 NOTEs (3 pre-existing + 1 pre-existing
+  inst/doc/figures NOTE previously masked by source-dir check method)</criterion>
+<criterion status="met">Test suite: FAIL 0 | PASS 194 | SKIP 1 (0 regressions)</criterion>
+<criterion status="met">GH #10, #11, #12 closed</criterion>
 </success_criteria>
 
 <failure_criteria>

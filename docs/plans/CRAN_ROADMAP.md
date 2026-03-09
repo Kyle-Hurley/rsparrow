@@ -1,32 +1,33 @@
 <cran_roadmap>
 
 <executive_summary>
-Plans 01–06F are complete. The package has been renamed to `rsparrow` (v2.1.0), pre-compiled
-DLLs removed, Fortran portability fixed (src/*.f), license resolved (CC0), DESCRIPTION
-modernized. 98 tests pass across 24 test files. R CMD check: 4 WARNINGs, 3 NOTEs, 0 ERRORs.
+Plans 01–07 are complete. The package is at the repo root (R/, src/, man/, tests/, inst/,
+DESCRIPTION, NAMESPACE); compiled artifacts removed from src/; Collate field removed;
+.Rbuildignore in place. Test suite: FAIL 0 | PASS 194 | SKIP 1.
+R CMD check (tarball, --no-manual): 4 WARNINGs, 4 NOTEs, 0 ERRORs.
 
-However, a critical code review (2026-03-08) identified fundamental issues that must be
+A critical code review (2026-03-08) identified fundamental issues that must be
 addressed before CRAN submission. These go beyond the existing WARNINGs:
 
-BLOCKERS IDENTIFIED:
-  (B1)  Package lives in RSPARROW_master/ instead of repo root — breaks all devtools workflows
-  (B2)  Compiled .o/.so artifacts in src/ — immediate CRAN rejection
-  (B3)  Collate field lists all 118 files — unnecessary, creates maintenance burden
+BLOCKERS RESOLVED (Plans 07):
+  (B1)  DONE — Package moved from RSPARROW_master/ to repo root (GH #10, commit e5b58b4)
+  (B2)  DONE — Compiled .o/.so artifacts deleted from src/ (GH #11, commit e5b58b4)
+  (B3)  DONE — Collate field removed from DESCRIPTION (GH #12, commit e5b58b4)
+  (B10) DONE — .Rbuildignore created at repo root (commit e5b58b4)
+
+BLOCKERS REMAINING:
   (B4)  Uncontrolled file I/O in estimation/prediction — CRAN policy violation
-  (B5)  <<- global assignment in rsparrow_model.R:380
+  (B5)  <<- global assignment in R/rsparrow_model.R:380
   (B6)  sink()/pdf() without on.exit() protection — 5 sink + 1 pdf instances
   (B7)  options() modified without restoration — 5 locations
   (B8)  assign(parent.frame()) anti-pattern — 7 locations
   (B9)  cat() used for messaging instead of message() — 53 instances
-  (B10) No .Rbuildignore (was created in Plan 01 but not at RSPARROW_master/ level)
   (B11) No example dataset in data/
   (B12) 31 unreachable functions still in R/ (dead code)
   (B13) Dynamic model infrastructure adds complexity for a feature users can replicate
         themselves — 175 references across 20 files
 
-NEW PLAN SEQUENCE (Plan 07+):
-  Plan 07: Package restructuring — move to repo root, delete compiled artifacts, remove
-           Collate, create .Rbuildignore, delete compiled objects from src/
+REMAINING PLAN SEQUENCE:
   Plan 08: Remove dynamic model infrastructure — delete/archive dynamic-only files,
            strip if_dynamic conditionals from 20 files
   Plan 09: Archive unreachable code — move 31 dead functions to inst/archived/
@@ -41,17 +42,17 @@ NEW PLAN SEQUENCE (Plan 07+):
 
 <package_structure>
 <requirement status="done">Rename package from RSPARROW to `rsparrow` in DESCRIPTION (CRAN naming convention: lowercase, no underscores)</requirement>
-<requirement status="open" gh="10">Move package root from RSPARROW_master/ to repo root — all devtools, usethis, roxygen2, and CRAN tooling assumes package root = repo root</requirement>
+<requirement status="done" gh="10">Move package root from RSPARROW_master/ to repo root — all devtools, usethis, roxygen2, and CRAN tooling assumes package root = repo root</requirement>
 <requirement status="done">Delete runRsparrow.R from R/ - moved to inst/legacy/; all files in R/ now define only functions, methods, or classes</requirement>
 <requirement status="done">Remove all pre-compiled DLLs (.dll) from src/; only .for source files remain</requirement>
-<requirement status="open" gh="11">Remove compiled .o and .so artifacts from src/ — CRAN requires source-only packages; R CMD INSTALL recompiles .f sources automatically</requirement>
+<requirement status="done" gh="11">Remove compiled .o and .so artifacts from src/ — CRAN requires source-only packages; R CMD INSTALL recompiles .f sources automatically</requirement>
 <requirement status="done">Remove bundled R-4.4.2.zip from repo root</requirement>
 <requirement status="done">Remove inst/sas/ directory (legacy SAS scripts)</requirement>
 <requirement status="done">Remove batch/ directory (Windows-only Rscript.exe batch execution)</requirement>
 <requirement status="done">Remove Thumbs.db and code.json from repo</requirement>
-<requirement status="open" gh="10">Create .Rbuildignore at package root to exclude non-package files (docs/, UserTutorial*, inst/legacy/, inst/shiny_dss/, inst/tables/, inst/doc/)</requirement>
+<requirement status="done" gh="10">Create .Rbuildignore at package root to exclude non-package files (docs/, scripts/, UserTutorial*, Makefile, CLAUDE.md, walkthrough.R, .github/, .gitlab/)</requirement>
 <requirement status="done">Ensure DESCRIPTION has Version in x.y.z format (now 2.1.0)</requirement>
-<requirement status="open" gh="12">Remove Collate field from DESCRIPTION — unnecessary for S3 packages, creates maintenance burden on every file change</requirement>
+<requirement status="done" gh="12">Remove Collate field from DESCRIPTION — unnecessary for S3 packages, creates maintenance burden on every file change</requirement>
 </package_structure>
 
 <code_quality>
@@ -206,9 +207,9 @@ dataset. Keep computation lightweight (\donttest{} or pre-computed results for s
   - [DONE] Add @return to all exported function documentation
   - [DONE] Add @examples to all exported functions
   - [DONE] Remove Windows-only code (shell.exec, Rscript.exe) — removed in Plan 04A Task 1
-  - [OPEN] GH #10: Move package root to repo root; create .Rbuildignore
-  - [OPEN] GH #11: Delete compiled .o/.so artifacts from src/
-  - [OPEN] GH #12: Remove Collate field from DESCRIPTION
+  - [DONE] GH #10: Move package root to repo root; create .Rbuildignore (Plan 07)
+  - [DONE] GH #11: Delete compiled .o/.so artifacts from src/ (Plan 07)
+  - [DONE] GH #12: Remove Collate field from DESCRIPTION (Plan 07)
   - [OPEN] GH #15: Separate computation from I/O in estimation/prediction
   - [OPEN] GH #16: Fix sink()/pdf() resource leaks with on.exit() or removal
   - [OPEN] GH #17: Fix options() without restoration
@@ -247,9 +248,9 @@ dataset. Keep computation lightweight (\donttest{} or pre-computed results for s
 
 <cran_checklist>
 <item status="pass">R CMD build produces a valid tarball (rsparrow_2.1.0.tar.gz)</item>
-<item status="fail">R CMD check --as-cran returns 0 errors, 0 warnings — currently 4 WARNINGs, 3 NOTEs</item>
+<item status="fail">R CMD check --as-cran returns 0 errors, 0 warnings — currently 4 WARNINGs, 4 NOTEs (tarball check)</item>
 <item status="pass">All files in R/ contain only function/method/class definitions</item>
-<item status="fail">No pre-compiled binaries in src/ — .o and .so files still present (GH #11)</item>
+<item status="pass">No pre-compiled binaries in src/ — .o and .so artifacts deleted (GH #11, Plan 07)</item>
 <item status="pass">Fortran source compiles on all platforms (no Windows-specific directives)</item>
 <item status="pass">NAMESPACE has explicit exports (6 export() + 7 S3method())</item>
 <item status="pass">NAMESPACE uses importFrom instead of blanket import (selective importFrom() only)</item>
@@ -257,7 +258,7 @@ dataset. Keep computation lightweight (\donttest{} or pre-computed results for s
 <item status="pass">DESCRIPTION uses Authors@R with person() entries</item>
 <item status="pass">DESCRIPTION License matches actual license terms</item>
 <item status="pass">DESCRIPTION Version is x.y.z format</item>
-<item status="fail">DESCRIPTION has no unnecessary Collate field (GH #12)</item>
+<item status="pass">DESCRIPTION has no Collate field (GH #12, Plan 07)</item>
 <item status="pass">All exported functions have complete roxygen2 documentation</item>
 <item status="pass">All exported functions have @examples</item>
 <item status="pass">All exported functions have @return</item>
@@ -268,7 +269,7 @@ dataset. Keep computation lightweight (\donttest{} or pre-computed results for s
 <item status="fail">Computation separated from I/O — no file writes as side effects (GH #15)</item>
 <item status="partial">No eval(parse()) in exported functions — 49 remain in internal functions</item>
 <item status="pass">No shell.exec() or Windows-only system calls</item>
-<item status="fail">Package root at repo root (GH #10)</item>
+<item status="pass">Package root at repo root (GH #10, Plan 07)</item>
 <item status="fail">Example dataset included in data/ (GH #9)</item>
 <item status="fail">At least one vignette demonstrating core workflow (GH #8)</item>
 <item status="fail">Package installs and loads on macOS, Linux, and Windows</item>
@@ -278,20 +279,6 @@ dataset. Keep computation lightweight (\donttest{} or pre-computed results for s
 </cran_checklist>
 
 <upcoming_plans>
-
-<plan id="07" label="Package Restructuring">
-Status: NOT STARTED
-Scope:
-  - Move package contents from RSPARROW_master/ to repo root
-  - Delete compiled .o and .so artifacts from src/
-  - Remove Collate field from DESCRIPTION
-  - Create proper .Rbuildignore at package root
-  - Update all paths in scripts/, docs/, Makefile, CLAUDE.md
-  - Verify R CMD build and R CMD check still work from new structure
-  - Update GitHub Actions / CI if applicable
-Dependencies: None (do this first — all subsequent plans work from new structure)
-GH Issues: #10, #11, #12
-</plan>
 
 <plan id="08" label="Remove Dynamic Model Infrastructure">
 Status: NOT STARTED
@@ -520,6 +507,23 @@ Completed 2026-03-08. 17 tests, all pass.
 
 <plan id="06F" label="Exported API Tests">
 Completed 2026-03-08. 38 tests (1 skip), all pass.
+</plan>
+
+<plan id="07" label="Package Restructuring">
+Completed 2026-03-08. Commit e5b58b4. GH #10, #11, #12 closed.
+  - Task 07-1: Inventoried RSPARROW_master/ references (load-bearing: Makefile,
+    .claude/skills/*.md; docs-only: CLAUDE.md, README.md)
+  - Task 07-2: Deleted 7 compiled artifacts (*.o, *.so) from src/; only *.f remain;
+    added src/*.o, src/*.so, src/*.so.dSYM to .gitignore
+  - Task 07-3: Removed 120-line Collate field from DESCRIPTION
+  - Task 07-4: git mv of R/, src/, man/, tests/, inst/, vignettes/, DESCRIPTION, NAMESPACE
+    from RSPARROW_master/ to repo root; history preserved (all 295 changes show as renames)
+  - Task 07-5: Created .Rbuildignore at repo root; tarball verified clean
+  - Task 07-6: Updated Makefile (PKG_DIR=., check now against tarball), CLAUDE.md,
+    and all .claude/skills/*.md
+  - Task 07-7: R CMD check (tarball, --no-manual): 0 ERRORs, 4 WARNINGs, 4 NOTEs
+    (3 pre-existing + 1 pre-existing inst/doc/figures NOTE previously masked by source-dir
+    check method). FAIL 0 | PASS 194 | SKIP 1.
 </plan>
 
 </completed_plans>
