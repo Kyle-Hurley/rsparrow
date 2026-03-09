@@ -60,7 +60,6 @@ make_mock_rsparrow <- function() {
         version    = "2.1.0",
         timestamp  = Sys.time(),
         run_id     = "mock_run",
-        model_type = "static",
         path_main  = "."
       )
     ),

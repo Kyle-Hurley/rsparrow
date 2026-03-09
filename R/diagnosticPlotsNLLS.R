@@ -7,14 +7,12 @@
 #' direct function calls.)
 #'
 #' Executed By: \itemize{
-#'              \item diagnosticPlotsNLLS_dyn.R,
 #'              \item diagnosticPlotsValidate.R,
 #'              \item estimate.R}
 #'
 #' Executes Routines: \itemize{
 #'              \item addMarkerText.R,
 #'              \item checkBinaryMaps.R,
-#'              \item checkDynamic.R,
 #'              \item diagnosticPlots_4panel_A.R,
 #'              \item diagnosticPlots_4panel_B.R,
 #'              \item hline.R,
@@ -73,9 +71,6 @@ diagnosticPlotsNLLS <- function(file.output.list, class.input.list, sitedata.dem
   classvar                 <- class.input.list$classvar
   class_landuse            <- class.input.list$class_landuse
 
-  # If static or dynamic
-  is_dynamic <- checkDynamic(sitedata)
-
   # Filter site attributes to those present in sitedata
   map_siteAttributes.list <- map_siteAttributes.list[map_siteAttributes.list %in% names(sitedata)]
 
@@ -94,17 +89,6 @@ diagnosticPlotsNLLS <- function(file.output.list, class.input.list, sitedata.dem
       p.list[["calsite_maps"]] <- NULL
 
     }
-
-  }
-
-  if (is_dynamic & validation) {
-
-    # Create validation plots directory for dynamic data
-    dynValPlot_dir <- paste0(
-      path_results, "estimate", .Platform$file.sep,
-      "validation_plots_dynamic", .Platform$file.sep
-    )
-    if (!dir.exists(dynValPlot_dir)) dir.create(dynValPlot_dir)
 
   }
 

@@ -2,9 +2,7 @@
 #' @description Creates list object for horizontal red line on plotly plot  \cr \cr
 #' Executed By: \itemize{\item create_diagnosticPlotList.R
 #'             \item diagnosticPlots_4panel_A.R
-#'             \item diagnosticPlots_4panel_B.R
-#'             \item diagnosticPlotsNLLS_dynOut.Rmd
-#'             \item diagnosticPlotsNLLS_dynOut.Rmd} \cr
+#'             \item diagnosticPlots_4panel_B.R} \cr
 #' @param spatialAutoCorr TRUE/FALSE indicating whether plot is a spatial auto correlation plot
 #' @param y y axis value to create horizontal line
 #' @param color color of horizontal line

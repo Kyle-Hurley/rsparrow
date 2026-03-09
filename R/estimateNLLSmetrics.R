@@ -54,22 +54,6 @@ estimateNLLSmetrics <- function(if_estimate, if_estimate_simulation, if_sparrowE
 
   message("Computing NLLS metrics...")
 
-  # check for dynamic model for generation of summary metrics
-  dynamic <- checkDynamic(subdata) # check for dynamic model (TRUE, FALSE)
-  dynseas <- FALSE
-  dynyear <- FALSE
-  if (dynamic) {
-    if ("season" %in% names(subdata)) {
-      if (sum(ifelse(!is.na(subdata$season), 1, 0)) == length(subdata$season)) {
-        dynseas <- TRUE
-      }
-    }
-    if ("year" %in% names(subdata)) {
-      if (sum(ifelse(!is.na(subdata$year), 1, 0)) == length(subdata$year)) {
-        dynyear <- TRUE
-      }
-    }
-  }
 
   # contiguous class variables by sites
   class <- array(0, dim = c(nrow = nrow(sitedata), ncol = length(classvar)))
@@ -97,9 +81,6 @@ estimateNLLSmetrics <- function(if_estimate, if_estimate_simulation, if_sparrowE
   ratio.obs.pred <- numeric(numsites)
   xlat <- numeric(numsites)
   xlon <- numeric(numsites)
-
-  cyear <- numeric(numsites)
-  cseason <- numeric(numsites)
 
 
   data <- DataMatrix.list$data
@@ -148,14 +129,6 @@ estimateNLLSmetrics <- function(if_estimate, if_estimate_simulation, if_sparrowE
         xssemrb[class[ins, 1]] <- xssemrb[class[ins, 1]] + Resids[ins]^2
       }
 
-      if (dynamic) { # obtain temporal tags for dynamic model
-        if (dynyear) {
-          cyear[ins] <- subdata$year[k]
-        }
-        if (dynseas) {
-          cseason[ins] <- subdata$season[k]
-        }
-      }
     }
   } #  reach counter
   xssemrb[is.na(xssemrb)] <- 0
@@ -186,83 +159,6 @@ estimateNLLSmetrics <- function(if_estimate, if_estimate_simulation, if_sparrowE
   NSeff <- 1 - (NSn / NSd) # overall Nash-Sutcliffe model efficiency
   PBias <- PBiasn / PBiasd * 100 # Percent bias
 
-  #############################################
-  # obtain summary metrics for dynamic model
-  if (dynamic) {
-    if (dynseas & dynyear) { # seasonal model
-      seas <- numeric(ins)
-      seas <- ifelse(cseason == "winter", 1, seas)
-      seas <- ifelse(cseason == "spring", 2, seas)
-      seas <- ifelse(cseason == "summer", 3, seas)
-      seas <- ifelse(cseason == "fall", 4, seas)
-      stime <- cyear * 10 + seas
-      dd <- data.frame(stime, cyear, cseason, seas)
-    } else { # mean seasonal or annual model
-      if (dynseas) {
-        seas <- numeric(ins)
-        seas <- ifelse(cseason == "winter", 1, seas)
-        seas <- ifelse(cseason == "spring", 2, seas)
-        seas <- ifelse(cseason == "summer", 3, seas)
-        seas <- ifelse(cseason == "fall", 4, seas)
-        stime <- seas
-        dd <- data.frame(stime, cseason, seas)
-      } else {
-        stime <- cyear
-        dd <- data.frame(stime, cyear)
-      }
-    }
-    x1 <- dd %>%
-      dplyr::group_by(stime) %>%
-      dplyr::summarize(count_num = n())
-    dynyearmin <- min(stime) # first year of record
-    dynyearmax <- max(stime) # last year of record
-    dynsites <- max(x1$count_num) # number sites
-    if (dynseas) {
-      dynyearmin <- dynyearmin / 10
-      dynyearmax <- dynyearmax / 10
-    }
-
-    # calculate  performance metrics for seasonal model (MOBS, SSE, RSQ, RSQ-YIELD, PERCENT BIAS)
-    if (dynseas) {
-      sSSE <- numeric(max(seas))
-      sRSQ <- numeric(max(seas))
-      sRSQ_YLD <- numeric(max(seas))
-      sPBias <- numeric(max(seas))
-      smobs <- numeric(max(seas))
-      scount <- numeric(max(seas))
-
-      for (j in 1:max(seas)) {
-        is <- 0
-        for (i in 1:ins) {
-          if (seas[i] == j) {
-            is <- is + 1
-          }
-        }
-        scount[j] <- is
-        is <- 0
-        PBiasn <- 0
-        PBiasd <- 0
-        sobs <- numeric(scount[j])
-        syldobs <- numeric(scount[j])
-        sResids <- numeric(scount[j])
-        for (i in 1:ins) {
-          if (seas[i] == j) {
-            is <- is + 1
-            sobs[is] <- Obs[i]
-            syldobs[is] <- yldobs[i]
-            sResids[is] <- Resids[i]
-            PBiasn <- PBiasn + (Obs[i] - predict[i])
-            PBiasd <- PBiasd + Obs[i]
-          }
-        }
-        smobs[j] <- is
-        sSSE[j] <- sum(sResids^2)
-        sRSQ[j] <- 1 - sSSE[j] / (sum(log(sobs)^2) - sum(log(sobs))^2 / is)
-        sRSQ_YLD[j] <- 1 - sSSE[j] / (sum(log(syldobs)^2) - sum(log(syldobs))^2 / is)
-        sPBias[j] <- PBiasn / PBiasd * 100 # Percent bias
-      }
-    } # if(dynseas)
-  } # if(dynamic)
 
   ####################################################
 
@@ -716,57 +612,6 @@ estimateNLLSmetrics <- function(if_estimate, if_estimate_simulation, if_sparrowE
     }
   }
 
-  #########################################################
-  # calculate  performance metrics for seasonal model (MOBS, SSE, RSQ, RSQ-YIELD, PERCENT BIAS)
-  if (dynseas) {
-    psSSE <- numeric(max(seas))
-    psRSQ <- numeric(max(seas))
-    psRSQ_YLD <- numeric(max(seas))
-    psPBias <- numeric(max(seas))
-
-    for (j in 1:max(seas)) {
-      is <- 0
-      PBiasn <- 0
-      PBiasd <- 0
-      sobs <- numeric(scount[j])
-      syldobs <- numeric(scount[j])
-      sResids <- numeric(scount[j])
-      for (i in 1:ins) {
-        if (seas[i] == j) {
-          is <- is + 1
-          sobs[is] <- Obs[i]
-          syldobs[is] <- yldobs[i]
-          sResids[is] <- pResids[i]
-          PBiasn <- PBiasn + (Obs[i] - ppredict[i])
-          PBiasd <- PBiasd + Obs[i]
-        }
-      }
-      psSSE[j] <- sum(sResids^2)
-      psRSQ[j] <- 1 - psSSE[j] / (sum(log(sobs)^2) - sum(log(sobs))^2 / is)
-      psRSQ_YLD[j] <- 1 - psSSE[j] / (sum(log(syldobs)^2) - sum(log(syldobs))^2 / is)
-      psPBias[j] <- PBiasn / PBiasd * 100 # Percent bias
-    }
-  } # if(dynseas)
-
-  if (dynamic) {
-    if (dynseas & dynyear) { # seasonal model
-      ANOVAdynamic.list <- named.list(
-        dynsites, dynyearmin, dynyearmax, cyear, cseason,
-        smobs, sSSE, sRSQ, sRSQ_YLD, sPBias,
-        psSSE, psRSQ, psRSQ_YLD, psPBias
-      )
-    } else { # mean seasonal or annual model
-      if (dynseas) {
-        ANOVAdynamic.list <- named.list(
-          dynsites, dynyearmin, dynyearmax, cseason,
-          smobs, sSSE, sRSQ, sRSQ_YLD, sPBias,
-          psSSE, psRSQ, psRSQ_YLD, psPBias
-        )
-      } else {
-        ANOVAdynamic.list <- named.list(dynsites, dynyearmin, dynyearmax, cyear)
-      }
-    }
-  }
 
   ######################################################################################
   if (identical(if_sparrowEsts, 1)) {
@@ -819,15 +664,7 @@ estimateNLLSmetrics <- function(if_estimate, if_estimate_simulation, if_sparrowE
   save(JacobResults, file = objfile)
 
 
-  if (dynamic) {
-    # store ANOVAdynamic in object as list
-    objfile <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_ANOVAdynamic.list")
-    save(ANOVAdynamic.list, file = objfile)
-
-    estimate.metrics.list <- named.list(JacobResults, HesResults, ANOVA.list, Mdiagnostics.list, ANOVAdynamic.list)
-  } else {
-    estimate.metrics.list <- named.list(JacobResults, HesResults, ANOVA.list, Mdiagnostics.list)
-  }
+  estimate.metrics.list <- named.list(JacobResults, HesResults, ANOVA.list, Mdiagnostics.list)
 
 
 

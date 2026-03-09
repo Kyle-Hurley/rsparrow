@@ -177,17 +177,6 @@ startModelRun <- function(file.output.list,
   }
   sparrow_state$subdata <- subdata
 
-  dynamic <- checkDynamic(subdata)
-  if (dynamic) {
-    if ("year" %in% names(subdata)) {
-      add_vars <- as.character(unique(c(add_vars, "year")))
-    }
-    if ("season" %in% names(subdata)) {
-      add_vars <- as.character(unique(c(add_vars, "season")))
-    }
-    sparrow_state$add_vars <- add_vars
-  }
-
   message("Testing for missing variables in subdata...")
   checkClassificationVars(subdata, class.input.list)
   checkMissingSubdataVars(subdata, betavalues, file.output.list, data_names = data_names)

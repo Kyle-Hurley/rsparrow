@@ -9,7 +9,6 @@
 #' Executed By: estimate.R
 #' 
 #' Executes Routines: \itemize{
-#'              \item checkDynamic.R,
 #'              \item named.list.R,
 #'              \item predictSensitivity.R}
 #' 
@@ -49,12 +48,6 @@ diagnosticSensitivity <- function(file.output.list, class.input.list, estimate.i
   betaconstant <- SelParmValues$betaconstant
   classvar <- class.input.list$classvar
   showPlotGrid <- mapping.input.list$showPlotGrid
-  if (checkDynamic(subdata)) {
-    if (!dir.exists(paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, "diagnostic_sensitivity_dynamic", .Platform$file.sep))) {
-      dir.create(paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, "diagnostic_sensitivity_dynamic", .Platform$file.sep))
-    }
-  }
-  
   depvar <- subdata$depvar
   xclass <- subdata[[classvar[1]]]
   

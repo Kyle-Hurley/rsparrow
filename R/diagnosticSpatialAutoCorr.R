@@ -9,8 +9,6 @@
 #'
 #' Executed By: controlFileTasksModel.R
 #'
-#' Executes Routines: \itemize{
-#'              \item checkDynamic.R}
 #'
 #' @param file.output.list list of control settings and relative paths used for input and
 #' output of external files.  Created by `generateInputList.R`
@@ -50,12 +48,6 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
   MoranDistanceWeightFunc  <- mapping.input.list$MoranDistanceWeightFunc
   pchPlotlyCross           <- mapping.input.list$pchPlotlyCross
   showPlotGrid             <- mapping.input.list$showPlotGrid
-
-  if (checkDynamic(subdata)) {
-    dyndir <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep,
-                     "diagnostic_spatialautocor_dynamic", .Platform$file.sep)
-    if (!dir.exists(dyndir)) dir.create(dyndir)
-  }
 
   data.index.list <- DataMatrix.list$data.index.list
   jdepvar <- data.index.list$jdepvar

@@ -8,11 +8,9 @@
 #' Executed By: controlFileTasksModel.R
 #' 
 #' Executes Routines: \itemize{
-#'              \item checkDynamic.R, 
-#'              \item diagnosticPlotsNLLS.R, 
-#'              \item diagnosticPlotsNLLS_dyn.R, 
-#'              \item diagnosticPlotsValidate.R, 
-#'              \item diagnosticSensitivity.R, 
+#'              \item diagnosticPlotsNLLS.R,
+#'              \item diagnosticPlotsValidate.R,
+#'              \item diagnosticSensitivity.R,
 #'              \item estimateFevalNoadj.R, 
 #'              \item estimateNLLSmetrics.R, 
 #'              \item estimateNLLStable.R, 
@@ -105,9 +103,7 @@ estimate <- function(if_estimate, if_predict, file.output.list,
   classvar <- class.input.list$classvar
   
   estimate.list <- NULL
-  
-  dynamic <- checkDynamic(subdata) # check for dynamic model (TRUE, FALSE)
-  
+
   if (if_estimate == "yes" & if_estimate_simulation == "no") {
     message("Running estimation...")
     sparrowEsts <- estimateOptimize(
@@ -131,13 +127,7 @@ estimate <- function(if_estimate, if_predict, file.output.list,
     ANOVA.list <- estimate.metrics.list$ANOVA.list
     Mdiagnostics.list <- estimate.metrics.list$Mdiagnostics.list
 
-    # check for dynamic model for generation of summary metrics
-    if (dynamic) {
-      ANOVAdynamic.list <- estimate.metrics.list$ANOVAdynamic.list
-      estimate.list <- named.list(sparrowEsts, JacobResults, HesResults, ANOVA.list, Mdiagnostics.list, ANOVAdynamic.list)
-    } else {
-      estimate.list <- named.list(sparrowEsts, JacobResults, HesResults, ANOVA.list, Mdiagnostics.list)
-    }
+    estimate.list <- named.list(sparrowEsts, JacobResults, HesResults, ANOVA.list, Mdiagnostics.list)
     
     if (if_validate == "yes") {
       message("Running Validation...")
@@ -151,12 +141,6 @@ estimate <- function(if_estimate, if_predict, file.output.list,
         sparrowEsts, JacobResults, HesResults, ANOVA.list, Mdiagnostics.list,
         vANOVA.list, vMdiagnostics.list
       )
-      if (dynamic) {
-        estimate.list <- named.list(
-          sparrowEsts, JacobResults, HesResults, ANOVA.list, Mdiagnostics.list, ANOVAdynamic.list,
-          vANOVA.list, vMdiagnostics.list
-        )
-      }
     }
     
     # Output summary metrics
@@ -308,45 +292,6 @@ estimate <- function(if_estimate, if_predict, file.output.list,
       
     }
     
-    # dyn_diagnostics_reports ---------------------------------------------------------------------
-    
-    if (!identical(NA, mapping.input.list$diagnosticPlots_timestep) & dynamic) {
-      
-      diagnosticPlotsNLLS_dyn(
-        validation = FALSE,
-        sensitivity = FALSE,
-        spatialAutoCorr = FALSE,
-        file.output.list = file.output.list,
-        class.input.list = class.input.list,
-        sitedata.demtarea.class = sitedata.demtarea.class,
-        sitedata = sitedata,
-        subdata = subdata,
-        sitedata.landuse = sitedata.landuse,
-        estimate.list = estimate.list,
-        mapping.input.list = mapping.input.list,
-        Csites.list = Csites.list,
-        Cor.ExplanVars.list = Cor.ExplanVars.list,
-        data_names = data_names,
-        add_vars = add_vars,
-        SelParmValues = SelParmValues,
-        DataMatrix.list = DataMatrix.list,
-        estimate.input.list = estimate.input.list,
-        min.sites.list = min.sites.list,dlvdsgn
-      )
-      
-    }
-    
-    if (dynamic & mapping.input.list$diagnostic_timeSeriesPlots == "yes") {
-      
-      diagnosticPlotsNLLS_timeSeries(
-        mapping.input.list = mapping.input.list, 
-        file.output.list = file.output.list, 
-        estimate.list = estimate.list, 
-        sitedata = sitedata
-      )
-      
-    }
-    
     ##############################################
     ### 3. Sensitivity analyses for parameters ###
     
@@ -361,37 +306,6 @@ estimate <- function(if_estimate, if_predict, file.output.list,
       sitedata.demtarea.class = sitedata.demtarea.class,
       mapping.input.list = mapping.input.list,dlvdsgn
     )
-    
-    # if dynamic data
-    if (dynamic) {
-      
-      if (!identical(NA, diagnosticPlots_timestep)) {
-        
-        diagnosticPlotsNLLS_dyn(
-          validation = FALSE,
-          sensitivity = TRUE,
-          spatialAutoCorr = FALSE,
-          file.output.list = file.output.list,
-          class.input.list = class.input.list,
-          sitedata.demtarea.class = sitedata.demtarea.class,
-          sitedata = sitedata,
-          subdata = subdata,
-          sitedata.landuse = sitedata.landuse,
-          estimate.list = estimate.list,
-          mapping.input.list = mapping.input.list,
-          Csites.list = Csites.list,
-          Cor.ExplanVars.list = Cor.ExplanVars.list,
-          data_names = data_names,
-          add_vars = add_vars,
-          SelParmValues = SelParmValues,
-          DataMatrix.list = DataMatrix.list,
-          estimate.input.list = estimate.input.list,
-          min.sites.list = min.sites.list,dlvdsgn
-        )
-        
-      }
-      
-    }
     
     #####################################
     ### 4. Output validation metrics  ###
@@ -409,36 +323,6 @@ estimate <- function(if_estimate, if_predict, file.output.list,
         add_vars = add_vars,
         data_names = data_names
       )
-      
-      if (checkDynamic(vsitedata)) {
-        
-        if (!identical(NA, diagnosticPlots_timestep)) {
-          
-          diagnosticPlotsNLLS_dyn(
-            validation = TRUE,
-            sensitivity = FALSE,
-            spatialAutoCorr = FALSE,
-            file.output.list = file.output.list,
-            class.input.list = class.input.list,
-            sitedata.demtarea.class = vsitedata.demtarea.class,
-            sitedata = vsitedata,
-            subdata = subdata,
-            sitedata.landuse = vsitedata.landuse,
-            estimate.list = estimate.list,
-            mapping.input.list = mapping.input.list,
-            Csites.list = Csites.list,
-            Cor.ExplanVars.list = Cor.ExplanVars.list,
-            data_names = data_names,
-            add_vars = add_vars,
-            SelParmValues = SelParmValues,
-            DataMatrix.list = DataMatrix.list,
-            estimate.input.list = estimate.input.list,
-            min.sites.list = min.sites.list,dlvdsgn
-          )
-          
-        }
-        
-      }
       
       # output residuals shapefile
       if (outputESRImaps[3] == "yes") {
@@ -726,43 +610,6 @@ estimate <- function(if_estimate, if_predict, file.output.list,
             )
           }
           
-          if (!identical(NA, mapping.input.list$diagnosticPlots_timestep) & dynamic) {
-            
-            diagnosticPlotsNLLS_dyn(
-              validation = FALSE,
-              sensitivity = FALSE,
-              spatialAutoCorr = FALSE,
-              file.output.list = file.output.list,
-              class.input.list = class.input.list,
-              sitedata.demtarea.class = sitedata.demtarea.class,
-              sitedata = sitedata,
-              subdata = subdata,
-              sitedata.landuse = sitedata.landuse,
-              estimate.list = estimate.list,
-              mapping.input.list = mapping.input.list,
-              Csites.list = Csites.list,
-              Cor.ExplanVars.list = Cor.ExplanVars.list,
-              data_names = data_names,
-              add_vars = add_vars,
-              SelParmValues = SelParmValues,
-              DataMatrix.list = DataMatrix.list,
-              estimate.input.list = estimate.input.list,
-              min.sites.list = min.sites.list,dlvdsgn
-            )
-            
-          }
-          
-          if (dynamic & mapping.input.list$diagnostic_timeSeriesPlots == "yes") {
-            
-            diagnosticPlotsNLLS_timeSeries(
-              mapping.input.list = mapping.input.list, 
-              file.output.list = file.output.list, 
-              estimate.list = estimate.list, 
-              sitedata = sitedata
-            )
-            
-          }
-          
           ### Sensitivity analyses for parameters ###
           
           diagnosticSensitivity(
@@ -776,36 +623,6 @@ estimate <- function(if_estimate, if_predict, file.output.list,
             sitedata.demtarea.class = sitedata.demtarea.class,
             mapping.input.list = mapping.input.list,dlvdsgn
           )
-          
-          if (dynamic) {
-            
-            if (!identical(NA, diagnosticPlots_timestep)) {
-              
-              diagnosticPlotsNLLS_dyn(
-                validation = FALSE,
-                sensitivity = TRUE,
-                spatialAutoCorr = FALSE,
-                file.output.list = file.output.list,
-                class.input.list = class.input.list,
-                sitedata.demtarea.class = sitedata.demtarea.class,
-                sitedata = sitedata,
-                subdata = subdata,
-                sitedata.landuse = sitedata.landuse,
-                estimate.list = estimate.list,
-                mapping.input.list = mapping.input.list,
-                Csites.list = Csites.list,
-                Cor.ExplanVars.list = Cor.ExplanVars.list,
-                data_names = data_names,
-                add_vars = add_vars,
-                SelParmValues = SelParmValues,
-                DataMatrix.list = DataMatrix.list,
-                estimate.input.list = estimate.input.list,
-                min.sites.list = min.sites.list,dlvdsgn
-              )
-              
-            }
-            
-          }
           
         } else {
           # if no monitoring loads, store Jacobian estimates in object as list for use in making predictions only

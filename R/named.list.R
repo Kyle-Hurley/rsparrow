@@ -3,10 +3,7 @@
 #'            the argument list. \cr \cr
 #' Executed By: \itemize{\item batchRun.R
 #'             \item addMarkerText.R
-#'             \item aggDynamicMapdata.R
 #'             \item applyUserModify.R
-#'             \item checkDrainageareaMapPrep.R
-#'             \item checkDrainageareaMapPrep_static.R
 #'             \item controlFileTasksModel.R
 #'             \item correlationMatrix.R
 #'             \item create_diagnosticPlotList.R

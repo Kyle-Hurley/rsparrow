@@ -137,31 +137,7 @@ predictScenariosPrep <- function(
     }
   } # Rshiny
 
-  if (identical(map_years, "all")) {
-    map_years <- unique(subdata$year)
-  }
-  if (identical(map_seasons, "all")) {
-    map_seasons <- unique(subdata$season)
-  }
-
-  if (!is.na(forecast_filename)) {
-    fData <- readForecast(
-      file.output.list, if_mean_adjust_delivery_vars, use_sparrowNames,
-      subdata, SelParmValues, forecast_filename, data_names
-    )
-
-    scenario_sources <- names(fData)[names(fData) != "waterid"]
-    matchData <- data[which(data[, 1] %in% fData$waterid), ]
-    fData <- fData[match(matchData[, 1], fData$waterid), ]
-    for (n in names(fData)[names(fData) != "waterid"]) {
-      varIndex <- jsrcvar[srcvar == n]
-      matchData[, varIndex] <- fData[, names(fData) == n]
-    }
-    scenarioFlag <- sapply(data[, 1], function(x) ifelse(x %in% fData$waterid, 1, 0))
-    data[which(data[, 1] %in% fData$waterid), ] <- matchData
-  } else { # not forecast scenario
-
-    # create scenario_name directory
+  # create scenario_name directory
     options(warn = -1)
     if (!Rshiny) {
       if (!dir.exists(paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name))) {
@@ -284,48 +260,7 @@ predictScenariosPrep <- function(
 
     ### target reach selection
     if (!is.na(select_targetReachWatersheds[1])) {
-      dynamic <- checkDynamic(subdata)
-      if (dynamic) {
-        #   #loop through timesteps
-        if (!identical(map_years, NA) & !identical(map_seasons, NA)) {
-          subdata_target <- subdata
-          subdata_target$hydseq <- rep(NA, nrow(subdata_target))
-          for (y in map_years) {
-            for (s in map_seasons) {
-              hydSub <- subdata[subdata$year == y & subdata$season == s, ]
-              subdata_target <- subdata_target[subdata_target$year != y & subdata_target$season != s, ]
-              select_targetWaterIDs <- hydSub[hydSub$mapping_waterid %in% select_targetReachWatersheds, ]$waterid_for_RSPARROW_mapping
-              hydSub_target <- hydseqTerm(hydSub, select_targetWaterIDs)
-              subdata_target <- rbind(subdata_target, hydSub_target)
-            }
-          }
-        } else if (!identical(map_years, NA)) {
-          subdata_target <- subdata
-          subdata_target$hydseq <- rep(NA, nrow(subdata_target))
-          for (y in map_years) {
-            hydSub <- subdata[subdata$year == y, ]
-            subdata_target <- subdata_target[subdata_target$year != y, ]
-            select_targetWaterIDs <- hydSub[hydSub$mapping_waterid %in% select_targetReachWatersheds, ]$waterid_for_RSPARROW_mapping
-            hydSub_target <- hydseqTerm(hydSub, select_targetWaterIDs)
-            subdata_target <- rbind(subdata_target, hydSub_target)
-          }
-        } else if (!identical(map_seasons, NA)) {
-          subdata_target <- subdata
-          subdata_target$hydseq <- rep(NA, nrow(subdata_target))
-          for (s in map_seasons) {
-            hydSub <- subdata[subdata$season == s, ]
-            subdata_target <- subdata_target[subdata_target$season != s, ]
-            select_targetWaterIDs <- hydSub[hydSub$mapping_waterid %in% select_targetReachWatersheds, ]$waterid_for_RSPARROW_mapping
-            hydSub_target <- hydseqTerm(hydSub, select_targetWaterIDs)
-            subdata_target <- rbind(subdata_target, hydSub_target)
-          }
-        }
-
-        #   #find all waterids associated with select_targetReachWatershed mapping_waterids
-        #
-      } else {
-        subdata_target <- hydseqTerm(subdata, select_targetReachWatersheds)
-      }
+      subdata_target <- hydseqTerm(subdata, select_targetReachWatersheds)
 
 
       subdata_target <- subdata_target[order(match(subdata_target$waterid, subdata$waterid)), ]
@@ -568,7 +503,6 @@ predictScenariosPrep <- function(
       ))
       scenarioError <- TRUE
     }
-  } # not forecast
   # outputlist
   scenarioPrep.list <- named.list(
     data, scenario_name, scenario_sources,

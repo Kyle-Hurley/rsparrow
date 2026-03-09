@@ -7,11 +7,8 @@
 #' Executed By: startModelRun.R
 #' 
 #' Executes Routines: \itemize{
-#'              \item checkDynamic.R, 
-#'              \item diagnosticPlotsNLLS_dyn.R, 
-#'              \item diagnosticPlotsNLLS_timeSeries.R, 
-#'              \item diagnosticSpatialAutoCorr.R, 
-#'              \item estimate.R, 
+#'              \item diagnosticSpatialAutoCorr.R,
+#'              \item estimate.R,
 #'              \item estimateBootstraps.R, 
 #'              \item named.list.R, 
 #'              \item outcharfun.R, 
@@ -206,48 +203,6 @@ controlFileTasksModel <- function(
           class.input.list = class.input.list,
           DataMatrix.list = DataMatrix.list
         )
-        
-        # if dynamic data
-        if (checkDynamic(sitedata)) {
-          
-          if (!identical(NA, diagnosticPlots_timestep)) {
-            
-            diagnosticPlotsNLLS_dyn(
-              validation = FALSE,
-              sensitivity = FALSE,
-              spatialAutoCorr = TRUE,
-              file.output.list = file.output.list,
-              class.input.list = class.input.list,
-              sitedata.demtarea.class = sitedata.demtarea.class,
-              sitedata = sitedata,
-              subdata = subdata,
-              sitedata.landuse = sitedata.landuse,
-              estimate.list = estimate.list,
-              mapping.input.list = mapping.input.list,
-              Csites.list = Csites.list,
-              Cor.ExplanVars.list = Cor.ExplanVars.list,
-              data_names = data_names,
-              add_vars = add_vars,
-              SelParmValues = SelParmValues,
-              DataMatrix.list = DataMatrix.list,
-              estimate.input.list = estimate.input.list,
-              min.sites.list = min.sites.list,dlvdsgn
-            )
-            
-            # if (mapping.input.list$diagnostic_timeSeriesPlots == "yes") {
-            #   
-            #   diagnosticPlotsNLLS_timeSeries(
-            #     mapping.input.list = mapping.input.list, 
-            #     file.output.list = file.output.list, 
-            #     estimate.list = estimate.list, 
-            #     sitedata = sitedata
-            #   )
-            #   
-            # }
-            
-          }
-          
-        }
         
         # sink text file
         options(width = 200, max.print = 999999)

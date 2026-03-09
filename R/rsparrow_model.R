@@ -19,8 +19,6 @@
 #'   and data. Must contain parameters.csv, design_matrix.csv, dataDictionary.csv.
 #' @param run_id Character. Name of the model run (default: "run1"). Used to match
 #'   parameter specifications in the control files.
-#' @param model_type Character. Either "static" for long-term mean annual models
-#'   or "dynamic" for seasonal/annual time-varying models. Default: "static".
 #' @param if_estimate Character. "yes" to run NLLS estimation, "no" to use
 #'   previously saved parameter estimates. Default: "yes".
 #' @param if_predict Character. "yes" to compute reach-level load and yield
@@ -42,7 +40,7 @@
 #'     \item{predictions}{Reach-level load/yield predictions (NULL until predict() called)}
 #'     \item{bootstrap}{Bootstrap results (NULL until rsparrow_bootstrap() called)}
 #'     \item{validation}{Validation results (NULL until rsparrow_validate() called)}
-#'     \item{metadata}{Package version, timestamp, run_id, model_type, path_main}
+#'     \item{metadata}{Package version, timestamp, run_id, path_main}
 #'   }
 #'
 #' @export
@@ -52,11 +50,10 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Estimate a static SPARROW model
+#' # Estimate a SPARROW model
 #' model <- rsparrow_model(
 #'   path_main = "~/sparrow_projects/my_watershed/",
-#'   run_id = "baseline_2020",
-#'   model_type = "static"
+#'   run_id = "baseline_2020"
 #' )
 #'
 #' # View estimation results
@@ -69,14 +66,13 @@
 #' # Generate predictions
 #' model <- predict(model, type = "all")
 #' }
-rsparrow_model <- function(path_main, run_id = "run1", model_type = "static",
+rsparrow_model <- function(path_main, run_id = "run1",
                             if_estimate = "yes", if_predict = "yes",
                             if_validate = "no", ...) {
 
   # ── Input validation ────────────────────────────────────────────────────────
   stopifnot(is.character(path_main), length(path_main) == 1)
   if (!dir.exists(path_main)) stop("path_main does not exist: ", path_main)
-  model_type <- match.arg(model_type, c("static", "dynamic"))
 
   # ── Step 1: Read data files ──────────────────────────────────────────────────
   sparrow_data <- read_sparrow_data(path_main, run_id = run_id)
@@ -430,7 +426,6 @@ rsparrow_model <- function(path_main, run_id = "run1", model_type = "static",
         version    = utils::packageVersion("rsparrow"),
         timestamp  = Sys.time(),
         run_id     = run_id,
-        model_type = model_type,
         path_main  = path_main
       )
     ),

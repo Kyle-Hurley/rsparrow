@@ -2,7 +2,6 @@
 #' @description Test whether variables in RSPARROW user setting
 #'             `add_plotlyVars` can be aggregated according to
 #'             `map_years` and/or `map_seasons`\cr \cr
-#' Executed By: aggDynamicMapdata.R \cr
 #' @param add_plotlyVars character vector indicating user selected variables to add to plot hover
 #'                      text
 #' @param subdata data.frame input data (subdata)

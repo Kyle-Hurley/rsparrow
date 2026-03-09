@@ -51,64 +51,7 @@ createVerifyReachAttr <- function(if_verify_demtarea, calculate_reach_attribute_
       if (length(grep("hydseq", calculate_reach_attribute_list)) != 0) {
         message("Running calculation of HYDSEQ (hydrologic sequencing numbers)...")
         # calculate hydseq variable, also headflag and demtarea if called for
-        if (checkDynamic(sub1)) {
-          if (length(names(sub1)[names(sub1) == "year"]) != 0) {
-            if (all(is.na(sub1$year))) {
-              # loop through seasons
-              hydseq_data <- sub1[0, ]
-              for (s in unique(sub1$season)[match(c("winter", "spring", "summer", "fall"), unique(sub1$season))]) {
-                data1_sub <- sub1[sub1$season == s, ]
-                if (nrow(data1_sub) != 0) {
-                  startSeq <- nrow(hydseq_data) + 1
-                  hydseq_datasub <- hydseq(data1_sub, calculate_reach_attribute_list, startSeq)
-                  hydseq_data <- rbind(hydseq_data, hydseq_datasub)
-                }
-              }
-            } else if (length(names(sub1)[names(sub1) == "season"]) == 0 | all(is.na(sub1$season))) {
-              # loop through year
-              hydseq_data <- sub1[0, ]
-              for (y in sort(unique(sub1$year))) {
-                data1_sub <- sub1[sub1$year == y, ]
-                if (nrow(data1_sub) != 0) {
-                  startSeq <- nrow(hydseq_data) + 1
-                  hydseq_datasub <- hydseq(data1_sub, calculate_reach_attribute_list, startSeq)
-                  hydseq_data <- rbind(hydseq_data, hydseq_datasub)
-                }
-              }
-            } else if (length(names(sub1)[names(sub1) == "season"]) != 0) {
-              if (!all(is.na(sub1$season))) { # loop through season and year
-                hydseq_data <- sub1[0, ]
-                for (y in sort(unique(sub1$year))) {
-                  for (s in unique(sub1$season)[match(c("winter", "spring", "summer", "fall"), unique(sub1$season))]) {
-                    data1_sub <- sub1[sub1$year == y & sub1$season == s, ]
-                    if (nrow(data1_sub) != 0) {
-                      startSeq <- nrow(hydseq_data) + 1
-                      hydseq_datasub <- hydseq(data1_sub, calculate_reach_attribute_list, startSeq)
-                      hydseq_data <- rbind(hydseq_data, hydseq_datasub)
-                    }
-                  } # end for s
-                } # end for y
-              } # end for !all(is.na(seasons))
-            } # names seasons
-          } else { # no year in names
-            if (length(names(sub1)[names(sub1) == "season"]) != 0) {
-              if (!all(is.na(sub1$season))) { # loop through season
-                # loop through seasons
-                hydseq_data <- sub1[0, ]
-                for (s in unique(sub1$season)[match(c("winter", "spring", "summer", "fall"), unique(sub1$season))]) {
-                  data1_sub <- sub1[sub1$season == s, ]
-                  if (nrow(data1_sub) != 0) {
-                    startSeq <- nrow(hydseq_data) + 1
-                    hydseq_datasub <- hydseq(data1_sub, calculate_reach_attribute_list, startSeq)
-                    hydseq_data <- rbind(hydseq_data, hydseq_datasub)
-                  }
-                }
-              }
-            }
-          } # no year in names
-        } else {
-          hydseq_data <- hydseq(sub1, calculate_reach_attribute_list)
-        }
+        hydseq_data <- hydseq(sub1, calculate_reach_attribute_list)
 
 
         waterid <- hydseq_data$waterid

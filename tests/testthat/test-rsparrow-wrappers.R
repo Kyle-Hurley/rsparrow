@@ -52,10 +52,10 @@ test_that("rsparrow_model has correct formal arguments", {
   args <- names(formals(rsparrow_model))
   expect_true("path_main"    %in% args)
   expect_true("run_id"       %in% args)
-  expect_true("model_type"   %in% args)
   expect_true("if_estimate"  %in% args)
   expect_true("if_predict"   %in% args)
   expect_true("if_validate"  %in% args)
+  expect_false("model_type"  %in% args)
 })
 
 test_that("rsparrow_model stops with clear error for non-existent path_main", {
@@ -65,11 +65,10 @@ test_that("rsparrow_model stops with clear error for non-existent path_main", {
   )
 })
 
-test_that("rsparrow_model model_type argument is validated", {
-  # match.arg fires before read_sparrow_data when path_main exists
+test_that("rsparrow_model stops with clear error for missing control files", {
   td <- tempdir()
   expect_error(
-    rsparrow_model(td, model_type = "invalid"),
-    regexp = "static|dynamic|arg"
+    rsparrow_model(td),
+    regexp = "exist|path_main|control|file|sparrow"
   )
 })

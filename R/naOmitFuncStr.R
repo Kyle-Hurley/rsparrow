@@ -1,7 +1,6 @@
 #' @title naOmitFuncStr
 #' @description creates string in the form 'function(x) aggFunc(x,na.rm=TRUE)' ensuring that
 #'              when the `aggFunc` is executed that NA values are removed. \cr \cr
-#' Executed By: \itemize{\item aggDynamicMapdata.R} \cr
 #' @param aggFunc character vector of an aggregate functions approved for RSPARROW 2.0
 #'                c("mean","median","min","max")
 #' @return `str` string in the form 'function(x) aggFunc(x,na.rm=TRUE)'
