@@ -7,28 +7,46 @@
 rsparrow_hydseq(data, from_col = "fnode", to_col = "tnode")
 }
 \arguments{
-\item{data}{A data.frame containing reach network topology with a
-\code{waterid} column.}
+\item{data}{A data.frame containing reach network topology. Must include
+columns for upstream node IDs, downstream node IDs, and a reach
+identifier named \code{waterid}.}
 
-\item{from_col}{Character. Name of column containing upstream node IDs
-(default: "fnode").}
+\item{from_col}{Character. Name of column containing upstream (from) node
+IDs (default: "fnode").}
 
-\item{to_col}{Character. Name of column containing downstream node IDs
-(default: "tnode").}
+\item{to_col}{Character. Name of column containing downstream (to) node
+IDs (default: "tnode").}
 }
 \value{
-The input data.frame with a \code{hydseq} column appended.
+The input data.frame with a \code{hydseq} column appended. Values
+are negative integers where more negative = further downstream. Headwater
+reaches have the largest (least negative) values.
 }
 \description{
 Orders stream reaches from upstream to downstream based on network topology.
+This is a key preprocessing step for SPARROW models, ensuring that load
+accumulation occurs in the correct hydrological order.
+}
+\details{
+The algorithm assigns sequential numbers starting from terminal (outlet)
+reaches and working upstream. Reaches are numbered so that downstream
+reaches have lower sequence numbers (more negative values), ensuring
+correct accumulation order when sorted.
 }
 \examples{
 \dontrun{
+# Create simple network topology
 network <- data.frame(
   waterid = 1:5,
   fnode = c(1, 2, 3, 4, 5),
   tnode = c(3, 3, 5, 5, 6)
 )
-network <- rsparrow_hydseq(network)
+
+# Compute hydrological sequence
+network <- rsparrow_hydseq(network, from_col = "fnode", to_col = "tnode")
+network[order(network$hydseq), ]
 }
+}
+\seealso{
+\code{\link{rsparrow_model}}
 }

@@ -271,43 +271,6 @@ predictScenariosOutCSV <- function(
     dec = csv_decimalSeparator, sep = csv_columnSeparator, col.names = TRUE, na = "NA"
   )
 
-  # Output meta data to text file documenting settings for scenario
-  fileout <- paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name, .Platform$file.sep, scenario_name, "_", run_id, "_scenario_metainfo.txt")
-  sink(file = fileout, split = "FALSE", append = FALSE)
-  if (!Rshiny) {
-    outvars2 <- named.list(
-      select_scenarioReachAreas, select_targetReachWatersheds,
-      scenario_sources, scenario_factors, landuseConversion
-    )
-    print(outvars2)
-  } else { # Rshiny
-
-    outvars2 <- data.frame(
-      select_scenarioReachAreas = as.character(input$domain),
-      select_targetReachWatersheds = as.character(input$target)
-    )
-    if (input$domain == "all reaches") {
-      print(outvars2)
-      print(space)
-      print(input$`nsSourceRedALL-hot`)
-    } else {
-      if (input$allSrc == "yes") {
-        print(outvars2)
-        print(space)
-        print(input$`nsSourceRed-hot`)
-        print(space)
-        print(input$`nsAllSources-hot`)
-      } else {
-        print(outvars2)
-        print(space)
-        print(input$`nsAllSourcesNO-hot`)
-      }
-    }
-  } # end Rshiny sink
-  print(space)
-  print(scenarioCoefficients)
-  sink(type = "message")
-  sink()
 
 
   if (!Rshiny) {

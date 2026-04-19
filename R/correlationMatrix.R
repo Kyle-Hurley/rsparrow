@@ -115,8 +115,6 @@ correlationMatrix <- function(file.output.list, SelParmValues, subdata) {
   ################################################
   # Output Results
 
-  filename <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_explvars_correlations.pdf")
-  pdf(file = filename, font = "Helvetica")
 
 
   #################################################
@@ -237,8 +235,6 @@ correlationMatrix <- function(file.output.list, SelParmValues, subdata) {
   )
   boxplot(sdf)
 
-  dev.off() # shuts down current graphics device
-  graphics.off() # shuts down all open graphics devices
 
 
   # save correlation matrices for output to tables
@@ -259,14 +255,10 @@ correlationMatrix <- function(file.output.list, SelParmValues, subdata) {
   colnames(space) <- c(" ")
 
 
-  filename <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_explvars_correlations.txt")
-  sink(file = filename, split = "FALSE", append = FALSE)
-
   #########################################
   # Monitoring site incremental area results
 
   if (numsites > 10) {
-    options(width = 200)
     print(outcharfun("CORRELATION MATRICES FOR EXPLANATORY VARIABLES (Site Incremental Areas)"))
 
     print(outcharfun("SPEARMAN CORRELATIONS FOR ALL OBSERVATIONS"))
@@ -283,7 +275,6 @@ correlationMatrix <- function(file.output.list, SelParmValues, subdata) {
   #########################################
   # Reach-level results
 
-  options(width = 200)
   print(space)
   print(space)
   print(outcharfun("CORRELATION MATRICES FOR EXPLANATORY VARIABLES (Reaches)"))
@@ -305,9 +296,6 @@ correlationMatrix <- function(file.output.list, SelParmValues, subdata) {
 
   print(outcharfun("FILTERED SUMMARY METRICS FOR EXPLANATORY VARIABLES (zero values converted to minimum of non-zero values)"))
   print(summary(cmatrix_filter))
-
-  sink(type = "message")
-  sink()
 
 
   return(Cor.ExplanVars.list)

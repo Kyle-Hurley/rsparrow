@@ -598,9 +598,6 @@ predictBootstraps <- function(iseed, biters, estimate.list, estimate.input.list,
     se_pload_total, ci_pload_total, se_mpload_total, ci_mpload_total,
     model.error.var, sample.error.var.boots
   )
-  objfile <- paste0(path_results, .Platform$file.sep, "predict", .Platform$file.sep, run_id, "_BootUncertainties")
-  save(BootUncertainties, file = objfile)
-
   ##########################################################################################
 
   # Output bootstrap yield predictions

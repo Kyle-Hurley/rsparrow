@@ -131,7 +131,6 @@ diagnosticPlots_4panel_B <- function(sitedata, plotResids, plot.ratio.obs.pred, 
 
   # Squared residuals vs predicted
   Resids2 <- plotResids**2
-  assign("Resids2", Resids2, envir = parent.frame())
 
   lwresids <- lowess(plotpredict, Resids2, f = 0.5, iter = 3)
 

@@ -29,14 +29,11 @@
 
 
 upstream <- function(group, hydseqvar, ifproc, fnode, dnstream_list, upstream_list, upstream_list_index, dnstream_list_index) {
+  upgroup <- vector("numeric")
   for (i in 1:length(group)) {
     # get upstream and dnstream indexes
     ulist_subset <- getuindx(fnode[group[i]], upstream_list_index)
     dlist_subset <- dnstream_list[getdindx(fnode[group[i]], dnstream_list_index)]
-    # create upgroup vector, empty
-    if (i == 1) {
-      upgroup <- vector("numeric")
-    }
 
     # If all reaches downstream of fnode have hydseg then get list of
     # reaches upstream of fnode to be added to upstream group
@@ -47,11 +44,5 @@ upstream <- function(group, hydseqvar, ifproc, fnode, dnstream_list, upstream_li
       upgroup <- c(upgroup, upstream_list[ulist_subset])
     } # end if (!is.na(ulist_subset) & ...
   } # for i
-  if (exists("upgroup")) {
-    # save ifproc changes to parent.frame
-    assign("ifproc", ifproc, envir = parent.frame())
-    return(upgroup)
-  } else {
-    return(NA)
-  } # end exists upgroup
+  list(upgroup = upgroup, ifproc = ifproc)
 } # end upstream

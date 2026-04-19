@@ -198,16 +198,6 @@ diagnosticSensitivity <- function(file.output.list, class.input.list, estimate.i
   }
   # save results to directory and global environment
   sensitivities.list <- named.list(xparm, xmed, xiqr, xsens)
-  objfile <- paste0(
-    path_results, 
-    .Platform$file.sep, 
-    "estimate", 
-    .Platform$file.sep, 
-    run_id, 
-    "_sensitivities.list"
-  )
-  save(sensitivities.list, file = objfile)
-  
   invisible(p.list)
 
 }

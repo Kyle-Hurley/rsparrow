@@ -14,14 +14,18 @@
 \item{...}{Additional arguments (currently unused).}
 }
 \value{
-Invisible \code{x}.
+Invisible \code{x}. Called for its side effect of printing to the console.
 }
 \description{
-Prints a concise summary of a fitted SPARROW model.
+Prints a concise summary of a fitted SPARROW model, including model type,
+the original call, estimated coefficients, and key fit statistics.
 }
 \examples{
 \dontrun{
 model <- rsparrow_model("~/my_model/")
 print(model)
 }
+}
+\seealso{
+\code{\link{summary.rsparrow}}, \code{\link{rsparrow_model}}
 }

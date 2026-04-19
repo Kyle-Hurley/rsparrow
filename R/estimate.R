@@ -463,12 +463,6 @@ estimate <- function(if_estimate, if_predict, file.output.list,
           Mdiagnostics.list <- estimate.metrics.list$Mdiagnostics.list
           estimate.list <- named.list(sparrowEsts, JacobResults, HesResults, ANOVA.list, Mdiagnostics.list)
 
-          # save sparrowEsts file to support prediction
-          objfile <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_sparrowEsts")
-          save(sparrowEsts, file = objfile)
-
-
-
           estimateNLLStable(
             file.output.list, if_estimate, if_estimate_simulation, ifHess, if_sparrowEsts,
             classvar, sitedata, numsites,
@@ -634,12 +628,6 @@ estimate <- function(if_estimate, if_predict, file.output.list,
           ))
 
 
-          objfile <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_JacobResults")
-          save(JacobResults, file = objfile)
-
-          objfile <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_sparrowEsts")
-          save(sparrowEsts, file = objfile)
-
           estimate.list <- named.list(sparrowEsts, JacobResults)
         }
       } # end if_estimate_simulation check
@@ -678,27 +666,6 @@ estimate <- function(if_estimate, if_predict, file.output.list,
   }
 
   ##########################################
-  if (if_estimate == "yes" | if_estimate_simulation == "yes") {
-    if ("Mdiagnostics.list" %in% names(estimate.list)) {
-      # store Mdiagnostics.list and ANOVA.list objects to disk
-      Mdiagnostics.list <- estimate.list$Mdiagnostics.list
-      objfile <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_Mdiagnostics.list")
-      save(Mdiagnostics.list, file = objfile)
-      ANOVA.list <- estimate.list$ANOVA.list
-      objfile <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_ANOVA.list")
-      save(ANOVA.list, file = objfile)
-
-      if (if_validate == "yes" & if_estimate_simulation == "no") {
-        # store vMdiagnostics.list and vANOVA.list objects to disk
-        vMdiagnostics.list <- estimate.list$vMdiagnostics.list
-        objfile <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_vMdiagnostics.list")
-        save(vMdiagnostics.list, file = objfile)
-        vANOVA.list <- estimate.list$vANOVA.list
-        objfile <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_vANOVA.list")
-        save(vANOVA.list, file = objfile)
-      }
-    }
-  }
 
   return(estimate.list)
 } # end function  # return

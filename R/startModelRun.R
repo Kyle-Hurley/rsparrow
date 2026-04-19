@@ -251,7 +251,6 @@ startModelRun <- function(file.output.list,
 
   print(paste0("Number of selected validation sites with non-zero observed loads: ", vic))
 
-  save(subdata, file = paste0(path_results, .Platform$file.sep, "data", .Platform$file.sep, "subdata"))
 
   ###############################################################
   # 6. Missing data checks and data setup for estimation
@@ -269,7 +268,6 @@ startModelRun <- function(file.output.list,
   sitedata <- subdata[(subdata$depvar > 0 & subdata$calsites == 1), ] # create site attribute object
   sparrow_state$sitedata <- sitedata
   numsites <- length(sitedata$waterid)
-  save(sitedata, file = paste0(path_results, .Platform$file.sep, "data", .Platform$file.sep, "sitedata"))
   sparrow_state$numsites <- numsites
 
 
@@ -291,7 +289,6 @@ startModelRun <- function(file.output.list,
     sparrow_state$vsitedata <- vsitedata
     vnumsites <- length(vsitedata$waterid)
     vnumsites
-    save(vsitedata, file = paste0(path_results, .Platform$file.sep, "data", .Platform$file.sep, "vsitedata"))
   }
 
   # (D) Setup land use for incremental basins for diagnostics
@@ -353,8 +350,6 @@ startModelRun <- function(file.output.list,
       message("Running correlations among explanatory variables...")
       Cor.ExplanVars.list <- correlationMatrix(file.output.list, SelParmValues, subdata)
 
-      objfile <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_Cor.ExplanVars.list")
-      save(Cor.ExplanVars.list, file = objfile)
     }
   }
 
@@ -451,6 +446,7 @@ startModelRun <- function(file.output.list,
 
   estimate.list <- runTimes$estimate.list
   sparrow_state$estimate.list <- estimate.list  # expose to rsparrow_model()
+  sparrow_state$predict.list  <- runTimes$predict.list  # expose to rsparrow_model()
   if (!is.null(estimate.list)) {
     # setup for interactive Mapping
     shinyArgs <- named.list(

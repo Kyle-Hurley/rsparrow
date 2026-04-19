@@ -1,4 +1,4 @@
-<plan id="10" label="Separate Computation from I/O" status="pending" blocked_by="07,08,09">
+<plan id="10" label="Separate Computation from I/O" status="complete" blocked_by="07,08,09">
 
 <objective>
 Refactor estimation and prediction functions to return R objects instead of writing files as
@@ -49,7 +49,7 @@ applyUserModify.R (3x assign parent.frame) is complex and deferred to Plan 11.
 
 <tasks>
 
-<task id="10-1" status="pending">
+<task id="10-1" status="complete">
 <subject>Audit all file I/O in computation functions</subject>
 <description>
 Before refactoring, produce a complete inventory of file I/O in active computation functions.
@@ -80,7 +80,7 @@ This read-only audit produces the work list for Tasks 10-2 through 10-8.
 </success_criteria>
 </task>
 
-<task id="10-2" status="pending">
+<task id="10-2" status="complete">
 <subject>Refactor estimate.R — remove save() and dir.create() side effects</subject>
 <description>
 estimate.R is the estimation orchestrator (~890 lines). It currently writes intermediate
@@ -117,7 +117,7 @@ After refactoring:
 </success_criteria>
 </task>
 
-<task id="10-3" status="pending">
+<task id="10-3" status="complete">
 <subject>Refactor startModelRun.R — remove save() side effects</subject>
 <description>
 startModelRun.R currently calls save() ~5 times to write intermediate state objects to disk.
@@ -145,7 +145,7 @@ After refactoring:
 </success_criteria>
 </task>
 
-<task id="10-4" status="pending">
+<task id="10-4" status="complete">
 <subject>Refactor estimateNLLStable.R — remove sink() and fwrite() side effects</subject>
 <description>
 estimateNLLStable.R generates the NLLS summary table and currently writes it to disk via
@@ -181,7 +181,7 @@ the data content of any table — only the delivery mechanism changes from file 
 </success_criteria>
 </task>
 
-<task id="10-5" status="pending">
+<task id="10-5" status="complete">
 <subject>Refactor controlFileTasksModel.R — remove save() and sink() side effects</subject>
 <description>
 controlFileTasksModel.R is the master task dispatcher. It currently:
@@ -228,7 +228,7 @@ After refactoring:
 </success_criteria>
 </task>
 
-<task id="10-6" status="pending">
+<task id="10-6" status="complete">
 <subject>Refactor prediction I/O — predictScenarios.R, predictBootstraps.R</subject>
 <description>
 predictScenarios.R and predictBootstraps.R write results to disk as side effects of running
@@ -269,7 +269,7 @@ After refactoring:
 </success_criteria>
 </task>
 
-<task id="10-7" status="pending">
+<task id="10-7" status="complete">
 <subject>Add on.exit() protection to estimateOptimize.R sink()</subject>
 <description>
 estimateOptimize.R uses sink() to log NLLS optimization progress to a file. This is a
@@ -307,7 +307,7 @@ After fix:
 </success_criteria>
 </task>
 
-<task id="10-8" status="pending">
+<task id="10-8" status="complete">
 <subject>Fix assign(parent.frame()) in diagnosticPlots_4panel_B.R and upstream.R</subject>
 <description>
 Two surviving assign(parent.frame()) patterns need to be refactored to use return values.
@@ -348,7 +348,7 @@ After fixes:
 </success_criteria>
 </task>
 
-<task id="10-9" status="pending">
+<task id="10-9" status="complete">
 <subject>Create write_rsparrow_results() convenience function for file output</subject>
 <description>
 After removing all file I/O from computation functions, users who want CSV/RData output
@@ -406,7 +406,7 @@ are called on user-specified paths.
 </success_criteria>
 </task>
 
-<task id="10-10" status="pending">
+<task id="10-10" status="complete">
 <subject>Run full verification after all I/O refactoring</subject>
 <description>
 After completing Tasks 10-2 through 10-9, verify that:

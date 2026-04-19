@@ -365,18 +365,8 @@ rsparrow_model <- function(path_main, run_id = "run1",
   # ── Step 6: Extract estimate.list ─────────────────────────────────────────────
   estimate_list <- sparrow_state$estimate.list
 
-  # ── Step 7: Load predict.list from saved file (if prediction was requested) ───
-  predict_list <- NULL
-  if (if_predict == "yes") {
-    predict_file <- paste0(path_results, "predict",
-                           .Platform$file.sep, run_id, "_predict.list")
-    if (file.exists(predict_file)) {
-      local({
-        load(predict_file)
-        predict_list <<- predict.list
-      })
-    }
-  }
+  # ── Step 7: Extract predict.list from sparrow_state (threaded via return value) ─
+  predict_list <- sparrow_state$predict.list
 
   # ── Step 8: Construct and return rsparrow S3 object ───────────────────────────
   # Safely extract nested fields (return NULL rather than error when absent)

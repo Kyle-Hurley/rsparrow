@@ -4,26 +4,40 @@
 \alias{rsparrow_validate}
 \title{Cross-Validation Diagnostics for SPARROW Models}
 \usage{
-rsparrow_validate(object, method = c("leave-one-out", "k-fold"), k = 10L, ...)
+rsparrow_validate(object, ...)
 }
 \arguments{
-\item{object}{An object of class "rsparrow".}
+\item{object}{An object of class "rsparrow" (output from
+\code{\link{rsparrow_model}} called with \code{if_validate = "yes"}).}
 
-\item{method}{Character. Validation method (default: "leave-one-out").}
-
-\item{k}{Integer. Number of folds for k-fold (default: 10).}
-
-\item{...}{Additional arguments.}
+\item{...}{Additional arguments (currently unused).}
 }
 \value{
-A list with validation statistics.
+The input rsparrow object with validation results added to the
+\code{validation} component, a named list including:
+\describe{
+\item{vANOVA.list}{ANOVA statistics for validation sites}
+\item{vMdiagnostics.list}{Diagnostic metrics at validation sites}
+}
 }
 \description{
-Performs cross-validation for SPARROW model assessment.
+Computes validation metrics using held-out monitoring sites that were
+separated from the calibration set when the model was estimated with
+\code{if_validate = "yes"}. Reports performance statistics at the
+validation sites.
+}
+\details{
+Validation data must have been prepared when the model was originally
+estimated. If the model was estimated without \code{if_validate = "yes"},
+this function will stop with an informative error.
 }
 \examples{
 \dontrun{
-model <- rsparrow_model("~/my_model/")
-cv <- rsparrow_validate(model, method = "k-fold", k = 10)
+model <- rsparrow_model("~/my_model/", if_validate = "yes")
+model <- rsparrow_validate(model)
+model$validation$vANOVA.list
 }
+}
+\seealso{
+\code{\link{rsparrow_model}}, \code{\link{summary.rsparrow}}
 }

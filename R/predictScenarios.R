@@ -117,18 +117,6 @@ predictScenarios <- function(
     }
   }
 
-  if (!Rshiny) {
-    # save flag_TargetReachWatersheds.csv
-    fileout <- paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, "flag_TargetReachWatersheds.csv")
-    outFlag <- subdata[, which(names(subdata) %in% c("waterid_for_RSPARROW_mapping", "demtarea", "demiarea", "rchname", add_vars))]
-    names(outFlag)[which(names(outFlag) == "waterid_for_RSPARROW_mapping")] <- "waterid"
-    outFlag$flag <- rep(0, nrow(outFlag))
-    outFlag <- outFlag[c("flag", "waterid", names(outFlag)[which(!names(outFlag) %in% c("flag", "waterid"))])]
-    fwrite(outFlag,
-      file = fileout, row.names = F, append = F, showProgress = FALSE, col.names = TRUE,
-      dec = csv_decimalSeparator, sep = csv_columnSeparator, na = "NA"
-    )
-  }
 
   if (((select_scenarioReachAreas != "none" | !is.na(forecast_filename)) & !Rshiny) |
     Rshiny) {
@@ -482,21 +470,6 @@ predictScenarios <- function(
             predict.source.list, predmatrix_chg, yldmatrix_chg, scenarioCoefficients, scenarioFlag
           )
 
-          if (!dir.exists(paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name, .Platform$file.sep))) {
-            dir.create(paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name, .Platform$file.sep))
-          }
-
-
-
-          objfile <- paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name, .Platform$file.sep, scenario_name, "_", run_id, "_predictScenarios.list")
-          save(predictScenarios.list, file = objfile)
-
-          # Save the data input matrix with altered source values per scenario adjustments
-          dataNames <- DataMatrix.list$dataNames
-          DataMatrixScenarios.list <- named.list(dataNames, data)
-
-          objfile <- paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name, .Platform$file.sep, scenario_name, "_", run_id, "_DataMatrixScenarios.list")
-          save(DataMatrixScenarios.list, file = objfile)
 
           #########################################
           #########################################

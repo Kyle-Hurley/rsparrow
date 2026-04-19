@@ -7,23 +7,37 @@
 rsparrow_bootstrap(object, n_boot = 100L, seed = NULL, ...)
 }
 \arguments{
-\item{object}{An object of class "rsparrow".}
+\item{object}{An object of class "rsparrow" (output from \code{\link{rsparrow_model}}).}
 
 \item{n_boot}{Integer. Number of bootstrap iterations (default: 100).}
 
-\item{seed}{Integer or NULL. Random seed for reproducibility.}
+\item{seed}{Integer or NULL. Random seed for reproducibility. If NULL
+(default), a random seed is generated.}
 
-\item{...}{Additional arguments.}
+\item{...}{Additional arguments passed to the internal bootstrap routine.}
 }
 \value{
-The input rsparrow object with bootstrap results added.
+The input rsparrow object with bootstrap results added to the
+\code{bootstrap} component, including:
+\describe{
+\item{bEstimate}{Matrix of bootstrap coefficient estimates (n_boot x n_params)}
+\item{bootmean_exp_weighted_error}{Numeric vector of bootstrap mean exponential
+weighted errors, one per iteration}
+\item{boot_resids}{Matrix of bootstrap residuals}
+\item{boot_lev}{Matrix of bootstrap leverage values}
+}
 }
 \description{
-Performs parametric bootstrap to estimate coefficient uncertainty.
+Performs parametric bootstrap to estimate coefficient uncertainty and
+prediction intervals for a fitted SPARROW model.
 }
 \examples{
 \dontrun{
 model <- rsparrow_model("~/my_model/")
 model <- rsparrow_bootstrap(model, n_boot = 200, seed = 42)
+model$bootstrap$bEstimate
 }
+}
+\seealso{
+\code{\link{rsparrow_model}}, \code{\link{predict.rsparrow}}
 }

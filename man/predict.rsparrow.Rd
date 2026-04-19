@@ -4,27 +4,52 @@
 \alias{predict.rsparrow}
 \title{Predict Method for SPARROW Models}
 \usage{
-\method{predict}{rsparrow}(object, newdata = NULL,
-  type = c("all", "loads", "yields", "delivery"), ...)
+\method{predict}{rsparrow}(
+  object,
+  newdata = NULL,
+  type = c("all", "loads", "yields", "delivery"),
+  ...
+)
 }
 \arguments{
-\item{object}{An object of class "rsparrow".}
+\item{object}{An object of class "rsparrow" (output from \code{\link{rsparrow_model}}).}
 
-\item{newdata}{Optional data.frame with new reach network data.}
+\item{newdata}{Optional data.frame with new reach network data. Must have the same
+structure as the original estimation data. If NULL (default), predictions are
+made for the original network.}
 
-\item{type}{Character. Type of prediction: "all", "loads", "yields", or "delivery".}
+\item{type}{Character. Type of prediction to compute:
+\describe{
+\item{"all"}{All prediction types (default)}
+\item{"loads"}{Total contaminant loads by reach}
+\item{"yields"}{Loads per unit drainage area}
+\item{"delivery"}{Delivery fractions from each reach to outlet}
+}}
 
 \item{...}{Additional arguments (currently unused).}
 }
 \value{
-The input rsparrow object with predictions populated.
+The input rsparrow object with the \code{predictions} list component populated.
+\code{predictions} contains data.frames with one row per reach:
+\describe{
+\item{loads}{Total predicted loads}
+\item{yields}{Predicted yields (load / drainage area)}
+\item{delivery_fractions}{Fraction of load delivered to outlet}
+\item{incremental_loads}{Load generated within each reach}
+}
 }
 \description{
-Computes reach-level predictions from an estimated SPARROW model.
+Computes reach-level predictions of contaminant loads, yields, and delivery
+fractions from an estimated SPARROW model. Predictions use the estimated
+coefficients and can be generated for the original network or new data.
 }
 \examples{
 \dontrun{
 model <- rsparrow_model("~/my_model/")
-model <- predict(model, type = "all")
+model_pred <- predict(model, type = "all")
+head(model_pred$predictions$loads)
 }
+}
+\seealso{
+\code{\link{rsparrow_model}}, \code{\link{rsparrow_scenario}}
 }

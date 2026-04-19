@@ -4,26 +4,47 @@
 \alias{rsparrow_scenario}
 \title{Run Scenario Predictions with Modified Sources}
 \usage{
-rsparrow_scenario(object, scenario_name, source_modifications, ...)
+rsparrow_scenario(object, source_changes, scenario_name = "scenario1", ...)
 }
 \arguments{
-\item{object}{An object of class "rsparrow".}
+\item{object}{An object of class "rsparrow" (output from \code{\link{rsparrow_model}}).}
 
-\item{scenario_name}{Character. Name for this scenario.}
+\item{source_changes}{A named numeric vector or named list specifying source
+multipliers. Names correspond to source variable names in the model;
+values are multiplicative factors (e.g.,
+\code{list(fertilizer = 0.5)} reduces fertilizer inputs by 50\\%).}
 
-\item{source_modifications}{A named list specifying source changes.}
+\item{scenario_name}{Character. Name for this scenario (used in output file
+labeling). Default: \code{"scenario1"}.}
 
-\item{...}{Additional arguments.}
+\item{...}{Additional arguments (currently unused).}
 }
 \value{
-The input rsparrow object with scenario predictions added.
+The input rsparrow object with scenario predictions added to
+\code{predictions$scenarios}.
 }
 \description{
-Generates predictions under hypothetical source modification scenarios.
+Generates predictions under hypothetical scenarios where contaminant
+sources are modified (e.g., reduced fertilizer application). Uses the
+estimated model coefficients with altered source multipliers.
+}
+\details{
+Predictions must already be populated (i.e., \code{\link{predict.rsparrow}}
+or \code{rsparrow_model(if_predict = "yes")} must have been run first).
 }
 \examples{
 \dontrun{
 model <- rsparrow_model("~/my_model/")
-model <- rsparrow_scenario(model, "reduce_fert", list(fertilizer = 0.5))
+model <- predict(model)
+
+# Reduce fertilizer sources by 50\%
+model <- rsparrow_scenario(
+  model,
+  source_changes = list(fertilizer = 0.5),
+  scenario_name  = "reduce_fertilizer"
+)
 }
+}
+\seealso{
+\code{\link{rsparrow_model}}, \code{\link{predict.rsparrow}}
 }

@@ -4,29 +4,87 @@
 \alias{rsparrow_model}
 \title{Estimate a SPARROW Water Quality Model}
 \usage{
-rsparrow_model(path_main, run_id = "run1", model_type = "static", ...)
+rsparrow_model(
+  path_main,
+  run_id = "run1",
+  if_estimate = "yes",
+  if_predict = "yes",
+  if_validate = "no",
+  ...
+)
 }
 \arguments{
-\item{path_main}{Character. Path to the main directory containing control files.}
+\item{path_main}{Character. Path to the main directory containing control files
+and data. Must contain parameters.csv, design_matrix.csv, dataDictionary.csv.}
 
-\item{run_id}{Character. Name of the model run (default: "run1").}
+\item{run_id}{Character. Name of the model run (default: "run1"). Used to match
+parameter specifications in the control files.}
 
-\item{model_type}{Character. Either "static" or "dynamic" (default: "static").}
+\item{if_estimate}{Character. "yes" to run NLLS estimation, "no" to use
+previously saved parameter estimates. Default: "yes".}
 
-\item{...}{Additional arguments passed to estimation routine.}
+\item{if_predict}{Character. "yes" to compute reach-level load and yield
+predictions after estimation. Default: "yes".}
+
+\item{if_validate}{Character. "yes" to split monitoring sites into calibration
+and validation sets. Default: "no".}
+
+\item{...}{Additional arguments passed to the internal estimation routine.}
 }
 \value{
-An S3 object of class "rsparrow".
+An S3 object of class "rsparrow" containing:
+\describe{
+\item{call}{The matched function call}
+\item{coefficients}{Named numeric vector of estimated parameters}
+\item{std_errors}{Standard errors of coefficients (Jacobian-based)}
+\item{vcov}{Variance-covariance matrix (Hessian-based; NULL if not computed)}
+\item{residuals}{Residuals at monitoring sites}
+\item{fitted_values}{Fitted loads at monitoring sites}
+\item{fit_stats}{List with R2, RMSE, npar, nobs, convergence}
+\item{data}{Input data (reach network, sites, design matrices)}
+\item{predictions}{Reach-level load/yield predictions (NULL until predict() called)}
+\item{bootstrap}{Bootstrap results (NULL until rsparrow_bootstrap() called)}
+\item{validation}{Validation results (NULL until rsparrow_validate() called)}
+\item{metadata}{Package version, timestamp, run_id, path_main}
+}
 }
 \description{
-Estimates a SPARROW model using nonlinear least squares.
+Estimates a SPARROW (SPAtially Referenced Regressions On Watershed attributes)
+model using nonlinear least squares. Reads input data from CSV control files,
+validates the reach network, computes hydrological sequencing, and optimizes
+model parameters using the nlmrt package.
+}
+\details{
+The function orchestrates the full SPARROW estimation workflow:
+\enumerate{
+\item Reads and validates control files (parameters.csv, design_matrix.csv)
+\item Loads reach network and monitoring site data
+\item Computes hydrological sequencing via \code{\link{rsparrow_hydseq}}
+\item Prepares data matrices for optimization
+\item Calls nonlinear least squares optimizer
+\item Computes fit statistics and diagnostics
+}
 }
 \examples{
 \dontrun{
-model <- rsparrow_model("~/my_model/", run_id = "baseline")
+# Estimate a SPARROW model
+model <- rsparrow_model(
+  path_main = "~/sparrow_projects/my_watershed/",
+  run_id = "baseline_2020"
+)
+
+# View estimation results
+print(model)
 summary(model)
+
+# Extract coefficients
+coef(model)
+
+# Generate predictions
+model <- predict(model, type = "all")
 }
 }
 \seealso{
-\code{\link{predict.rsparrow}}, \code{\link{summary.rsparrow}}
+\code{\link{predict.rsparrow}}, \code{\link{summary.rsparrow}},
+\code{\link{read_sparrow_data}}
 }

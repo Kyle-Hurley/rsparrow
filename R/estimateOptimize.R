@@ -56,6 +56,7 @@ estimateOptimize <- function(file.output.list, SelParmValues, estimate.input.lis
 
   filename <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_log.txt")
   sink(file = filename, split = "TRUE")
+  on.exit({if (sink.number() > 0) sink()}, add = TRUE)
 
   ptm <- proc.time()
 
@@ -103,13 +104,6 @@ estimateOptimize <- function(file.output.list, SelParmValues, estimate.input.lis
   sparrowEsts$if_mean_adjust_delivery_vars <- if_mean_adjust_delivery_vars
   sparrowEsts$NLLS_weights <- estimate.input.list$NLLS_weights
   sparrowEsts$dlvdsgn <- dlvdsgn
-
-  # SAVE SPARROW MODEL OBJECT TO FILE
-  #  (Use 'load' command to read object into R
-  objfile <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_sparrowEsts")
-  save(sparrowEsts, file = objfile)
-
-
 
 
 

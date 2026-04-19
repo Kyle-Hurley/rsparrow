@@ -164,14 +164,6 @@ controlFileTasksModel <- function(
     add_vars, data_names
   )
 
-  # save the DataMatrix.list used to estimate the model
-  objfile <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_DataMatrix.list")
-  save(DataMatrix.list, file = objfile)
-
-  # save the SelParmValues information used to estimate the model
-  objfile <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_SelParmValues")
-  save(SelParmValues, file = objfile)
-
 
   ######################
   ### B. DIAGNOSTICS ###
@@ -192,7 +184,7 @@ controlFileTasksModel <- function(
       message("Running diagnostic spatial autocorrelation...")
       # only execute if stream 'length' available for all reaches
       if (sum(!is.na(subdata$length)) > 0) {
-        diagnosticSpatialAutoCorr(
+        diagSpatResult <- diagnosticSpatialAutoCorr(
           file.output.list = file.output.list,
           sitedata = sitedata,
           estimate.list = estimate.list,
@@ -203,50 +195,6 @@ controlFileTasksModel <- function(
           class.input.list = class.input.list,
           DataMatrix.list = DataMatrix.list
         )
-        
-        # sink text file
-        options(width = 200, max.print = 999999)
-        
-        # define "space" for printing
-        ch <- character(1)
-        space <- data.frame(ch)
-        row.names(space) <- ch
-        colnames(space) <- c(" ")
-        
-        # load data from RMD
-        load(paste0(path_master, "tempDiagSpat.RData"))
-        file.remove(paste0(path_master, "tempDiagSpat.RData"))
-        dd <- saveList$dd
-        sites_sigmoran <- saveList$sites_sigmoran
-        moranOut <- saveList$moranOut
-        xtext <- saveList$xtext
-        
-        filename <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_diagnostic_spatialautocor.txt")
-        sink(file = filename, split = "FALSE", append = FALSE)
-        
-        print(outcharfun("MORAN'S I EUCLIDEAN AND HYDROLOGIC DISTANCE WEIGHTED RESULTS"))
-        print(dd)
-        
-        print(outcharfun("RIVER BASIN RESULTS"))
-        print(outcharfun(" Euclidean (E) and hydrologic (H) distance weighting (reported for most downstream site in river basins with >= 5 sites)"))
-        print(space)
-        print(sites_sigmoran)
-        print(space)
-        
-        print(outcharfun("FULL DOMAIN RESULTS (Hydrologic distance weighting within river basins)"))
-        print(moranOut)
-        
-        print(outcharfun(xtext))
-        print(space)
-        
-        print(outcharfun("REGIONAL AND FULL DOMAIN RESULTS"))
-        print(outcharfun(" Euclidean distance weighting (regional results reported for contiguous spatial class variable)"))
-        print(space)
-        print(class_sigmoran)
-        
-        sink(type = "message")
-        sink()
-        
       }
     } else {
       message("Diagnostic spatial autocorrelation was not executed;
@@ -332,6 +280,8 @@ if (if_boot_estimate == "yes" & biters!=0){
 
   BootPredictRunTime <- " "
   MapPredictRunTime <- " "
+  predict.list <- NULL
+  predictBoots.list <- NULL
 
   if (if_predict == "yes") {
     objfile <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_JacobResults")
@@ -351,8 +301,6 @@ if (if_boot_estimate == "yes" & biters!=0){
         SelParmValues, subdata, dlvdsgn
       )
 
-      objfile <- paste0(path_results, .Platform$file.sep, "predict", .Platform$file.sep, run_id, "_predict.list")
-      save(predict.list, file = objfile)
       predictOutCSV(
         file.output.list, estimate.list, predict.list, subdata,
         add_vars, data_names
@@ -368,9 +316,8 @@ if (if_boot_estimate == "yes" & biters!=0){
   ptm <- proc.time()
   if (if_boot_predict == "yes") {
     if (file.exists(paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_BootBetaest")) &
-      (file.exists(paste0(path_results, .Platform$file.sep, "predict", .Platform$file.sep, run_id, "_predict.list")) | if_predict == "yes")) {
+        !is.null(predict.list)) {
       load(paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_BootBetaest"))
-      load(paste0(path_results, .Platform$file.sep, "predict", .Platform$file.sep, run_id, "_predict.list"))
 
       message("Running bootstrap predictions...")
       predictBoots.list <- predictBootstraps(
@@ -379,17 +326,14 @@ if (if_boot_estimate == "yes" & biters!=0){
         subdata, file.output.list, dlvdsgn
       )
 
-      objfile <- paste0(path_results, .Platform$file.sep, "predict", .Platform$file.sep, run_id, "_predictBoots.list")
-      save(predictBoots.list, file = objfile)
-
       predictBootsOutCSV(
         file.output.list, estimate.list, predictBoots.list, subdata,
         add_vars, data_names
       ) # edit preditBootsOutCSV accordingly
     } else if (!file.exists(paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_BootBetaest"))) {
       message(paste0(" \nWARNING : BootBetaest DOES NOT EXIST.  boot_predict NOT RUN.\n "))
-    } else if (!(file.exists(paste0(path_results, .Platform$file.sep, "predict", .Platform$file.sep, run_id, "_predict.list")) | if_predict == "yes")) {
-      message(paste0(" \nWARNING : predict.list DOES NOT EXIST.  boot_predict NOT RUN.\n "))
+    } else if (is.null(predict.list)) {
+      message(paste0(" \nWARNING : predict.list NOT AVAILABLE.  Run with if_predict='yes' to enable boot_predict.\n "))
     } # end if file.exists
   } # end _BootBetaest check
   BootPredictRunTime <- proc.time() - ptm
@@ -427,7 +371,7 @@ if (if_boot_estimate == "yes" & biters!=0){
 
   ##########################################
 
-  runTimes <- named.list(BootEstRunTime, BootPredictRunTime, MapPredictRunTime, estimate.list)
+  runTimes <- named.list(BootEstRunTime, BootPredictRunTime, MapPredictRunTime, estimate.list, predict.list, predictBoots.list)
 
 
 

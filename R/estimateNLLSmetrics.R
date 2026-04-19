@@ -537,9 +537,6 @@ estimateNLLSmetrics <- function(if_estimate, if_estimate_simulation, if_sparrowE
 
     HesResults <- named.list(Parmnames, Hesnames, oEstimate, oSEh, oTh, opTh, cov2, cor2, HesRunTime)
 
-    # store Hessian estimates in object as list
-    objfile <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_HessianResults")
-    save(HesResults, file = objfile)
   } # end ifHess check
 
   ##########################################################
@@ -658,11 +655,6 @@ estimateNLLSmetrics <- function(if_estimate, if_estimate_simulation, if_sparrowE
     Resids, pResids, standardResids, CooksD, CooksDpvalue,
     leverage, leverageCrit
   )
-
-  # store Jacobian estimates in object as list
-  objfile <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_JacobResults")
-  save(JacobResults, file = objfile)
-
 
   estimate.metrics.list <- named.list(JacobResults, HesResults, ANOVA.list, Mdiagnostics.list)
 

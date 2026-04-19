@@ -10,21 +10,12 @@
 \item{x}{An object of class \code{"rsparrow"}.}
 
 \item{type}{Character. One of \code{"residuals"}, \code{"sensitivity"}, or
-\code{"spatial"}. Selects the diagnostic plot type:
-\describe{
-  \item{\code{"residuals"}}{Estimation performance panels (observed vs. predicted
-    loads and yields; residuals). Use the \code{panel} argument to select
-    \code{"A"} (4-panel observed/residual), \code{"B"} (boxplot/Q-Q), or
-    \code{"both"}.}
-  \item{\code{"sensitivity"}}{Parameter sensitivity: change in predicted load
-    for a 1\% change in each explanatory variable.}
-  \item{\code{"spatial"}}{Spatial autocorrelation of residuals: CDF of
-    hydrological and Euclidean distances and Moran's I statistics.}
-}}
+\code{"spatial"}. Selects the diagnostic plot type.}
 
 \item{...}{Additional arguments passed to the internal dispatch function.
-For \code{type = "residuals"}: \code{panel} selects which 4-panel group
-(\code{"A"}, \code{"B"}, or \code{"both"}).}
+For \code{type = "residuals"}, the \code{panel} argument selects which
+4-panel group to display: \code{"A"} (observed vs. predicted and residuals),
+\code{"B"} (boxplots and Q-Q), or \code{"both"}.}
 }
 \value{
 A named list of plotly plot objects, returned invisibly. For
@@ -40,16 +31,9 @@ and spatial autocorrelation of residuals.
 \examples{
 \dontrun{
 model <- rsparrow_model("~/my_model/")
-
-# Residual diagnostics (4-panel observed vs. predicted)
 plot(model, type = "residuals")
-plot(model, type = "residuals", panel = "A")
 plot(model, type = "residuals", panel = "B")
-
-# Parameter sensitivity
 plot(model, type = "sensitivity")
-
-# Spatial autocorrelation
 plot(model, type = "spatial")
 }
 }

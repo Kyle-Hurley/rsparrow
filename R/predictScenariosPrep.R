@@ -138,6 +138,8 @@ predictScenariosPrep <- function(
   } # Rshiny
 
   # create scenario_name directory
+    old_warn <- getOption("warn")
+    on.exit(options(warn = old_warn), add = TRUE)
     options(warn = -1)
     if (!Rshiny) {
       if (!dir.exists(paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name))) {
@@ -148,7 +150,7 @@ predictScenariosPrep <- function(
         dir.create(paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, input$scenarioName), showWarnings = FALSE)
       } # if direcotry not found
     } # if Rshiny TRUE
-    options(warn = 0)
+    options(warn = old_warn)  # restore early; on.exit is safety net for errors above
 
 
     # extract required variables from subdata (dynamic column names from data dictionary)

@@ -9,7 +9,8 @@
 \arguments{
 \item{object}{An object of class "rsparrow".}
 
-\item{type}{Character. Type of residuals (default: "response").}
+\item{type}{Character. Type of residuals. Currently only "response" is
+supported (default). Reserved for future extensions (e.g., "pearson").}
 
 \item{...}{Additional arguments (currently unused).}
 }
@@ -17,11 +18,14 @@
 A numeric vector of residuals at monitoring sites.
 }
 \description{
-Extracts residuals from a fitted SPARROW model.
+Extracts residuals at monitoring sites from a fitted SPARROW model.
 }
 \examples{
 \dontrun{
 model <- rsparrow_model("~/my_model/")
 residuals(model)
 }
+}
+\seealso{
+\code{\link{rsparrow_model}}, \code{\link{summary.rsparrow}}
 }

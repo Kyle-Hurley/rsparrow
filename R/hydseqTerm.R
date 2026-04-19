@@ -174,7 +174,9 @@ hydseqTerm <- function(subdata, select_targetReachWatersheds) {
     hydseqvar[stack] <- seq((h0 + 1), h1, 1)
 
     # Repopulate the stack
-    stack <- upstream(stack, hydseqvar, ifproc, fnode, dnstream_list, upstream_list, upstream_list_index, dnstream_list_index)
+    upstream_result <- upstream(stack, hydseqvar, ifproc, fnode, dnstream_list, upstream_list, upstream_list_index, dnstream_list_index)
+    stack  <- upstream_result$upgroup
+    ifproc <- upstream_result$ifproc
 
     # Increment the hydrosequence counter
     h0 <- h1

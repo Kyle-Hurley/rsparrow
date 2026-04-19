@@ -12,14 +12,25 @@
 \item{...}{Additional arguments (currently unused).}
 }
 \value{
-An object of class "summary.rsparrow".
+An object of class "summary.rsparrow" (a list) containing:
+\describe{
+\item{call}{The original model call}
+\item{coefficients}{Matrix with estimates, std errors, z-values, p-values}
+\item{fit_stats}{Model fit statistics (AIC, BIC, R-squared, RMSE, log-likelihood)}
+\item{n_obs}{Number of monitoring sites used in estimation}
+\item{n_reach}{Number of reaches in network}
+}
 }
 \description{
-Produces a summary of SPARROW model estimation results.
+Produces a summary of SPARROW model estimation including a coefficient table
+with standard errors, z-values, p-values, and model fit statistics.
 }
 \examples{
 \dontrun{
 model <- rsparrow_model("~/my_model/")
 summary(model)
 }
+}
+\seealso{
+\code{\link{rsparrow_model}}, \code{\link{coef.rsparrow}}
 }

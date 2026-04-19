@@ -4,8 +4,13 @@
 \alias{read_sparrow_data}
 \title{Read and Validate SPARROW Input Data}
 \usage{
-read_sparrow_data(path_main, run_id = "run1", data_file = "data1.csv",
-  csv_decimalSeparator = ".", csv_columnSeparator = ",")
+read_sparrow_data(
+  path_main,
+  run_id = "run1",
+  data_file = "data1.csv",
+  csv_decimalSeparator = ".",
+  csv_columnSeparator = ","
+)
 }
 \arguments{
 \item{path_main}{Character. Path to the main project directory containing
@@ -26,15 +31,15 @@ in \code{path_main}.}
 }
 \value{
 A list with components:
-  \describe{
-    \item{file.output.list}{Named list of paths and settings used by
-      internal SPARROW functions.}
-    \item{data1}{Data.frame of raw reach network data read from
-      \code{data_file}.}
-    \item{data_names}{Data.frame of variable metadata from
-      dataDictionary.csv (columns: varType, sparrowNames, data1UserNames,
-      varunits, explanation).}
-  }
+\describe{
+\item{file.output.list}{Named list of paths and settings used by
+internal SPARROW functions.}
+\item{data1}{Data.frame of raw reach network data read from
+\code{data_file}.}
+\item{data_names}{Data.frame of variable metadata from
+dataDictionary.csv (columns: varType, sparrowNames, data1UserNames,
+varunits, explanation).}
+}
 }
 \description{
 Reads SPARROW input data from CSV control files and returns the raw data
@@ -43,10 +48,15 @@ estimation, enabling programmatic data inspection before fitting.
 }
 \examples{
 \dontrun{
+# Read and inspect data before modeling
 sparrow_data <- read_sparrow_data("~/my_model/", run_id = "run1")
 names(sparrow_data)           # "file.output.list" "data1" "data_names"
 nrow(sparrow_data$data1)      # number of reach records
 head(sparrow_data$data_names) # variable metadata
+
+# Verify error handling
+read_sparrow_data("/nonexistent/path")  # errors: path_main does not exist
+read_sparrow_data("/tmp")               # errors: Missing required control files
 }
 }
 \seealso{

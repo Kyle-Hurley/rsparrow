@@ -650,18 +650,11 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
     class_sigmoran <- data.frame(cind, nmrbout, pmoran, pmoran_dev)
     colnames(class_sigmoran) <- c(cindLabel, " Number Stations", " Moran's P-Value", " Moran's Standard Deviate")
 
-    fileCSV <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep,
-                      "summaryCSV", .Platform$file.sep)
-    fileout <- paste0(fileCSV, "EuclideanMoransI.csv")
-    fwrite(class_sigmoran,
-      file = fileout, row.names = FALSE, append = FALSE, showProgress = FALSE,
-      dec = csv_decimalSeparator, sep = csv_columnSeparator, col.names = TRUE, na = "NA"
-    )
-
     saveList <- named.list(dd, sites_sigmoran, moranOut, xtext, class_sigmoran)
-    save(saveList, file = paste0(path_masterFormat, "tempDiagSpat.RData"))
+  } else {
+    saveList <- NULL
   }
 
-  invisible(p.list)
+  invisible(list(plots = p.list, saveList = saveList))
 
 } # end function

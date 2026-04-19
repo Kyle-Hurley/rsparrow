@@ -23,7 +23,7 @@ createSubdataSorted <- function(filter_data1_conditions, data1) {
     subdata <- data1[base_mask, ]
   } else {
     # filter_data1_conditions are user-supplied expression strings from sparrow_control.
-    # This eval() is intentional — necessary for user-supplied filter expressions.
+    # This eval() is intentional -- necessary for user-supplied filter expressions.
     # Hardened with tryCatch for informative errors (Plan 05C).
     filter_expr <- paste0("base_mask & ", paste(filter_data1_conditions, collapse = " & "))
     subdata <- tryCatch(

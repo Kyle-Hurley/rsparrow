@@ -37,7 +37,8 @@ Suggests:
     sf (>= 0.9-6),
     spdep (>= 1.1-5),
     testthat (>= 3.0.0)
+Encoding: UTF-8
 License: CC0
 URL: https://code.usgs.gov/water/stats/RSPARROW
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Config/testthat/edition: 3

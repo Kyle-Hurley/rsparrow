@@ -12,14 +12,19 @@
 \item{...}{Additional arguments (currently unused).}
 }
 \value{
-A square numeric matrix.
+A square numeric matrix with dimensions equal to the number of
+estimated coefficients. Row and column names match coefficient names.
 }
 \description{
-Extracts the variance-covariance matrix from a fitted SPARROW model.
+Extracts the variance-covariance matrix of the estimated coefficients
+from a fitted SPARROW model.
 }
 \examples{
 \dontrun{
 model <- rsparrow_model("~/my_model/")
 vcov(model)
 }
+}
+\seealso{
+\code{\link{coef.rsparrow}}, \code{\link{rsparrow_model}}
 }

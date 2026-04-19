@@ -11,13 +11,31 @@ attributes) model for estimating contaminant sources, watershed delivery,
 and in-stream transport in river networks.
 }
 \section{Main Functions}{
+
 \itemize{
-  \item \code{\link{rsparrow_model}}: Estimate a SPARROW model
-  \item \code{\link{predict.rsparrow}}: Predict loads and yields
-  \item \code{\link{summary.rsparrow}}: Summarize estimation results
-  \item \code{\link{read_sparrow_data}}: Read and validate input data
-  \item \code{\link{rsparrow_hydseq}}: Compute hydrological sequencing
+\item \code{\link{rsparrow_model}}: Estimate a SPARROW model
+\item \code{\link{predict.rsparrow}}: Predict loads and yields
+\item \code{\link{summary.rsparrow}}: Summarize estimation results
+\item \code{\link{read_sparrow_data}}: Read and validate input data
+\item \code{\link{rsparrow_hydseq}}: Compute hydrological sequencing
 }
 }
 
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://code.usgs.gov/water/stats/RSPARROW}
+}
+
+}
+\author{
+\strong{Maintainer}: Kyle Hurley \email{khurley@usgs.gov}
+
+Authors:
+\itemize{
+  \item Lillian Gorman Sanisaca \email{lgormansanisaca@usgs.gov}
+  \item Richard Alexander \email{ralex@usgs.gov}
+}
+
+}
 \keyword{internal}

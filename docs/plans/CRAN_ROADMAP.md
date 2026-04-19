@@ -1,31 +1,37 @@
 <cran_roadmap>
 
 <executive_summary>
-Plans 01–09 are complete. The package is at the repo root (R/, src/, man/, tests/, inst/,
+Plans 01–10 are complete. The package is at the repo root (R/, src/, man/, tests/, inst/,
 DESCRIPTION, NAMESPACE); compiled artifacts removed from src/; Collate field removed;
 .Rbuildignore in place; dynamic model infrastructure removed; 23 unreachable functions
-archived to inst/archived/. Test suite: FAIL 0 | PASS 166 | SKIP 1.
+archived to inst/archived/; computation/I/O separated (save/fwrite/sink/pdf side effects
+removed from computation functions; write_rsparrow_results() exported as opt-in I/O;
+<<-, assign(parent.frame()) eliminated from rsparrow_model.R, upstream.R,
+diagnosticPlots_4panel_B.R; on.exit() added to estimateOptimize.R sink).
+Test suite: FAIL 0 | PASS 166 | SKIP 1.
 R CMD check (tarball, --no-manual): 4 WARNINGs, 4 NOTEs, 0 ERRORs.
 
 A critical code review (2026-03-08) identified fundamental issues that must be
 addressed before CRAN submission. These go beyond the existing WARNINGs:
 
-BLOCKERS RESOLVED (Plans 07–09):
+BLOCKERS RESOLVED (Plans 07–10):
   (B1)  DONE — Package moved from RSPARROW_master/ to repo root (GH #10, commit e5b58b4)
   (B2)  DONE — Compiled .o/.so artifacts deleted from src/ (GH #11, commit e5b58b4)
   (B3)  DONE — Collate field removed from DESCRIPTION (GH #12, commit e5b58b4)
   (B10) DONE — .Rbuildignore created at repo root (commit e5b58b4)
   (B12) DONE — 23 unreachable functions archived to inst/archived/ (GH #14, Plan 09)
   (B13) DONE — Dynamic model infrastructure removed (GH #13, Plan 08)
+  (B4)  DONE — Computation/I/O separated; write_rsparrow_results() as opt-in output (GH #15, Plan 10)
+  (B5)  DONE — <<- eliminated from rsparrow_model.R (Plan 10); assign(parent.frame())
+               eliminated from upstream.R and diagnosticPlots_4panel_B.R (Plan 10)
+  (B6)  DONE — sink/pdf side effects removed; estimateOptimize.R sink protected with on.exit() (Plan 10)
+  (B7)  DONE — options() modifications removed (correlationMatrix.R, estimateNLLStable.R,
+               controlFileTasksModel.R); predictScenariosPrep.R wrapped with on.exit() (Plan 10)
 
 BLOCKERS REMAINING:
-  (B4)  Uncontrolled file I/O in estimation/prediction — CRAN policy violation
-  (B5)  <<- global assignment in R/rsparrow_model.R:380
-  (B6)  sink()/pdf() without on.exit() protection — 5 sink instances
-  (B7)  options() modified without restoration — 5 locations
-  (B8)  assign(parent.frame()) anti-pattern — 5 locations (checkBinaryMaps.R and unPackList.R excluded — now archived or reachable)
-  (B9)  cat() used for messaging instead of message() — 53 instances
-  (B11) No example dataset in data/
+  (B8)  assign(parent.frame()) remains in checkBinaryMaps.R:35 and applyUserModify.R (Plan 11)
+  (B9)  cat() used for messaging instead of message() — 53 instances (Plan 11)
+  (B11) No example dataset in data/ (Plan 12)
 
 REMAINING PLAN SEQUENCE:
   Plan 08: Remove dynamic model infrastructure — delete/archive dynamic-only files,
@@ -58,27 +64,24 @@ REMAINING PLAN SEQUENCE:
 <code_quality>
 <requirement status="done" gh="13">Remove dynamic model infrastructure — the dynamic feature is temporal diagnostic stratification of a single unified model; users can replicate this by including temporal columns and subsetting results. Removes ~935 lines of dynamic-only code and simplifies 20 files with 175 if_dynamic references</requirement>
 <requirement status="done" gh="14">Archive unreachable functions to inst/archived/ — 23 functions confirmed unreachable from all 13 exports (down from 31 original estimate: 5 found to be reachable, 3 already archived in Plan 08). Archived to legacy_data_import/, mapping/, utilities/ subdirectories. Test count: 186→166 (20 tests removed that tested archived functions)</requirement>
-<requirement status="open" gh="15">Separate computation from I/O — estimation/prediction functions must return R objects, not write files as side effects. Move file output to dedicated I/O functions that users call explicitly. Affected: estimate.R (~7 save + 10 dir.create), startModelRun.R (~5 save), estimateNLLStable.R (~20 fwrite + sink), controlFileTasksModel.R (~4 save + sink), predictScenarios.R (~2 save + dir.create), and ~10 other files</requirement>
-<requirement status="open" gh="16">Fix sink()/pdf() resource leaks — 5 sink() and 1 pdf() calls lack on.exit() protection:
-  - estimateOptimize.R: sink to log file — KEEP but add on.exit(); this is legitimate operational logging
-  - estimateNLLStable.R: sink to summary file — REFACTOR to return data, remove sink
-  - correlationMatrix.R: pdf+sink for correlation report — REFACTOR to return data, remove both
-  - predictScenariosOutCSV.R: sink for metadata — REMOVE text sink, keep CSV exports
-  - controlFileTasksModel.R: sink for spatial autocorr diagnostics — REMOVE, return data
-  - estimateWeightedErrors.R: pdf for weight plots — REMOVE (function is dead code candidate)</requirement>
-<requirement status="open" gh="17">Fix options() modifications without restoration — 5 locations modify options(width/warn/max.print) without on.exit() to restore:
-  - correlationMatrix.R:269,286
-  - predictScenariosPrep.R:165,175
-  - controlFileTasksModel.R:253
-  - estimateNLLStable.R:189
-  Only mod_read_utf8.R does it correctly</requirement>
-<requirement status="open" gh="18">Eliminate <<- and assign(parent.frame()) anti-patterns:
-  - rsparrow_model.R:380 — <<- used to extract predict.list from load() inside local(); should restructure to avoid global assignment
-  - diagnosticPlots_4panel_B.R:134 — assign to parent.frame
-  - upstream.R:52 — assign to parent.frame
-  - applyUserModify.R:40,43,45 — 3× assign to parent.frame
-  - checkBinaryMaps.R:35 — assign to parent.frame (reachable from diagnosticPlotsNLLS.R)
-  - unPackList.R — archived to inst/archived/utilities/ in Plan 09</requirement>
+<requirement status="done" gh="15">Separate computation from I/O — estimation/prediction functions return R objects; file output removed as side effects. write_rsparrow_results() exported as the single opt-in I/O function. Removed: ~7 save + 10 dir.create from estimate.R, ~5 save from startModelRun.R, ~20 fwrite + sink from estimateNLLStable.R, ~4 save + sink from controlFileTasksModel.R, save/dir.create from predictScenarios.R, predictBootstraps.R, diagnosticSensitivity.R, diagnosticSpatialAutoCorr.R, correlationMatrix.R, predictScenariosOutCSV.R, estimateBootstraps.R (CSV only; cross-run BootBetaest save kept)</requirement>
+<requirement status="done" gh="16">Fix sink()/pdf() resource leaks — all unprotected sink/pdf removed or protected:
+  - estimateOptimize.R: KEPT — on.exit(sink(), add=TRUE) added (Plan 10)
+  - estimateNLLStable.R: sink REMOVED, data returned as named list (Plan 10)
+  - correlationMatrix.R: pdf+sink REMOVED, data returned (Plan 10)
+  - predictScenariosOutCSV.R: metadata sink REMOVED (Plan 10)
+  - controlFileTasksModel.R: spatial autocorr sink REMOVED, data returned (Plan 10)</requirement>
+<requirement status="done" gh="17">Fix options() modifications without restoration — all unprotected options() removed:
+  - correlationMatrix.R: options(width) REMOVED (Plan 10)
+  - predictScenariosPrep.R: options(warn) wrapped with on.exit() (Plan 10)
+  - controlFileTasksModel.R: options() block REMOVED with spatial autocorr sink (Plan 10)
+  - estimateNLLStable.R: options(width/max.print) REMOVED (Plan 10)</requirement>
+<requirement status="partial" gh="18">Eliminate <<- and assign(parent.frame()) anti-patterns:
+  - rsparrow_model.R: <<- ELIMINATED — predict.list threaded via sparrow_state return value (Plan 10)
+  - diagnosticPlots_4panel_B.R:134 — ELIMINATED (Plan 10)
+  - upstream.R:52 — ELIMINATED, function returns named list (Plan 10)
+  - applyUserModify.R:40,43,45 — 3× assign to parent.frame — DEFERRED to Plan 11
+  - checkBinaryMaps.R:35 — assign to parent.frame — DEFERRED to Plan 11</requirement>
 <requirement status="open" gh="19">Replace cat() with message() for user-facing output — 53 instances across 15+ files. cat() should only be used in print/summary S3 methods for structured output. All informational messages must use message() so users can suppress them</requirement>
 <requirement status="open">Replace remaining eval(parse()) where feasible — 49 remain (27 COMPLEX/deferred + ~22 hardened hover-text). Some will be eliminated by archiving dead code (Plan 09) and removing dynamic infrastructure (Plan 08)</requirement>
 </code_quality>

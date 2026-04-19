@@ -15,11 +15,15 @@
 A named numeric vector of estimated model coefficients.
 }
 \description{
-Extracts estimated coefficients from a fitted SPARROW model.
+Extracts the estimated coefficients (parameter values) from a fitted
+SPARROW model.
 }
 \examples{
 \dontrun{
 model <- rsparrow_model("~/my_model/")
 coef(model)
 }
+}
+\seealso{
+\code{\link{vcov.rsparrow}}, \code{\link{rsparrow_model}}
 }

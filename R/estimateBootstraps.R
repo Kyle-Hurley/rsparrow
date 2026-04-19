@@ -177,21 +177,5 @@ estimateBootstraps <- function(iseed, biters, estimate.list,
   objfile <- paste0(path_results, "estimate", .Platform$file.sep, run_id, "_BootBetaest")
   save(BootResults, file = objfile)
 
-  # output to CSV
-  outvars <- data.frame(rep(1:biters), bEstimate, bootmean_exp_weighted_error)
-  headlist <- character(length(Parmnames) + 2)
-  headlist[1] <- "biters"
-  for (i in 1:length(Parmnames)) {
-    headlist[i + 1] <- Parmnames[i]
-  }
-  headlist[i + 2] <- "bootmean_exp_weighted_error"
-  colnames(outvars) <- headlist
-  fileout <- paste0(path_results, "estimate", .Platform$file.sep, run_id, "_bootbetaest.csv")
-  fwrite(outvars,
-    file = fileout, row.names = F, append = F, showProgress = FALSE,
-    dec = csv_decimalSeparator, sep = csv_columnSeparator, col.names = TRUE, na = "NA"
-  )
-
-
   return(BootResults)
 } # end function
