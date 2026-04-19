@@ -1,4 +1,4 @@
-<plan id="09" label="Archive Unreachable Code" status="pending" blocked_by="07,08">
+<plan id="09" label="Archive Unreachable Code" status="complete" blocked_by="07,08">
 
 <objective>
 Move the 31 internal functions that are unreachable from any exported function to

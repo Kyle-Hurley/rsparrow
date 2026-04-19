@@ -1,4 +1,4 @@
-<plan id="08" label="Remove Dynamic Model Infrastructure" status="pending" blocked_by="07">
+<plan id="08" label="Remove Dynamic Model Infrastructure" status="complete" blocked_by="07">
 
 <objective>
 Archive the six dynamic-only R files to inst/archived/dynamic/ and strip all if_dynamic

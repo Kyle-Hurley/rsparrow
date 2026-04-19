@@ -6,9 +6,10 @@ contains 118 R files (105 internal + 13 exported), 6 Fortran subroutines, and 3
 Imports (data.table, nlmrt, numDeriv). The package lives at the repo root (moved from
 RSPARROW_master/ in Plan 07) and is undergoing refactoring for CRAN submission.
 
-Plans 01–06F are complete: package structure, non-core code separation, API design,
+Plans 01–09 are complete: package structure, non-core code separation, API design,
 GlobalEnv/eval elimination, all 13 exported functions implemented, dead-code removal, predict
-consolidation, eval/parse cleanup, diagnostic plot infrastructure, test suite (98 tests pass).
+consolidation, eval/parse cleanup, diagnostic plot infrastructure, test suite (166 tests pass),
+package restructuring to repo root, dynamic model removal, and 23 unreachable functions archived.
 
 A critical code review (2026-03-08) identified fundamental issues blocking CRAN submission:
 package not at repo root, compiled artifacts in src/, uncontrolled file I/O in estimation/
@@ -16,8 +17,8 @@ prediction, sink/pdf/options without on.exit(), <<- and assign(parent.frame()) a
 cat() instead of message(), 31 unreachable functions, unnecessary Collate field, and dynamic
 model infrastructure that adds complexity for a feature users can replicate themselves.
 
-Remaining work: Plans 07–12 (restructuring, dynamic removal, dead code archival,
-computation/I/O separation, CRAN compliance fixes, example dataset + vignette).
+Remaining work: Plans 10–12 (computation/I/O separation, CRAN compliance fixes,
+example dataset + vignette).
 </project_overview>
 
 <key_concepts>
@@ -49,12 +50,12 @@ SelParmValues, dlvdsgn, Csites.weights.list, Vsites.list, classvar, estimate.lis
 estimate.input.list (with ConcFactor/loadUnits/yieldUnits/ConcUnits added in Plan 04D-4),
 scenario.input.list, mapping.input.list, data_names, file.output.list.
 
-CRITICAL ISSUES (Plans 07–12):
-- Package root must move from RSPARROW_master/ to repo root (Plan 07, GH #10)
-- Compiled .o/.so in src/ must be deleted (Plan 07, GH #11)
-- Collate field in DESCRIPTION must be removed (Plan 07, GH #12)
-- Dynamic model infrastructure being removed (Plan 08, GH #13)
-- 31 unreachable functions to be archived to inst/archived/ (Plan 09, GH #14)
+COMPLETED (Plans 07–09):
+- Package moved to repo root; compiled artifacts deleted; Collate removed (GH #10, #11, #12)
+- Dynamic model infrastructure removed (Plan 08, GH #13)
+- 23 unreachable functions archived to inst/archived/ (Plan 09, GH #14)
+
+REMAINING ISSUES (Plans 10–12):
 - Computation must be separated from I/O (Plan 10, GH #15)
 - sink/pdf/options need on.exit(); cat→message; <<-/assign(parent.frame()) eliminated
   (Plan 11, GH #16-19)
@@ -97,15 +98,15 @@ R >= 4.4.0 (pipe |> syntax detected in 10 files; %||% available from base R)
 </dependencies>
 
 <technical_debt>
-Remaining issues (post-Plan 07):
-- DYNAMIC: 175 dynamic model references across 20 files (GH #13)
-- DEAD CODE: 31 unreachable functions still in R/ (GH #14)
+Remaining issues (post-Plan 09):
 - I/O COUPLING: ~35 dir.create, ~22 save, ~22 fwrite in computation functions (GH #15)
 - RESOURCE LEAKS: 5 sink + 1 pdf without on.exit() (GH #16)
 - OPTIONS: 5 options() without restoration (GH #17)
-- ANTI-PATTERNS: 1 <<- + 7 assign(parent.frame()) (GH #18)
+- ANTI-PATTERNS: 1 <<- + 5 assign(parent.frame()) (GH #18; unPackList×2 archived in Plan 09)
 - MESSAGING: 53 cat() instead of message() (GH #19)
-- EVAL/PARSE: 49 eval(parse()) remain (27 COMPLEX/deferred + ~22 hardened hover-text)
+- EVAL/PARSE: ~25 eval(parse()) remain (~21 COMPLEX/deferred + ~4 hardened hover-text;
+  reduced from 49 by Plans 08+09 archiving mapLoopStr×11, unPackList×1, naOmitFuncStr×1,
+  aggDynamicMapdata×5, dynamic diag files×4, checkDrainageareaErrors×1)
 - MONOLITHS: functions exceeding 800 lines (estimate.R, estimateNLLSmetrics.R, estimateNLLStable.R)
 - CODOC: Rd mismatches in 3 exported functions (GH #5)
 - IMPORTS: undeclared stringi/xfun in legacy encoding files (GH #6)

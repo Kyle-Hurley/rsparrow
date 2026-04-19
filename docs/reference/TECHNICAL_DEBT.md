@@ -22,29 +22,31 @@ Plan 05C: The remaining unPackList() in applyUserModify.R's generated function s
 removed and replaced with explicit assign() loops (Option B). The string itself still uses
 outer eval(parse()) to evaluate the user-supplied function — unavoidable without API redesign.
 Plan 05D: All REMOVE-list files that called unPackList() deleted (create_diagnosticPlotList.R,
-make_*.R, makeReport_*.R, render_report.R). unPackList.R itself remains in R/ with 3 COMPLEX/
+make_*.R, makeReport_*.R, render_report.R). unPackList.R itself remained in R/ with 3 COMPLEX/
 deferred callers (mapLoopStr.R, replaceNAs.R, applyUserModify.R); deletion deferred beyond Plan 05D.
+Plan 09: unPackList.R and mapLoopStr.R (its last active caller) both archived to
+inst/archived/utilities/ and inst/archived/mapping/ respectively. replaceNAs.R retains a TODO
+comment; applyUserModify.R replaced its unPackList call with explicit assign loops in Plan 05C.
+Zero unPackList() calls remain in R/.
 </issue>
 
 <issue name="eval(parse(text=...)) Anti-Pattern" status="PARTIALLY_RESOLVED">
-49 occurrences remain across R files (down from 339 across 61 files; 47 post-05B; ~27 post-05C).
-Post-05D the count is 49 because inlining make_*.R files into REFACTOR callers brought their
-~22 hardened hover-text eval(parse()) patterns along. All remaining are either COMPLEX/deferred
-or hardened non-arbitrary patterns. Remaining by file:
+~25 occurrences remain across R files (down from 339 across 61 files; 49 post-05D; reduced
+by Plans 08+09 archiving dynamic files and dead-code files). Remaining by file:
 COMPLEX/deferred (deferred to future plans):
-- mapLoopStr.R (11) — dynamic plotly subplot construction; deferred.
 - plotlyLayout.R (8) — plotly layout spec evaluation; deferred.
-- aggDynamicMapdata.R (5) — dynamic FUN= aggregation; deferred.
 - diagnosticSpatialAutoCorr.R (5) — spatial autocorrelation diagnostics; deferred.
 - predictScenariosPrep.R (4) — 3 guarded Shiny DSS, 1 deferred.
 - applyUserModify.R (2) — outer eval of user-supplied function; hardened with tryCatch.
 - replaceNAs.R (1) — parent.frame() injection antipattern; deferred.
-- unPackList.R (1) — still in R/ (3 COMPLEX callers remain); deferred.
-- naOmitFuncStr.R (1) — helper returning eval expression; deferred.
 - createSubdataSorted.R (1) — user filter string; hardened with tryCatch.
 Hardened hover-text (non-arbitrary; brought in from inlined make_*.R files):
-- diagnosticPlotsNLLS.R (3), diagnosticPlotsNLLS_dyn.R (2),
-  diagnosticPlotsNLLS_timeSeries.R (2), checkDrainageareaErrors.R (1), predict_core.R (1)
+- diagnosticPlotsNLLS.R (3), predict_core.R (1)
+Archived (Plans 08+09 — no longer in R/):
+- mapLoopStr.R (11), unPackList.R (1), naOmitFuncStr.R (1) — archived Plan 09
+- aggDynamicMapdata.R (5), diagnosticPlotsNLLS_dyn.R (2),
+  diagnosticPlotsNLLS_timeSeries.R (2) — archived Plan 08
+- checkDrainageareaErrors.R (1) — archived Plan 09
 Resolved in Plan 04B: 21 specification-string calls inlined in 7 core math files.
 Resolved in Plan 04C: dynamic column access replaced with [[]] in 6 files
   (checkingMissingVars.R, replaceData1Names.R, setNAdf.R, readForecast.R, validateFevalNoadj.R,

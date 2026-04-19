@@ -1,31 +1,31 @@
 <cran_roadmap>
 
 <executive_summary>
-Plans 01–07 are complete. The package is at the repo root (R/, src/, man/, tests/, inst/,
+Plans 01–09 are complete. The package is at the repo root (R/, src/, man/, tests/, inst/,
 DESCRIPTION, NAMESPACE); compiled artifacts removed from src/; Collate field removed;
-.Rbuildignore in place. Test suite: FAIL 0 | PASS 194 | SKIP 1.
+.Rbuildignore in place; dynamic model infrastructure removed; 23 unreachable functions
+archived to inst/archived/. Test suite: FAIL 0 | PASS 166 | SKIP 1.
 R CMD check (tarball, --no-manual): 4 WARNINGs, 4 NOTEs, 0 ERRORs.
 
 A critical code review (2026-03-08) identified fundamental issues that must be
 addressed before CRAN submission. These go beyond the existing WARNINGs:
 
-BLOCKERS RESOLVED (Plans 07):
+BLOCKERS RESOLVED (Plans 07–09):
   (B1)  DONE — Package moved from RSPARROW_master/ to repo root (GH #10, commit e5b58b4)
   (B2)  DONE — Compiled .o/.so artifacts deleted from src/ (GH #11, commit e5b58b4)
   (B3)  DONE — Collate field removed from DESCRIPTION (GH #12, commit e5b58b4)
   (B10) DONE — .Rbuildignore created at repo root (commit e5b58b4)
+  (B12) DONE — 23 unreachable functions archived to inst/archived/ (GH #14, Plan 09)
+  (B13) DONE — Dynamic model infrastructure removed (GH #13, Plan 08)
 
 BLOCKERS REMAINING:
   (B4)  Uncontrolled file I/O in estimation/prediction — CRAN policy violation
   (B5)  <<- global assignment in R/rsparrow_model.R:380
-  (B6)  sink()/pdf() without on.exit() protection — 5 sink + 1 pdf instances
+  (B6)  sink()/pdf() without on.exit() protection — 5 sink instances
   (B7)  options() modified without restoration — 5 locations
-  (B8)  assign(parent.frame()) anti-pattern — 7 locations
+  (B8)  assign(parent.frame()) anti-pattern — 5 locations (checkBinaryMaps.R and unPackList.R excluded — now archived or reachable)
   (B9)  cat() used for messaging instead of message() — 53 instances
   (B11) No example dataset in data/
-  (B12) 31 unreachable functions still in R/ (dead code)
-  (B13) Dynamic model infrastructure adds complexity for a feature users can replicate
-        themselves — 175 references across 20 files
 
 REMAINING PLAN SEQUENCE:
   Plan 08: Remove dynamic model infrastructure — delete/archive dynamic-only files,
@@ -56,8 +56,8 @@ REMAINING PLAN SEQUENCE:
 </package_structure>
 
 <code_quality>
-<requirement status="open" gh="13">Remove dynamic model infrastructure — the dynamic feature is temporal diagnostic stratification of a single unified model; users can replicate this by including temporal columns and subsetting results. Removes ~935 lines of dynamic-only code and simplifies 20 files with 175 if_dynamic references</requirement>
-<requirement status="open" gh="14">Archive 31 unreachable functions to inst/archived/ — these are not called from any exported function and add ~4,000 lines of dead code. Archive rather than delete to allow recovery if needed</requirement>
+<requirement status="done" gh="13">Remove dynamic model infrastructure — the dynamic feature is temporal diagnostic stratification of a single unified model; users can replicate this by including temporal columns and subsetting results. Removes ~935 lines of dynamic-only code and simplifies 20 files with 175 if_dynamic references</requirement>
+<requirement status="done" gh="14">Archive unreachable functions to inst/archived/ — 23 functions confirmed unreachable from all 13 exports (down from 31 original estimate: 5 found to be reachable, 3 already archived in Plan 08). Archived to legacy_data_import/, mapping/, utilities/ subdirectories. Test count: 186→166 (20 tests removed that tested archived functions)</requirement>
 <requirement status="open" gh="15">Separate computation from I/O — estimation/prediction functions must return R objects, not write files as side effects. Move file output to dedicated I/O functions that users call explicitly. Affected: estimate.R (~7 save + 10 dir.create), startModelRun.R (~5 save), estimateNLLStable.R (~20 fwrite + sink), controlFileTasksModel.R (~4 save + sink), predictScenarios.R (~2 save + dir.create), and ~10 other files</requirement>
 <requirement status="open" gh="16">Fix sink()/pdf() resource leaks — 5 sink() and 1 pdf() calls lack on.exit() protection:
   - estimateOptimize.R: sink to log file — KEEP but add on.exit(); this is legitimate operational logging
@@ -77,8 +77,8 @@ REMAINING PLAN SEQUENCE:
   - diagnosticPlots_4panel_B.R:134 — assign to parent.frame
   - upstream.R:52 — assign to parent.frame
   - applyUserModify.R:40,43,45 — 3× assign to parent.frame
-  - checkBinaryMaps.R:35 — assign to parent.frame (likely dead code)
-  - unPackList.R:95,102 — assign to parent.frame (core anti-pattern)</requirement>
+  - checkBinaryMaps.R:35 — assign to parent.frame (reachable from diagnosticPlotsNLLS.R)
+  - unPackList.R — archived to inst/archived/utilities/ in Plan 09</requirement>
 <requirement status="open" gh="19">Replace cat() with message() for user-facing output — 53 instances across 15+ files. cat() should only be used in print/summary S3 methods for structured output. All informational messages must use message() so users can suppress them</requirement>
 <requirement status="open">Replace remaining eval(parse()) where feasible — 49 remain (27 COMPLEX/deferred + ~22 hardened hover-text). Some will be eliminated by archiving dead code (Plan 09) and removing dynamic infrastructure (Plan 08)</requirement>
 </code_quality>
@@ -133,7 +133,7 @@ REMAINING PLAN SEQUENCE:
 <architecture_recommendations>
 
 <code_organization>
-<recommendation status="partial">Eliminate unPackList.R entirely. Replace all call sites with explicit argument passing. 3 COMPLEX/deferred callers remain (mapLoopStr.R, replaceNAs.R, applyUserModify.R) — these may be archived in Plan 09.</recommendation>
+<recommendation status="done">Eliminate unPackList.R entirely. unPackList.R and mapLoopStr.R (its last active callers) both archived to inst/archived/ in Plan 09. replaceNAs.R retains a TODO comment; applyUserModify.R replaced unPackList with explicit assign loops in Plan 05C.</recommendation>
 <recommendation status="done">Remove all assign(..., envir = .GlobalEnv) calls. All 51 occurrences eliminated (Plans 04A + 04B). Zero remain in R/.</recommendation>
 <recommendation status="partial">Replace remaining eval(parse(text = ...)) with proper R idioms. 49 remain after Plans 04B/05B/05C/05D. Some will be eliminated by archiving dead code and removing dynamic infrastructure.</recommendation>
 <recommendation status="done">Merge duplicate prediction functions: predict_core.R (266 lines) created in Plan 05B.</recommendation>
@@ -144,7 +144,7 @@ REMAINING PLAN SEQUENCE:
   - estimateNLLStable.R (763 lines) -> return structured data; eliminate sink() file I/O
   - predictScenarios.R (523 lines) -> extract core logic from Shiny coupling</recommendation>
 <recommendation status="done">Move all Shiny/GUI files to inst/shiny_dss/ (Plan 02).</recommendation>
-<recommendation status="partial">Remove non-core functions. ~79 deleted across Plans 02/05A/05D. ~31 unreachable functions remain — to be archived in Plan 09.</recommendation>
+<recommendation status="done">Remove non-core functions. ~79 deleted across Plans 02/05A/05D. 23 unreachable functions archived to inst/archived/ in Plan 09. 5 functions originally listed as dead were found to be reachable (calcDemtareaClass, calcIncremLandUse, startEndmodifySubdata, checkBinaryMaps, hline).</recommendation>
 <recommendation status="done">Remove interactive map/report generators. Done in Plans 05A/05D.</recommendation>
 <recommendation>Replace all "yes"/"no" string settings with logical TRUE/FALSE throughout. ~50 occurrences.</recommendation>
 <recommendation>Separate computation from I/O. Core functions return R objects; file output is opt-in via dedicated I/O functions.</recommendation>
@@ -221,8 +221,8 @@ dataset. Keep computation lightweight (\donttest{} or pre-computed results for s
 </priority>
 
 <priority level="2" label="High-value - enables usability and maintainability">
-  - [OPEN] GH #13: Remove dynamic model infrastructure (175 references across 20 files)
-  - [OPEN] GH #14: Archive 31 unreachable functions to inst/archived/
+  - [DONE] GH #13: Remove dynamic model infrastructure (Plan 08)
+  - [DONE] GH #14: Archive 23 unreachable functions to inst/archived/ (Plan 09)
   - [OPEN] GH #9: Create example dataset in data/
   - [OPEN] GH #8: Write primary vignette
   - [PARTIAL] Eliminate unPackList.R — 3 COMPLEX/deferred callers remain (may be archived)
@@ -279,55 +279,6 @@ dataset. Keep computation lightweight (\donttest{} or pre-computed results for s
 </cran_checklist>
 
 <upcoming_plans>
-
-<plan id="08" label="Remove Dynamic Model Infrastructure">
-Status: NOT STARTED
-Scope:
-  - Archive dynamic-only files to inst/archived/dynamic/:
-    diagnosticPlotsNLLS_dyn.R (935 lines), checkDynamic.R (50 lines),
-    aggDynamicMapdata.R (226 lines), setupDynamicMaps.R (190 lines),
-    diagnosticPlotsNLLS_timeSeries.R (200 lines), readForecast.R (306 lines)
-  - Strip if_dynamic conditionals from ~14 remaining files (175 references across 20 files):
-    estimateNLLSmetrics.R (38 refs), estimateNLLStable.R (24 refs), estimate.R (21 refs),
-    diagnosticPlotsNLLS.R (8 refs), diagnosticSpatialAutoCorr.R (6 refs),
-    predictScenariosPrep.R (5 refs), controlFileTasksModel.R (3 refs),
-    startModelRun.R (2 refs), rsparrow_model.R (2 refs), diagnosticSensitivity.R (2 refs),
-    checkDrainageareaMapPrep.R (2 refs), hline.R (2 refs), replaceNAs.R (1 ref),
-    hydseq.R (1 ref)
-  - Remove model_type parameter from rsparrow_model() (or make it internal-only)
-  - Remove map_years, map_seasons, diagnosticPlots_timestep, diagnostic_timeSeriesPlots
-    settings from file.output.list
-  - Update tests, documentation, DESCRIPTION Collate (if not yet removed)
-Dependencies: Plan 07 (new package root)
-GH Issues: #13
-Estimated line reduction: ~1,900 lines archived + ~200 lines of conditionals removed
-</plan>
-
-<plan id="09" label="Archive Unreachable Code">
-Status: NOT STARTED
-Scope:
-  - Move 31 unreachable functions to inst/archived/ with categorized subdirectories:
-    Category 1 — Legacy data import (12 files):
-      addVars.R, calcDemtareaClass.R, calcHeadflag.R, calcIncremLandUse.R,
-      checkData1NavigationVars.R, checkDupVarnames.R, checkMissingData1Vars.R,
-      createInitialDataDictionary.R, createVerifyReachAttr.R, dataInputPrep.R,
-      replaceData1Names.R, startEndmodifySubdata.R
-    Category 2 — Mapping/visualization (9 files):
-      checkBinaryMaps.R, checkDrainageareaErrors.R, checkDrainageareaMapPrep.R,
-      g_legend.R, mapBreaks.R, mapLoopStr.R, set_unique_breaks.R,
-      setupDynamicMaps.R (if not archived in Plan 08), verifyDemtarea.R
-    Category 3 — Deferred utilities (7 files):
-      unPackList.R, naOmitFuncStr.R, aggDynamicMapdata.R (if not archived in Plan 08),
-      test_addPlotlyvars.R, syncVarNames.R, estimateWeightedErrors.R, copyStructure.R
-    Category 4 — Plotting utilities (3 files):
-      hline.R, makeAESvector.R, areColors.R
-  - Remove archived files from DESCRIPTION Collate (if not yet removed)
-  - Verify no exported function breaks after archival
-  - Create inst/archived/README.md documenting what was archived and why
-Dependencies: Plans 07, 08 (some files overlap with dynamic removal)
-GH Issues: #14
-Note: Archive rather than delete. Some of these functions may be needed for future features.
-</plan>
 
 <plan id="10" label="Separate Computation from I/O">
 Status: NOT STARTED
@@ -507,6 +458,34 @@ Completed 2026-03-08. 17 tests, all pass.
 
 <plan id="06F" label="Exported API Tests">
 Completed 2026-03-08. 38 tests (1 skip), all pass.
+</plan>
+
+<plan id="08" label="Remove Dynamic Model Infrastructure">
+Completed 2026-03-09. GH #13 closed.
+  - Archived 7 dynamic-only R files to inst/archived/dynamic/ (checkDynamic, readForecast,
+    aggDynamicMapdata, setupDynamicMaps, checkDrainageareaMapPrep, diagnosticPlotsNLLS_dyn,
+    diagnosticPlotsNLLS_timeSeries)
+  - Stripped all if(dynamic) branches from 14 active R files
+  - Removed model_type parameter from rsparrow_model() entirely
+  - test_checkDynamic.R removed (8 tests); test count: 194→186
+</plan>
+
+<plan id="09" label="Archive Unreachable Code">
+Completed 2026-04-19. GH #14 closed.
+  - Call-graph verification found 5 functions incorrectly listed as dead (reachable):
+    calcDemtareaClass, calcIncremLandUse, startEndmodifySubdata (via startModelRun.R),
+    checkBinaryMaps, hline (via diagnosticPlotsNLLS.R and diagnosticPlots_4panel_A.R)
+  - Archived 23 files (not 31 — 5 reachable, 3 already in inst/archived/dynamic/ from Plan 08):
+    inst/archived/legacy_data_import/ (9): addVars, calcHeadflag, checkData1NavigationVars,
+      checkDupVarnames, checkMissingData1Vars, createInitialDataDictionary, createVerifyReachAttr,
+      dataInputPrep, replaceData1Names
+    inst/archived/mapping/ (8): checkDrainageareaErrors, g_legend, mapBreaks, mapLoopStr,
+      set_unique_breaks, verifyDemtarea, makeAESvector, areColors
+    inst/archived/utilities/ (6): unPackList, naOmitFuncStr, test_addPlotlyvars, syncVarNames,
+      estimateWeightedErrors, copyStructure
+  - Removed test-copyStructure.R, test-estimateWeightedErrors.R; updated test-calcflags.R
+  - Test count: 186→166 (20 tests removed)
+  - eval(parse()) count reduced by ~13 (mapLoopStr×11, unPackList×1, naOmitFuncStr×1)
 </plan>
 
 <plan id="07" label="Package Restructuring">
