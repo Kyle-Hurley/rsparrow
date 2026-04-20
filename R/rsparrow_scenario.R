@@ -25,16 +25,19 @@
 #' @seealso \code{\link{rsparrow_model}}, \code{\link{predict.rsparrow}}
 #'
 #' @examples
-#' \dontrun{
-#' model <- rsparrow_model("~/my_model/")
-#' model <- predict(model)
-#'
-#' # Reduce fertilizer sources by 50%
-#' model <- rsparrow_scenario(
-#'   model,
-#'   source_changes = list(fertilizer = 0.5),
-#'   scenario_name  = "reduce_fertilizer"
-#' )
+#' \donttest{
+#' td <- tempdir()
+#' write.csv(sparrow_example$data_dictionary,
+#'           file.path(td, "dataDictionary.csv"), row.names = FALSE)
+#' write.csv(sparrow_example$parameters,
+#'           file.path(td, "parameters.csv"), row.names = FALSE)
+#' write.csv(sparrow_example$design_matrix,
+#'           file.path(td, "design_matrix.csv"), row.names = FALSE)
+#' reaches <- rsparrow_hydseq(sparrow_example$reaches)
+#' write.csv(reaches, file.path(td, "data1.csv"), row.names = FALSE)
+#' model <- rsparrow_model(td, run_id = "ex")
+#' # Reduce the agricultural N source by 50%
+#' model <- rsparrow_scenario(model, source_changes = list(agN = 0.5))
 #' }
 rsparrow_scenario <- function(object, source_changes,
                               scenario_name = "scenario1", ...) {

@@ -34,18 +34,9 @@ reaches have lower sequence numbers (more negative values), ensuring
 correct accumulation order when sorted.
 }
 \examples{
-\dontrun{
-# Create simple network topology
-network <- data.frame(
-  waterid = 1:5,
-  fnode = c(1, 2, 3, 4, 5),
-  tnode = c(3, 3, 5, 5, 6)
-)
-
-# Compute hydrological sequence
-network <- rsparrow_hydseq(network, from_col = "fnode", to_col = "tnode")
-network[order(network$hydseq), ]
-}
+# Order the example network reaches from upstream to downstream
+reaches <- rsparrow_hydseq(sparrow_example$reaches)
+head(reaches[order(reaches$hydseq), c("waterid", "fnode", "tnode", "hydseq")])
 }
 \seealso{
 \code{\link{rsparrow_model}}

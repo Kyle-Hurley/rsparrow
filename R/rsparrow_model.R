@@ -49,22 +49,19 @@
 #'   \code{\link{read_sparrow_data}}
 #'
 #' @examples
-#' \dontrun{
-#' # Estimate a SPARROW model
-#' model <- rsparrow_model(
-#'   path_main = "~/sparrow_projects/my_watershed/",
-#'   run_id = "baseline_2020"
-#' )
-#'
-#' # View estimation results
+#' \donttest{
+#' td <- tempdir()
+#' write.csv(sparrow_example$data_dictionary,
+#'           file.path(td, "dataDictionary.csv"), row.names = FALSE)
+#' write.csv(sparrow_example$parameters,
+#'           file.path(td, "parameters.csv"), row.names = FALSE)
+#' write.csv(sparrow_example$design_matrix,
+#'           file.path(td, "design_matrix.csv"), row.names = FALSE)
+#' reaches <- rsparrow_hydseq(sparrow_example$reaches)
+#' write.csv(reaches, file.path(td, "data1.csv"), row.names = FALSE)
+#' model <- rsparrow_model(td, run_id = "ex")
 #' print(model)
-#' summary(model)
-#'
-#' # Extract coefficients
 #' coef(model)
-#'
-#' # Generate predictions
-#' model <- predict(model, type = "all")
 #' }
 rsparrow_model <- function(path_main, run_id = "run1",
                             if_estimate = "yes", if_predict = "yes",
@@ -319,7 +316,24 @@ rsparrow_model <- function(path_main, run_id = "run1",
     map_seasons              = NA,
     mapsPerPage              = NA,
     mapPageGroupBy           = NA,
-    scenarioMapColors        = c("lightblue","blue","darkgreen","gold","red","darkred")
+    scenarioMapColors        = c("lightblue","blue","darkgreen","gold","red","darkred"),
+    # Diagnostic plot settings
+    diagnosticPlotPointStyle = 1,
+    diagnosticPlotPointSize  = 0.4,
+    loadUnits                = "kg/year",
+    yieldUnits               = "kg/ha/year",
+    # R pch → plotly marker symbol cross-reference table
+    pchPlotlyCross           = data.frame(
+      pch    = c(0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 11L, 12L,
+                 13L, 14L, 15L, 16L, 17L, 18L, 19L, 20L, 21L, 22L, 23L, 24L, 25L),
+      plotly = c("square-open","circle-open","triangle-up-open","cross-thin-open",
+                 "x-thin-open","diamond-open","triangle-down-open","square-x-open",
+                 "asterisk-open","diamond-x-open","circle-x-open","star-triangle-up-open",
+                 "square-cross-open","circle-x-open","triangle-up-open",
+                 "square","circle","triangle-up","diamond","circle","circle",
+                 "circle","square","diamond","triangle-up","triangle-down"),
+      stringsAsFactors = FALSE
+    )
   )
 
   scenario.input.list <- list(

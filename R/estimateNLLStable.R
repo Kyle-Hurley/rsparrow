@@ -393,13 +393,13 @@ estimateNLLStable <- function(file.output.list, if_estimate, if_estimate_simulat
 
   dd <- data.frame(sitedata, standardResids, Resids, leverage, leverageCrit, CooksD, CooksDpvalue, residCheck, weight, tiarea)
   dd1 <- subset(dd, dd$residCheck > 3 | dd$leverage > dd$leverageCrit | dd$CooksDpvalue < 0.10)
-  keeps <- c(
+  keeps <- na.omit(c(
     "waterid", "demtarea", "rchname", "station_id", "station_name", "staid",
     classvar[1], "standardResids", "Resids", "leverage", "leverageCrit", "CooksD", "CooksDpvalue", "weight", "tiarea", "residCheck"
-  )
+  ))
 
   # output largest outlier text
-  ddnew <- dd1[keeps]
+  ddnew <- dd1[intersect(keeps, names(dd1))]
   print(space)
   print("LARGEST OUTLIERS", quote = FALSE)
   print("(absolute standardized residual>3, leverage>Critical value, or Cook's D p-value<0.10)", quote = FALSE)
@@ -511,19 +511,20 @@ estimateNLLStable <- function(file.output.list, if_estimate, if_estimate_simulat
   predictYield <- predict / sitedata$demtarea
 
 
-  origWaterid <- sitedata$waterid_for_RSPARROW_mapping
+  origWaterid <- if (!is.null(sitedata$waterid_for_RSPARROW_mapping))
+    sitedata$waterid_for_RSPARROW_mapping else sitedata$waterid
   dd <- data.frame(
     sitedata, origWaterid, Obs, predict, Obsyield, predictYield, Resids, standardResids, leverage, leverageCrit,
     CooksD, CooksDpvalue, boot_resid, weight, tiarea, pResids,
     ratio.obs.pred, pratio.obs.pred, xlat, xlon
   )
 
-  keeps <- c(
+  keeps <- na.omit(c(
     "waterid", "origWaterid", "demtarea", "rchname", "station_id", "station_name", "staid", classvar[1], "Obs",
     "predict", "Obsyield", "predictYield", "Resids", "standardResids", "leverage", "leverageCrit", "CooksD", "CooksDpvalue", "boot_resid", "weight", "tiarea", "pResids",
     "ratio.obs.pred", "pratio.obs.pred", "xlat", "xlon"
-  )
-  ddnew <- dd[keeps]
+  ))
+  ddnew <- dd[intersect(keeps, names(dd))]
 
   # Add jacobian derivatives to the residuals file for estimated coefficients (JacobResults object variables)
   #  Derivatives not reported for "Fixed" coefficients

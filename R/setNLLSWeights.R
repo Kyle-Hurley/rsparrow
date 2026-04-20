@@ -47,9 +47,9 @@ setNLLSWeights <- function(NLLS_weights, run_id, subdata, sitedata, data_names,
   minnum <- minimum_reaches_separating_sites
   staidseq <- assignIncremSiteIDs(minnum, staid, waterid, tnode, fnode) # call function to assign sites to reaches
   xx <- data.frame(staidseq, demiarea)
-  count <- ddply(xx, .(staidseq), dplyr::summarize, nirchs = length(staidseq)) # get count for unique staids
+  count <- plyr::ddply(xx, plyr::.(staidseq), dplyr::summarize, nirchs = length(staidseq)) # get count for unique staids
   count <- count[-1, ] # delete first row
-  siteiarea <- ddply(xx, .(staidseq), dplyr::summarize, tiarea = sum(demiarea)) # sum incr areas for unique staids
+  siteiarea <- plyr::ddply(xx, plyr::.(staidseq), dplyr::summarize, tiarea = sum(demiarea)) # sum incr areas for unique staids
   siteiarea <- siteiarea[-1, ] # delete first row
 
   # Update SITEDATA, merge COUNT and SITEIAREA by staidseq

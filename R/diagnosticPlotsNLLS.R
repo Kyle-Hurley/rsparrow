@@ -97,7 +97,11 @@ diagnosticPlotsNLLS <- function(file.output.list, class.input.list, sitedata.dem
   # Build marker list (shared by est and sim plots)
   pnch <- as.character(pchPlotlyCross[pchPlotlyCross$pch == diagnosticPlotPointStyle, ]$plotly)
   markerSize <- diagnosticPlotPointSize * 10
-  markerCols <- colorNumeric(c("black", "white"), 1:2)
+  if (requireNamespace("leaflet", quietly = TRUE)) {
+    markerCols <- leaflet::colorNumeric(c("black", "white"), 1:2)
+  } else {
+    markerCols <- function(x) c("black", "white")[x]
+  }
   test <- regexpr("open", pnch) > 0
   if (test) {
     markerList <- list(symbol = pnch, size = markerSize, color = markerCols(1))

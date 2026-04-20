@@ -89,8 +89,8 @@ selectCalibrationSites <- function(subdata, data_names,
   seliarea <- minimum_site_incremental_area
   sid <- ifelse(depvar > 0, staid, 0) # recode for reduced set of sites (8-26-2016)
   xx <- data.frame(waterid, sid, staidseq, demiarea, depvar, hydseq, demtarea, tnode, fnode)
-  count <- ddply(xx, .(staidseq), dplyr::summarize, nirchs = length(staidseq)) # get count for unique staids
-  siteiarea <- ddply(xx, .(staidseq), dplyr::summarize, tiarea = sum(demiarea)) # sum incr areas for unique staids
+  count <- plyr::ddply(xx, plyr::.(staidseq), dplyr::summarize, nirchs = length(staidseq)) # get count for unique staids
+  siteiarea <- plyr::ddply(xx, plyr::.(staidseq), dplyr::summarize, tiarea = sum(demiarea)) # sum incr areas for unique staids
   xx <- merge(xx, siteiarea, by = "staidseq", all.y = FALSE, all.x = TRUE)
   xx <- merge(xx, count, by = "staidseq", all.y = FALSE, all.x = TRUE)
   xx <- xx[with(xx, order(xx$hydseq)), ] # resort dataframe by the original HYDSEQ order

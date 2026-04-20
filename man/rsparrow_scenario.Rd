@@ -12,7 +12,7 @@ rsparrow_scenario(object, source_changes, scenario_name = "scenario1", ...)
 \item{source_changes}{A named numeric vector or named list specifying source
 multipliers. Names correspond to source variable names in the model;
 values are multiplicative factors (e.g.,
-\code{list(fertilizer = 0.5)} reduces fertilizer inputs by 50\%).}
+\code{list(fertilizer = 0.5)} reduces fertilizer inputs by 50 percent.}
 
 \item{scenario_name}{Character. Name for this scenario (used in output file
 labeling). Default: \code{"scenario1"}.}
@@ -33,16 +33,19 @@ Predictions must already be populated (i.e., \code{\link{predict.rsparrow}}
 or \code{rsparrow_model(if_predict = "yes")} must have been run first).
 }
 \examples{
-\dontrun{
-model <- rsparrow_model("~/my_model/")
-model <- predict(model)
-
-# Reduce fertilizer sources by 50\%
-model <- rsparrow_scenario(
-  model,
-  source_changes = list(fertilizer = 0.5),
-  scenario_name  = "reduce_fertilizer"
-)
+\donttest{
+td <- tempdir()
+write.csv(sparrow_example$data_dictionary,
+          file.path(td, "dataDictionary.csv"), row.names = FALSE)
+write.csv(sparrow_example$parameters,
+          file.path(td, "parameters.csv"), row.names = FALSE)
+write.csv(sparrow_example$design_matrix,
+          file.path(td, "design_matrix.csv"), row.names = FALSE)
+reaches <- rsparrow_hydseq(sparrow_example$reaches)
+write.csv(reaches, file.path(td, "data1.csv"), row.names = FALSE)
+model <- rsparrow_model(td, run_id = "ex")
+# Reduce the agricultural N source by 50\%
+model <- rsparrow_scenario(model, source_changes = list(agN = 0.5))
 }
 }
 \seealso{

@@ -15,9 +15,12 @@ checkClassificationVars <- function(subdata, class.input.list) {
   classvar <- class.input.list$classvar
   class_landuse <- class.input.list$class_landuse
 
-  if (!identical(classvar, NA)) {
+  # Filter out NA entries before checking — NA_character_ sentinel means
+  # "no classification variable specified" and should be treated the same as NA.
+  classvar_valid <- classvar[!is.na(classvar)]
+  if (length(classvar_valid) > 0) {
     # test for class var in names subdata
-    testClassvar <- classvar[which(!classvar %in% names(subdata))]
+    testClassvar <- classvar_valid[which(!classvar_valid %in% names(subdata))]
     if (length(testClassvar) != 0) {
       message(paste0("INVALID classvar ", paste(testClassvar, collapse = ", "), " NOT FOUND IN dataDictionary.csv \nRUN EXECUTION TERMINATED"))
       stop("Error in checkClassificationVars.R. Run execution terminated.")

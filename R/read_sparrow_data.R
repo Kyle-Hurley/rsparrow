@@ -32,16 +32,19 @@
 #' @seealso \code{\link{rsparrow_model}}, \code{\link{rsparrow_hydseq}}
 #'
 #' @examples
-#' \dontrun{
-#' # Read and inspect data before modeling
-#' sparrow_data <- read_sparrow_data("~/my_model/", run_id = "run1")
-#' names(sparrow_data)           # "file.output.list" "data1" "data_names"
-#' nrow(sparrow_data$data1)      # number of reach records
-#' head(sparrow_data$data_names) # variable metadata
-#'
-#' # Verify error handling
-#' read_sparrow_data("/nonexistent/path")  # errors: path_main does not exist
-#' read_sparrow_data("/tmp")               # errors: Missing required control files
+#' \donttest{
+#' td <- tempdir()
+#' write.csv(sparrow_example$data_dictionary,
+#'           file.path(td, "dataDictionary.csv"), row.names = FALSE)
+#' write.csv(sparrow_example$parameters,
+#'           file.path(td, "parameters.csv"), row.names = FALSE)
+#' write.csv(sparrow_example$design_matrix,
+#'           file.path(td, "design_matrix.csv"), row.names = FALSE)
+#' reaches <- rsparrow_hydseq(sparrow_example$reaches)
+#' write.csv(reaches, file.path(td, "data1.csv"), row.names = FALSE)
+#' sparrow_data <- read_sparrow_data(td, run_id = "ex")
+#' names(sparrow_data)       # "file.output.list" "data1" "data_names"
+#' nrow(sparrow_data$data1)  # 60 reaches
 #' }
 read_sparrow_data <- function(path_main, run_id = "run1",
                                data_file = "data1.csv",
@@ -68,13 +71,16 @@ read_sparrow_data <- function(path_main, run_id = "run1",
                          .Platform$file.sep)
   dir.create(path_results, recursive = TRUE, showWarnings = FALSE)
 
-  # Copy dataDictionary.csv into results dir with run_id prefix so that
-  # read_dataDictionary() can find it at paste0(path_results, run_id, "_dataDictionary.csv").
-  file.copy(
-    file.path(path_main, "dataDictionary.csv"),
-    paste0(path_results, run_id, "_dataDictionary.csv"),
-    overwrite = TRUE
-  )
+  # Copy control files into results dir with run_id prefix so that
+  # readParameters(), readDesignMatrix(), and read_dataDictionary() can find
+  # them at paste0(path_results, run_id, "_<file>.csv").
+  for (ctlfile in c("dataDictionary.csv", "parameters.csv", "design_matrix.csv")) {
+    file.copy(
+      file.path(path_main, ctlfile),
+      paste0(path_results, run_id, "_", ctlfile),
+      overwrite = TRUE
+    )
+  }
 
   # 4. Locate data file: look in path_main/data/ first, then path_main/.
   #    path_data must end with file separator (readData uses paste0(path_data, filename)).

@@ -24,9 +24,18 @@
 #' @seealso \code{\link{rsparrow_model}}, \code{\link{predict.rsparrow}}
 #'
 #' @examples
-#' \dontrun{
-#' model <- rsparrow_model("~/my_model/")
-#' model <- rsparrow_bootstrap(model, n_boot = 200, seed = 42)
+#' \donttest{
+#' td <- tempdir()
+#' write.csv(sparrow_example$data_dictionary,
+#'           file.path(td, "dataDictionary.csv"), row.names = FALSE)
+#' write.csv(sparrow_example$parameters,
+#'           file.path(td, "parameters.csv"), row.names = FALSE)
+#' write.csv(sparrow_example$design_matrix,
+#'           file.path(td, "design_matrix.csv"), row.names = FALSE)
+#' reaches <- rsparrow_hydseq(sparrow_example$reaches)
+#' write.csv(reaches, file.path(td, "data1.csv"), row.names = FALSE)
+#' model <- rsparrow_model(td, run_id = "ex")
+#' model <- rsparrow_bootstrap(model, n_boot = 50, seed = 42)
 #' model$bootstrap$bEstimate
 #' }
 rsparrow_bootstrap <- function(object, n_boot = 100L, seed = NULL, ...) {

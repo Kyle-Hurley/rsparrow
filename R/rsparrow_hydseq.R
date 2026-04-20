@@ -26,18 +26,9 @@
 #' @seealso \code{\link{rsparrow_model}}
 #'
 #' @examples
-#' \dontrun{
-#' # Create simple network topology
-#' network <- data.frame(
-#'   waterid = 1:5,
-#'   fnode = c(1, 2, 3, 4, 5),
-#'   tnode = c(3, 3, 5, 5, 6)
-#' )
-#'
-#' # Compute hydrological sequence
-#' network <- rsparrow_hydseq(network, from_col = "fnode", to_col = "tnode")
-#' network[order(network$hydseq), ]
-#' }
+#' # Order the example network reaches from upstream to downstream
+#' reaches <- rsparrow_hydseq(sparrow_example$reaches)
+#' head(reaches[order(reaches$hydseq), c("waterid", "fnode", "tnode", "hydseq")])
 rsparrow_hydseq <- function(data, from_col = "fnode", to_col = "tnode") {
   stopifnot(is.data.frame(data))
   stopifnot(from_col %in% names(data))

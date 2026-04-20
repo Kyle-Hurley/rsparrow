@@ -284,8 +284,7 @@ if (if_boot_estimate == "yes" & biters!=0){
   predictBoots.list <- NULL
 
   if (if_predict == "yes") {
-    objfile <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_JacobResults")
-    if (file.exists(objfile) == TRUE) {
+    if (!is.null(estimate.list$JacobResults)) {
       message("Running predictions...")
 
       # Calculate and output standard bias-corrected predictions
@@ -305,7 +304,7 @@ if (if_boot_estimate == "yes" & biters!=0){
         file.output.list, estimate.list, predict.list, subdata,
         add_vars, data_names
       )
-    } # end check on JacobResults exist
+    } # end check on JacobResults available
   } # end if_predict
 
   ###############################################

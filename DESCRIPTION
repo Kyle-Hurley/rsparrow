@@ -2,7 +2,6 @@ Package: rsparrow
 Type: Package
 Title: SPARROW Water-Quality Modeling
 Version: 2.1.0
-Date: 2025-01-31
 Authors@R: c(
     person("Lillian", "Gorman Sanisaca",
            email = "lgormansanisaca@usgs.gov", role = "aut"),
@@ -10,9 +9,12 @@ Authors@R: c(
            email = "khurley@usgs.gov", role = c("aut", "cre")),
     person("Richard", "Alexander",
            email = "ralex@usgs.gov", role = "aut"))
-Description: Setup and execution of the USGS SPARROW (SPAtially Referenced
-    Regressions On Watershed attributes) water-quality model for a
-    user-defined domain.
+Description: Implements the USGS SPARROW (SPAtially Referenced Regressions On
+    Watershed attributes) water-quality model for static (long-term mean annual)
+    estimation and prediction. Provides nonlinear least-squares estimation of
+    watershed source and delivery parameters, reach-level load and yield
+    predictions with bias correction, parametric bootstrap uncertainty, scenario
+    analysis, and diagnostic plots.
 Roxygen: list(markdown=TRUE)
 VignetteBuilder: knitr
 Depends:
@@ -39,7 +41,9 @@ Suggests:
     spdep (>= 1.1-5),
     testthat (>= 3.0.0)
 Encoding: UTF-8
+LazyData: true
 License: CC0
-URL: https://code.usgs.gov/water/stats/RSPARROW
+URL: https://github.com/Kyle-Hurley/rsparrow
+BugReports: https://github.com/Kyle-Hurley/rsparrow/issues
 RoxygenNote: 7.3.3
 Config/testthat/edition: 3

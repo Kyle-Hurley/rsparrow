@@ -7,90 +7,194 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# Introduction
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
 
-rsparrow is an R package for executing and evaluating SPARROW (SPAtially Referenced
-Regressions On Watershed attributes) models. It generates estimation results,
-predictions, and diagnostic output for static (long-term mean annual) SPARROW
-water-quality models.
+## Overview
 
-Static SPARROW models provide reach-level predictions (and uncertainties) of the
-long-term mean annual water-quality loads and flow-weighted concentrations. The
-predictions include the shares of the load attributable to individual upstream
-sources and predictions of the mass quantities of the total load and individual
-sources that are delivered to downstream water bodies.
+**rsparrow** is an R package for executing and evaluating SPARROW (SPAtially Referenced
+Regressions On Watershed attributes) models. SPARROW models three watershed processes:
 
-# Installation
+1. **Source generation** — contaminant inputs from land uses (e.g., agricultural N,
+   atmospheric deposition)
+2. **Land-to-water delivery** — transport to streams via surficial and subsurface pathways,
+   modulated by climate and landscape variables
+3. **In-stream transport and decay** — removal and attenuation as water moves downstream
+   through reaches and reservoirs
 
-Install rsparrow from CRAN:
+The package implements static (long-term mean annual) SPARROW models. It generates
+reach-level load and yield predictions, source attribution, parameter uncertainty via
+bootstrap, and diagnostic plots.
 
-```r
+## Installation
+
+```{r install, eval=FALSE}
 install.packages("rsparrow")
+
+# Or the development version from GitHub:
+# remotes::install_github("Kyle-Hurley/rsparrow")
 ```
 
-Or install the development version from GitHub:
+## The Example Dataset
 
-```r
-# install.packages("remotes")
-remotes::install_github("Kyle-Hurley/rsparrow")
-```
+rsparrow includes a synthetic 60-reach example dataset, `sparrow_example`, that
+demonstrates the full modeling workflow without requiring real data.
 
-# Basic Usage
-
-```r
+```{r load-data}
 library(rsparrow)
 
-# Run a SPARROW model (requires a configured model directory)
-model <- rsparrow_model(path_main = "path/to/model/", run_id = "myrun")
-
-# View a summary
-summary(model)
-
-# Generate predictions
-model <- predict(model)
-
-# Scenario analysis: reduce a source by 50 percent
-model <- rsparrow_scenario(
-  model,
-  source_changes = list(fertilizer = 0.5),
-  scenario_name  = "reduce_fertilizer"
-)
+str(sparrow_example, max.level = 1)
 ```
 
-# Model Directory Setup
+The dataset contains five elements:
 
-A SPARROW model requires a directory containing:
+- **`reaches`** — 60-reach dendritic network with two tributary branches draining to
+  a single outlet. Columns include topology (`waterid`, `fnode`, `tnode`), drainage
+  area (`demiarea`, `demtarea`), a synthetic agricultural-N source (`agN`), and a
+  precipitation delivery variable (`ppt`).
+- **`sites`** — 5 monitoring sites with synthetic observed loads (`depvar`, kg/year).
+- **`parameters`** — parameter configuration (SOURCE and DELIVF types).
+- **`design_matrix`** — binary matrix associating sources with delivery variables.
+- **`data_dictionary`** — maps internal SPARROW variable names to data column names.
 
-- `sparrow_control.R` — control settings script
-- `parameters.csv` — parameter configuration
-- `design_matrix.csv` — source-delivery design matrix
-- `dataDictionary.csv` — variable metadata
-- `data1.csv` — reach-level input data
+## Step 1: Examine the Network Topology
 
-See the package documentation (`?rsparrow_model`) and the USGS RSPARROW
-documentation for detailed setup instructions.
+Before fitting a model, compute the hydrological sequence — the reach ordering from
+upstream to downstream that SPARROW uses for load accumulation.
 
-# Reporting Bugs
+```{r hydseq}
+reaches <- rsparrow_hydseq(sparrow_example$reaches)
+head(reaches[order(reaches$hydseq), c("waterid", "fnode", "tnode", "hydseq")])
+```
 
-Please report bugs and ask questions on the GitHub Issues page:
-<https://github.com/Kyle-Hurley/rsparrow/issues>
+Reaches with more negative `hydseq` values are further downstream. The outlet reach
+has the most negative value.
 
-# Citation
+## Step 2: Set Up a Model Directory
 
-Gorman Sanisaca, Lillian, Hurley, Kyle P., and Alexander, Richard B. (2025)
+rsparrow reads control files from a directory. Write the example data there:
+
+```{r setup-dir, eval=FALSE}
+td <- tempdir()
+
+# Write control CSVs
+write.csv(sparrow_example$data_dictionary,
+          file.path(td, "dataDictionary.csv"), row.names = FALSE)
+write.csv(sparrow_example$parameters,
+          file.path(td, "parameters.csv"), row.names = FALSE)
+write.csv(sparrow_example$design_matrix,
+          file.path(td, "design_matrix.csv"), row.names = FALSE)
+
+# Write reach data with pre-computed hydseq
+reaches <- rsparrow_hydseq(sparrow_example$reaches)
+write.csv(reaches, file.path(td, "data1.csv"), row.names = FALSE)
+```
+
+## Step 3: Fit the Model
+
+Call `rsparrow_model()` to estimate and predict:
+
+```{r fit-model, eval=FALSE}
+model <- rsparrow_model(td, run_id = "ex")
+```
+
+After a few seconds, the model produces a summary of estimation performance:
+
+```
+  SPARROW NLLS MODEL SUMMARY
+
+  MODEL NAME: ex
+
+  MODEL ESTIMATION PERFORMANCE (Monitoring-Adjusted Predictions)
+ MOBS NPARM DF       SSE       MSE      RMSE       RSQ
+    5     2  3 0.3410997 0.1136999 0.3371942 0.8056507
+
+  PARAMETER ESTIMATES
+  PARAMETER PARM TYPE ESTIMATE     SE         T         P-VALUE
+1 agN       SOURCE    3.417676  0.6478    5.276    0.01327
+2 ppt       DELIVF   -0.001593  0.0038   -0.422    0.70122
+```
+
+## Step 4: Examine Results
+
+The returned `rsparrow` object supports standard S3 methods:
+
+```{r examine, eval=FALSE}
+# Compact summary
+print(model)
+
+# Full estimation summary
+summary(model)
+
+# Parameter estimates
+coef(model)
+#>        agN        ppt
+#>  3.4176761 -0.0015935
+
+# Log residuals at calibration sites
+residuals(model)
+
+# Parameter covariance matrix
+vcov(model)
+
+# Predictions (populated when if_predict = "yes")
+names(model$predictions)
+#> [1] "oparmlist"          "loadunits"          "predmatrix"
+#> [4] "oyieldlist"         "yieldunits"         "yldmatrix"
+```
+
+## Step 5: Diagnostic Plots
+
+If the **plotly** package is installed, diagnostic residual plots are available:
+
+```{r plots, eval=FALSE}
+plot(model, type = "residuals")           # observed vs predicted, residuals
+plot(model, type = "residuals", panel = "B")  # Q-Q, boxplots
+plot(model, type = "sensitivity")         # parameter sensitivity
+plot(model, type = "spatial")             # spatial autocorrelation
+```
+
+## Step 6: Bootstrap Uncertainty
+
+Estimate parameter uncertainty via parametric bootstrap:
+
+```{r bootstrap, eval=FALSE}
+model <- rsparrow_bootstrap(model, n_boot = 200, seed = 42)
+model$bootstrap$bEstimate  # bootstrapped parameter distributions
+```
+
+## Step 7: Scenario Analysis
+
+Evaluate the effect of changing source inputs:
+
+```{r scenario, eval=FALSE}
+# Simulate a 50% reduction in agricultural N loading
+model <- rsparrow_scenario(model, source_changes = list(agN = 0.5))
+```
+
+## Further Reading
+
+- `?rsparrow_model` — full parameter documentation
+- `?sparrow_example` — description of the example dataset
+- SPARROW methodology: Alexander, R.B., et al. (2008). *Differences in phosphorus and
+  nitrogen delivery to the Gulf of Mexico from the Mississippi River basin.*
+  Environmental Science & Technology, 42(3), 822–830.
+- USGS SPARROW resources: <https://www.usgs.gov/mission-areas/water-resources/science/sparrow-modeling>
+
+## Citation
+
+Gorman Sanisaca, Lillian, Hurley, Kyle P., and Alexander, Richard B. (2025).
 RSPARROW 2.1.0: An R system for SPARROW modeling. U.S. Geological Survey.
-DOI: https://doi.org/10.5066/P1Y6RUBU
 
-# Disclaimer
+## Disclaimer
 
 This software has been approved for release by the U.S. Geological Survey (USGS).
 Although the software has been subjected to rigorous review, the USGS reserves the
 right to update the software as needed pursuant to further analysis and review. No
 warranty, expressed or implied, is made by the USGS or the U.S. Government as to
 the functionality of the software and related material nor shall the fact of release
-constitute any such warranty. Furthermore, the software is released on condition
-that neither the USGS nor the U.S. Government shall be held liable for any damages
-resulting from its authorized or unauthorized use.
+constitute any such warranty.
 
 Any use of trade, firm, or product names is for descriptive purposes only and does
 not imply endorsement by the U.S. Government.

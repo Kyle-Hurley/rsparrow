@@ -23,12 +23,19 @@
 #' @seealso \code{\link{summary.rsparrow}}, \code{\link{residuals.rsparrow}}
 #'
 #' @examples
-#' \dontrun{
-#' model <- rsparrow_model("~/my_model/")
+#' \donttest{
+#' td <- tempdir()
+#' write.csv(sparrow_example$data_dictionary,
+#'           file.path(td, "dataDictionary.csv"), row.names = FALSE)
+#' write.csv(sparrow_example$parameters,
+#'           file.path(td, "parameters.csv"), row.names = FALSE)
+#' write.csv(sparrow_example$design_matrix,
+#'           file.path(td, "design_matrix.csv"), row.names = FALSE)
+#' reaches <- rsparrow_hydseq(sparrow_example$reaches)
+#' write.csv(reaches, file.path(td, "data1.csv"), row.names = FALSE)
+#' model <- rsparrow_model(td, run_id = "ex")
 #' plot(model, type = "residuals")
 #' plot(model, type = "residuals", panel = "B")
-#' plot(model, type = "sensitivity")
-#' plot(model, type = "spatial")
 #' }
 plot.rsparrow <- function(x, type = c("residuals", "sensitivity", "spatial"), ...) {
   type <- match.arg(type)
@@ -50,7 +57,11 @@ plot.rsparrow <- function(x, type = c("residuals", "sensitivity", "spatial"), ..
 
   pnch <- as.character(mp$pchPlotlyCross[mp$pchPlotlyCross$pch == mp$diagnosticPlotPointStyle, ]$plotly)
   markerSize <- mp$diagnosticPlotPointSize * 10
-  markerCols <- colorNumeric(c("black", "white"), 1:2)
+  if (requireNamespace("leaflet", quietly = TRUE)) {
+    markerCols <- leaflet::colorNumeric(c("black", "white"), 1:2)
+  } else {
+    markerCols <- function(x) c("black", "white")[x]
+  }
   test <- regexpr("open", pnch) > 0
   if (test) {
     markerList <- list(symbol = pnch, size = markerSize, color = markerCols(1))

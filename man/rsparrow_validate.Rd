@@ -32,10 +32,18 @@ estimated. If the model was estimated without \code{if_validate = "yes"},
 this function will stop with an informative error.
 }
 \examples{
-\dontrun{
-model <- rsparrow_model("~/my_model/", if_validate = "yes")
+\donttest{
+td <- tempdir()
+write.csv(sparrow_example$data_dictionary,
+          file.path(td, "dataDictionary.csv"), row.names = FALSE)
+write.csv(sparrow_example$parameters,
+          file.path(td, "parameters.csv"), row.names = FALSE)
+write.csv(sparrow_example$design_matrix,
+          file.path(td, "design_matrix.csv"), row.names = FALSE)
+reaches <- rsparrow_hydseq(sparrow_example$reaches)
+write.csv(reaches, file.path(td, "data1.csv"), row.names = FALSE)
+model <- rsparrow_model(td, run_id = "ex", if_validate = "yes")
 model <- rsparrow_validate(model)
-model$validation$vANOVA.list
 }
 }
 \seealso{

@@ -47,16 +47,19 @@ objects needed for model fitting. This separates data I/O from model
 estimation, enabling programmatic data inspection before fitting.
 }
 \examples{
-\dontrun{
-# Read and inspect data before modeling
-sparrow_data <- read_sparrow_data("~/my_model/", run_id = "run1")
-names(sparrow_data)           # "file.output.list" "data1" "data_names"
-nrow(sparrow_data$data1)      # number of reach records
-head(sparrow_data$data_names) # variable metadata
-
-# Verify error handling
-read_sparrow_data("/nonexistent/path")  # errors: path_main does not exist
-read_sparrow_data("/tmp")               # errors: Missing required control files
+\donttest{
+td <- tempdir()
+write.csv(sparrow_example$data_dictionary,
+          file.path(td, "dataDictionary.csv"), row.names = FALSE)
+write.csv(sparrow_example$parameters,
+          file.path(td, "parameters.csv"), row.names = FALSE)
+write.csv(sparrow_example$design_matrix,
+          file.path(td, "design_matrix.csv"), row.names = FALSE)
+reaches <- rsparrow_hydseq(sparrow_example$reaches)
+write.csv(reaches, file.path(td, "data1.csv"), row.names = FALSE)
+sparrow_data <- read_sparrow_data(td, run_id = "ex")
+names(sparrow_data)       # "file.output.list" "data1" "data_names"
+nrow(sparrow_data$data1)  # 60 reaches
 }
 }
 \seealso{
