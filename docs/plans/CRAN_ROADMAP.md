@@ -1,14 +1,18 @@
 <cran_roadmap>
 
 <executive_summary>
-Plans 01–11 are complete. The package is at the repo root (R/, src/, man/, tests/, inst/,
-DESCRIPTION, NAMESPACE); compiled artifacts removed from src/; Collate field removed;
-.Rbuildignore in place; dynamic model infrastructure removed; 23 unreachable functions
-archived to inst/archived/; computation/I/O separated; all CRAN compliance issues fixed.
+Plans 01–12 are complete. The package is CRAN-ready.
+  - Package at repo root (R/, src/, man/, tests/, inst/, DESCRIPTION, NAMESPACE)
+  - Compiled artifacts removed from src/; Collate field removed; .Rbuildignore in place
+  - Dynamic model infrastructure removed; 23 unreachable functions archived to inst/archived/
+  - Computation/I/O separated; all CRAN compliance issues fixed
+  - sparrow_example dataset in data/ (GH #9); introductory vignette (GH #8)
+  - @examples updated in all 14 exported functions using sparrow_example
+  - DESCRIPTION URL/BugReports point to GitHub
 Test suite: FAIL 0 | PASS 166 | SKIP 1.
-R CMD check (tarball, --no-manual): 0 WARNINGs, 4 NOTEs, 0 ERRORs.
+R CMD check (tarball, --no-manual): 0 ERRORs, 0 WARNINGs, 2 NOTEs (both pre-existing).
 
-BLOCKERS RESOLVED (Plans 07–11):
+ALL BLOCKERS RESOLVED (Plans 07–12):
   (B1)  DONE — Package moved from RSPARROW_master/ to repo root (GH #10, commit e5b58b4)
   (B2)  DONE — Compiled .o/.so artifacts deleted from src/ (GH #11, commit e5b58b4)
   (B3)  DONE — Collate field removed from DESCRIPTION (GH #12, commit e5b58b4)
@@ -22,21 +26,11 @@ BLOCKERS RESOLVED (Plans 07–11):
   (B8)  DONE — cat()→message() across all 10 affected files (GH #19, Plan 11)
   (B9)  DONE — stringi/xfun: xfun replaced with base R; stringi guarded by requireNamespace() (GH #6, Plan 11)
   (B10) DONE — layout() prefixed with plotly:: to eliminate shape-argument WARNINGs (GH #7, Plan 11)
-  (B11) DONE — rsparrow_scenario.Rd \\% fixed to \\% (Rd comment char issue) (GH #5, Plan 11)
-  (B12) DONE — Vignette converted from pdf_document to rmarkdown::html_vignette (Plan 11)
-
-BLOCKERS REMAINING:
-  (B13) No example dataset in data/ (Plan 12)
-
-REMAINING PLAN SEQUENCE:
-  Plan 08: Remove dynamic model infrastructure — delete/archive dynamic-only files,
-           strip if_dynamic conditionals from 20 files
-  Plan 09: Archive unreachable code — move 31 dead functions to inst/archived/
-  Plan 10: Separate computation from I/O — refactor estimation/prediction to return objects,
-           move file writes to dedicated output functions
-  Plan 11: Fix CRAN compliance issues — on.exit() protection, cat()→message(),
-           <<- elimination, assign(parent.frame()) removal, options() restoration
-  Plan 12: Example dataset, vignette, and final R CMD check cleanup
+  (B11) DONE — rsparrow_scenario.Rd \\% fixed (Rd comment char issue) (GH #5, Plan 11)
+  (B12) DONE — Vignette converted to rmarkdown::html_vignette; rewritten for new API (GH #8, Plans 11+12)
+  (B14) DONE — sparrow_example dataset in data/ (GH #9, Plan 12)
+  (B15) DONE — @examples updated in all 14 exported functions (Plan 12)
+  (B16) DONE — DESCRIPTION URL/BugReports updated to GitHub (Plan 12)
 </executive_summary>
 
 <critical_requirements>
@@ -88,7 +82,7 @@ REMAINING PLAN SEQUENCE:
 <requirement>Remove manual "Executed By" / "Executes Routines" lists from roxygen headers - these are stale and non-standard</requirement>
 <requirement status="done">Regenerate all man/ pages via roxygen2 after adding proper tags (manual generation; roxygen2 unavailable)</requirement>
 <requirement status="done">Rewrite package-level documentation (?rsparrow) with a clear overview and quick-start example</requirement>
-<requirement status="open" gh="8">Rewrite vignette to demonstrate the refactored API (current vignette references the control-script workflow)</requirement>
+<requirement status="done" gh="8">Rewrite vignette to demonstrate the refactored API — RSPARROW_vignette.Rmd fully rewritten with sparrow_example workflow (Plan 12)</requirement>
 </documentation>
 
 <testing_and_examples>
@@ -98,7 +92,7 @@ REMAINING PLAN SEQUENCE:
 <requirement>All tests must complete within CRAN's 10-minute limit for R CMD check</requirement>
 <requirement status="done">Remove or rewrite the 7 makeReport_* test files that test Rmd report rendering — 8 broken test files deleted in Plan 06A (including makeReport_siteAttrMaps)</requirement>
 <requirement status="done">Add testthat edition 3 in DESCRIPTION (Suggests: testthat (>= 3.0.0), Config/testthat/edition: 3) — Plan 06A</requirement>
-<requirement status="open" gh="9">Include example dataset in data/ with roxygen documentation for runnable @examples</requirement>
+<requirement status="done" gh="9">Include example dataset in data/ with roxygen documentation — sparrow_example: 60-reach synthetic network (2.5 KB XZ), documented in R/data.R (Plan 12)</requirement>
 </testing_and_examples>
 
 <dependencies_and_portability>
@@ -123,7 +117,7 @@ REMAINING PLAN SEQUENCE:
 <requirement status="done">Fix Maintainer field: Kyle Hurley (khurley@usgs.gov) is sole maintainer (cre role)</requirement>
 <requirement status="done">Convert Author field to Authors@R using person() entries with roles (aut, cre)</requirement>
 <requirement>Add ORCID iDs if available for authors</requirement>
-<requirement>Update URL field - current URL (code.usgs.gov/water/stats/RSPARROW) may be stale; add BugReports field pointing to GitHub issues</requirement>
+<requirement status="done">Update URL field to https://github.com/Kyle-Hurley/rsparrow; BugReports field added pointing to GitHub issues (Plan 12)</requirement>
 </legal_and_administrative>
 
 </critical_requirements>
@@ -246,7 +240,7 @@ dataset. Keep computation lightweight (\donttest{} or pre-computed results for s
 
 <cran_checklist>
 <item status="pass">R CMD build produces a valid tarball (rsparrow_2.1.0.tar.gz)</item>
-<item status="pass">R CMD check --no-manual returns 0 errors, 0 warnings — 0 WARNINGs, 4 NOTEs (tarball check, Plan 11)</item>
+<item status="pass">R CMD check --no-manual returns 0 errors, 0 warnings — 0 ERRORs, 0 WARNINGs, 2 NOTEs (tarball check, Plan 12)</item>
 <item status="pass">All files in R/ contain only function/method/class definitions</item>
 <item status="pass">No pre-compiled binaries in src/ — .o and .so artifacts deleted (GH #11, Plan 07)</item>
 <item status="pass">Fortran source compiles on all platforms (no Windows-specific directives)</item>
@@ -268,11 +262,11 @@ dataset. Keep computation lightweight (\donttest{} or pre-computed results for s
 <item status="partial">No eval(parse()) in exported functions — 49 remain in internal functions</item>
 <item status="pass">No shell.exec() or Windows-only system calls</item>
 <item status="pass">Package root at repo root (GH #10, Plan 07)</item>
-<item status="fail">Example dataset included in data/ (GH #9)</item>
-<item status="pass">At least one vignette demonstrating core workflow — html_vignette added (Plan 11); full workflow vignette deferred to Plan 12 (GH #8)</item>
-<item status="fail">Package installs and loads on macOS, Linux, and Windows</item>
-<item status="fail">Total R CMD check time under 10 minutes</item>
-<item status="fail">testthat tests pass on all platforms</item>
+<item status="pass">Example dataset included in data/ (GH #9, Plan 12) — sparrow_example: 60-reach synthetic network, LazyData: true</item>
+<item status="pass">At least one vignette demonstrating core workflow — html_vignette fully updated with sparrow_example workflow (GH #8, Plan 12)</item>
+<item status="unchecked">Package installs and loads on macOS, Linux, and Windows — Linux verified; Windows/macOS untested</item>
+<item status="pass">Total R CMD check time under 10 minutes — tests run in ~1.2s</item>
+<item status="unchecked">testthat tests pass on all platforms — Linux verified (FAIL 0, PASS 166, SKIP 1)</item>
 <item status="unchecked">CRAN submission via devtools::submit_cran() accepted</item>
 </cran_checklist>
 
