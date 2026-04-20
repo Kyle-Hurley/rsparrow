@@ -45,15 +45,12 @@ readData <- function(file.output.list, input_data_fileName) {
   }
 
 
-  cat("head(data1)\n\n")
+  message("head(data1)")
   print(head(data1))
-  cat("\n\n")
-  cat("nrow(data1)\n\n")
+  message("nrow(data1)")
   print(nrow(data1))
-  cat("\n\n")
-  cat("Time elapsed during data import.\n ")
+  message("Time elapsed during data import.")
   print(proc.time() - ptm)
-  cat("\n\n")
 
 
   return(data1)

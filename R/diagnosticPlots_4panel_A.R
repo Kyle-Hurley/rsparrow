@@ -153,7 +153,7 @@ diagnosticPlots_4panel_A <- function(plotpredict, plotObs, plotyldpredict, ploty
     hoverinfo = "text",
     text = as.formula(markerText)
   )
-  p3 <- p3 %>% layout(shapes = list(hline(spatialAutoCorr=FALSE, 0)))
+  p3 <- p3 %>% plotly::layout(shapes = list(hline(spatialAutoCorr=FALSE, 0)))
 
 
   # yield residual plot
@@ -187,7 +187,7 @@ diagnosticPlots_4panel_A <- function(plotpredict, plotObs, plotyldpredict, ploty
     hoverinfo = "text",
     text = as.formula(markerText)
   )
-  p4 <- p4 %>% layout(shapes = list(hline(spatialAutoCorr=FALSE, 0)))
+  p4 <- p4 %>% plotly::layout(shapes = list(hline(spatialAutoCorr=FALSE, 0)))
 
   p <- subplot(p1, p2, p3, p4,
     nrows = 2, widths = c(0.5, 0.5), heights = c(0.5, 0.5),

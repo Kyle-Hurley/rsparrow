@@ -28,22 +28,15 @@ checkBinaryMaps <- function(mapSetting, path_gis) {
   }
   objfile <- paste0(path_gis, .Platform$file.sep, outObj)
 
-
-
   if (!identical(mapSetting, NA) & file.exists(objfile)) {
-    load(objfile)
-    assign(outObj, get(outObj), envir = parent.frame())
-
-    if (!exists("outObj")) {
+    e <- new.env(parent = emptyenv())
+    load(objfile, envir = e)
+    if (!exists(outObj, envir = e, inherits = FALSE)) {
       message(paste0(settingName, " <- ", mapSetting, " NOT FOUND MAPPING CANNOT COMPLETE.\nSet if_create_binary_maps<-'yes' to create binary files."))
-      fileLoaded <- FALSE
-    } else {
-      fileLoaded <- TRUE
+      return(list(fileLoaded = FALSE, mapObj = NULL))
     }
-  } else {
-    fileLoaded <- FALSE
+    return(list(fileLoaded = TRUE, mapObj = get(outObj, envir = e, inherits = FALSE)))
   }
 
-
-  return(fileLoaded)
+  return(list(fileLoaded = FALSE, mapObj = NULL))
 } # end function

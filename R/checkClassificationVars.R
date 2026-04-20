@@ -38,10 +38,8 @@ checkClassificationVars <- function(subdata, class.input.list) {
         } else {
           type <- "class_landuse"
         }
-        cat("\n \n")
         message(paste("ERROR the following ", type, " variable has MISSING values : ", names(cols)[c]))
         message(paste("\nMISSING VALUES IN 'classvar' AND/OR 'class_landuse' VARIABLES WILL CAUSE PROGRAM FAILURE!"))
-        cat("\n \n")
         stop("Error in checkClassificationVars.R. Run execution terminated.")
       }
     }

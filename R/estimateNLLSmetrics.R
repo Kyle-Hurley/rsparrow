@@ -216,7 +216,6 @@ estimateNLLSmetrics <- function(if_estimate, if_estimate_simulation, if_sparrowE
       ))
       if (length(ErrorSolve) > 0) {
         if (ErrorSolve == 1) {
-          cat("\n \n")
           message(singularMessage)
 
           Message <- "ERROR"
@@ -249,7 +248,6 @@ estimateNLLSmetrics <- function(if_estimate, if_estimate_simulation, if_sparrowE
       ))
       if (length(ErrorSolve) > 0) {
         if (ErrorSolve == 1) {
-          cat("\n \n")
           message(singularMessage)
 
           Message <- "ERROR"
@@ -475,7 +473,6 @@ estimateNLLSmetrics <- function(if_estimate, if_estimate_simulation, if_sparrowE
     ))
     if (length(ErrorSolve) > 0) {
       if (ErrorSolve == 1) {
-        cat("\n \n")
         message(singularMessage)
 
         Message <- "ERROR"

@@ -12,7 +12,7 @@ rsparrow_scenario(object, source_changes, scenario_name = "scenario1", ...)
 \item{source_changes}{A named numeric vector or named list specifying source
 multipliers. Names correspond to source variable names in the model;
 values are multiplicative factors (e.g.,
-\code{list(fertilizer = 0.5)} reduces fertilizer inputs by 50\\%).}
+\code{list(fertilizer = 0.5)} reduces fertilizer inputs by 50\%).}
 
 \item{scenario_name}{Character. Name for this scenario (used in output file
 labeling). Default: \code{"scenario1"}.}

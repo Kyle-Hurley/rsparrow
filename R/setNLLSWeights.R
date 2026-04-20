@@ -74,7 +74,6 @@ setNLLSWeights <- function(NLLS_weights, run_id, subdata, sitedata, data_names,
   if (NLLS_weights != "default") {
     if (sum(ifelse(is.na(weight), 1, 0)) > 0 | is.null(weight)) {
       Csites.weights.list <- named.list(NLLS_weights, tiarea, count, weight)
-      cat("\n \n")
       message("ERROR: Missing values found for calibration sites in the system variable 'weight' \n that is used in the requested weighted estimation (see 'NLLS_weights' control setting). \n For the NLLS_weights option, the variable 'weight' must be computed in userModifyData and \n entered into the dataDictionary.csv as sparrowNames with FIXED varType. \nRUN EXECUTION TERMINATED.")
       stop("Error in setNLLSWeights.R. Run execution terminated.")
     }

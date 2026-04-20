@@ -1,70 +1,96 @@
 ---
-title: "SPARROW"
-author: "Richard Alexander, Lillian Gorman Sanisaca, and Kyle Hurley"
-date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: pdf_document
+title: "Getting Started with rsparrow"
+output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Getting Started with rsparrow}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 # Introduction
 
-This vignette provides a general summary of RSPARROW and guidance on the setup and execution of the system. 
+rsparrow is an R package for executing and evaluating SPARROW (SPAtially Referenced
+Regressions On Watershed attributes) models. It generates estimation results,
+predictions, and diagnostic output for static (long-term mean annual) SPARROW
+water-quality models.
 
-RSPARROW is a system of R scripts and functions for executing and evaluating SPARROW models that generates graphical, map, and tabular output. Users operate the system within RStudio from a single control script that accesses the supporting input files and functions.
+Static SPARROW models provide reach-level predictions (and uncertainties) of the
+long-term mean annual water-quality loads and flow-weighted concentrations. The
+predictions include the shares of the load attributable to individual upstream
+sources and predictions of the mass quantities of the total load and individual
+sources that are delivered to downstream water bodies.
 
-The RSPARROW documentation describes the steps necessary to estimate the static version of the model. Static SPARROW models provide reach-level predictions (and uncertainties) of the long-term mean annual water-quality loads and flow-weighted concentrations. The predictions also include the shares of the load attributable to individual upstream sources and predictions of the mass quantities of the total load and individual sources that are delivered to downstream water bodies.
+# Installation
 
-Users are directed to download the documentation from <https://code.usgs.gov/water/stats/rsparrow/-/blob/master/RSPARROW_master/inst/doc/RSPARROW_docV2.0.pdf>. This provides a complete guide to the installation and use of RSPARROW, including the steps needed to create and interpret SPARROW models. 
+Install rsparrow from CRAN:
 
+```r
+install.packages("rsparrow")
+```
 
-# Installation of RSPARROW
+Or install the development version from GitHub:
 
-**Download RSPARROW from the USGS GitLab repository:**  https://code.usgs.gov/water/stats/RSPARROW. This includes scripts, functions, and supporting documentation and tutorials.  
+```r
+# install.packages("remotes")
+remotes::install_github("Kyle-Hurley/rsparrow")
+```
 
-See Chapter 1.3 of the documentation for information on the RSPARROW directory structure and contents.  
+# Basic Usage
 
-**Three directories contain the contents of RSPARROW** (The figure below shows the contents of the RSPARROW directories as installed on a user's computer):
+```r
+library(rsparrow)
 
-1. **RSPARROW_master**:  Includes functions, sourced files (DLLs), meta-data, and documentation vignettes. The directory contents should not be modified by users; no other sub-directories should be created in this directory on a user's computer. **The documentation, with clickable links in the PDF table of contents, is located in the ["RSPARROW_master/inst/doc"](https://code.usgs.gov/water/stats/RSPARROW/RSPARROW_master/inst/doc/RSPARROW_v2.0.pdf) sub-directory.** 
+# Run a SPARROW model (requires a configured model directory)
+model <- rsparrow_model(path_main = "path/to/model/", run_id = "myrun")
 
-2. **UserTutorial**:  Contains the SPARROW total nitrogen models that are used for the tutorials presented in Chapter 6 of the documentation. 
+# View a summary
+summary(model)
 
-    * The *"results"* sub-directory contains a control script, input control files to execute the SPARROW model, and sub-directories for the tutorial models. The control script executes a predetermined sequence of function calls, governed by user settings in the control script. Separate execution of RSPARROW library functions by users (e.g., to estimate models or generate predictions and maps) is not supported. 
-    
-    * The directory structure and contents for the tutorial model, including the control scipt and input control files, can be used as a template to guide the setup and execution of user developed models.  
+# Generate predictions
+model <- predict(model)
 
-3. **R-4.4.2**:  Contains the recommended 4.4.2 version of R, with pre-installed RSPARROW library dependencies. The R library dependencies have been tested for compatibility with RSPARROW. More recent R versions (>4.4.2) may operate with RSPARROW, once the required package dependencies are installed, but full compatibility of these R versions with RSPARROW is not guaranteed. The R-4.4.2 directory should be located separately from the RSPARROW master and User Directories, such as parallel to a user's other versions of R.
+# Scenario analysis: reduce a source by 50 percent
+model <- rsparrow_scenario(
+  model,
+  source_changes = list(fertilizer = 0.5),
+  scenario_name  = "reduce_fertilizer"
+)
+```
 
+# Model Directory Setup
 
+A SPARROW model requires a directory containing:
 
-# Setup and execution of a SPARROW model in RSPARROW
+- `sparrow_control.R` — control settings script
+- `parameters.csv` — parameter configuration
+- `design_matrix.csv` — source-delivery design matrix
+- `dataDictionary.csv` — variable metadata
+- `data1.csv` — reach-level input data
 
-See the documentation Chapter 4.1 ("Overview of the *sparrow_control.R* script settings") and 4.2 ("Executing the control script in RStudio") for details on getting started with RSPARROW. Chapter 4.2 gives information on finding a copy of the control script, a list of five major steps for executing RSPARROW, and a detailed checklist for the setup and testing of system settings, control files, and new models. 
+See the package documentation (`?rsparrow_model`) and the USGS RSPARROW
+documentation for detailed setup instructions.
 
-The tutorial models described in Chapter 6 also provide an illustration of how to build a SPARROW model, starting with a simple specification and adding variables to construct a more complex model. The descriptions of the models include helpful summaries of the model output and interpretations of the model results. 
+# Reporting Bugs
 
+Please report bugs and ask questions on the GitHub Issues page:
+<https://github.com/Kyle-Hurley/rsparrow/issues>
 
-# Reporting bugs
+# Citation
 
-Please consider reporting bugs and asking questions on the GitLab Issues page: <https://code.usgs.gov/water/stats/rsparrow/-/issues>
-
-
-# Citation for the RSPARROW Software Release
-
-Gorman Sanisaca, Lillian, Hurley, Kyle P., and Alexander, Richard B.  (2025) [RSPARROW 2.1.0: An R system for SPARROW modeling](ttps://code.usgs.gov/water/stats/RSPARROW) [Software release]. U.S. Geological Survey. DOI: https://doi.org/10.5066/P1Y6RUBU
-
-
-# Code of Conduct
-
-We want to encourage a warm, welcoming, and safe environment for contributing to this project. See the [code of conduct](https://github.com/USGS-R/toxEval/blob/master/CONDUCT.md) for more information.
-
+Gorman Sanisaca, Lillian, Hurley, Kyle P., and Alexander, Richard B. (2025)
+RSPARROW 2.1.0: An R system for SPARROW modeling. U.S. Geological Survey.
+DOI: https://doi.org/10.5066/P1Y6RUBU
 
 # Disclaimer
 
-This software has been approved for release by the U.S. Geological Survey (USGS). Although the software has been subjected to rigorous review, the USGS reserves the right to update the software as needed pursuant to further analysis and review. No warranty, expressed or implied, is made by the USGS or the U.S. Government as to the functionality of the software and related material nor shall the fact of release constitute any such warranty. Furthermore, the software is released on condition that neither the USGS nor the U.S. Government shall be held liable for any damages resulting from its authorized or unauthorized use.
+This software has been approved for release by the U.S. Geological Survey (USGS).
+Although the software has been subjected to rigorous review, the USGS reserves the
+right to update the software as needed pursuant to further analysis and review. No
+warranty, expressed or implied, is made by the USGS or the U.S. Government as to
+the functionality of the software and related material nor shall the fact of release
+constitute any such warranty. Furthermore, the software is released on condition
+that neither the USGS nor the U.S. Government shall be held liable for any damages
+resulting from its authorized or unauthorized use.
 
-Any use of trade, firm, or product names is for descriptive purposes only and does not imply endorsement by the U.S. Government. 
-
+Any use of trade, firm, or product names is for descriptive purposes only and does
+not imply endorsement by the U.S. Government.

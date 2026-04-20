@@ -272,7 +272,7 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
       x = plotData$sdist, y = plotData$y, type = "scatter", mode = "lines", color = I("black"),
       line = list(color = I("black"))
     ) %>%
-    layout(shapes = list(
+    plotly::layout(shapes = list(
       hline(spatialAutoCorr = TRUE, 1, color = "black", dash = "dash"),
       hline(spatialAutoCorr = TRUE, 0, color = "black", dash = "dash")
     ))
@@ -308,7 +308,7 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
       x = plotData$edist, y = plotData$y, type = "scatter", mode = "lines", color = I("black"),
       line = list(color = I("black"))
     ) %>%
-    layout(shapes = list(
+    plotly::layout(shapes = list(
       hline(spatialAutoCorr = TRUE, 1, color = "black", dash = "dash"),
       hline(spatialAutoCorr = TRUE, 0, color = "black", dash = "dash")
     ))
@@ -425,7 +425,7 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
     mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
                                     line = list(color = "black", width = 3))
   )
-  p_21a <- p %>% layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
+  p_21a <- p %>% plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
 
   if (length(pmoran_dev) == 0) cind <- character(0)
   p <- plotlyLayout(NA, pmoran_dev,
@@ -441,7 +441,7 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
     mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
                                     line = list(color = "black", width = 3))
   )
-  p_21b <- p %>% layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
+  p_21b <- p %>% plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
 
   if (length(bpmoran) == 0) cind <- character(0)
   p <- plotlyLayout(NA, bpmoran,
@@ -457,7 +457,7 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
     mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
                                     line = list(color = "black", width = 3))
   )
-  p_21c <- p %>% layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
+  p_21c <- p %>% plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
 
   if (length(bpmoran_dev) == 0) cind <- character(0)
   p <- plotlyLayout(NA, bpmoran_dev,
@@ -473,7 +473,7 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
     mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
                                     line = list(color = "black", width = 3))
   )
-  p_21d <- p %>% layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
+  p_21d <- p %>% plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
 
   p.list[["p21"]] <- subplot(p_21a, p_21b, p_21c, p_21d,
     nrows = 2, widths = c(0.5, 0.5),
@@ -613,7 +613,7 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
     mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
                                     line = list(color = "black", width = 3))
   )
-  p_22a <- p %>% layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
+  p_22a <- p %>% plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
 
   p <- plotlyLayout(NA, pmoran_dev,
     log = "", nTicks = 7, digits = 1,
@@ -628,7 +628,7 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
     mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
                                     line = list(color = "black", width = 3))
   )
-  p_22b <- p %>% layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
+  p_22b <- p %>% plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
 
   h <- if (!dynamic) c(1) else c(0.5)
   p.list[["p22"]] <- subplot(p_22a, p_22b,

@@ -74,7 +74,9 @@ diagnosticPlotsNLLS <- function(file.output.list, class.input.list, sitedata.dem
   # Filter site attributes to those present in sitedata
   map_siteAttributes.list <- map_siteAttributes.list[map_siteAttributes.list %in% names(sitedata)]
 
-  existGeoLines <- checkBinaryMaps(LineShapeGeo, path_gis)
+  geoLinesResult <- checkBinaryMaps(LineShapeGeo, path_gis)
+  existGeoLines  <- geoLinesResult$fileLoaded
+  if (existGeoLines) GeoLines <- geoLinesResult$mapObj
   msa_has_attr  <- length(map_siteAttributes.list) > 0
   msa_not_na    <- !identical(NA, map_siteAttributes.list)
 

@@ -16,8 +16,7 @@ startEndmodifySubdata <- function(data_names, class_landuse, data1) {
   missingLanduseClass <- class_landuse[which(!class_landuse %in% data_names$sparrowNames)]
   if (length(na.omit(missingLanduseClass)) != 0) {
     for (i in 1:length(missingLanduseClass)) {
-      cat("\n FATAL ERROR : MISSING class_landuse : ", missingLanduseClass[i], "\n ", sep = "")
-      cat("\n \n")
+      message("FATAL ERROR: MISSING class_landuse: ", missingLanduseClass[i])
     }
   }
 

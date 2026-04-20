@@ -159,14 +159,12 @@ startModelRun <- function(file.output.list,
     ) # end try
 
     if (class(tryIt) == "try-error") { # if an error occured
-      cat("\n \n")
       message(paste0(
         "AN ERROR OCCURRED IN PROCESSING _userModifyData.R\n",
         geterrmessage(), "RUN EXECUTION TERMINATED."
       ))
 
       if (regexpr("not found", geterrmessage()) > 0) {
-        cat("\n \n")
         message(paste("OBJECT NOT FOUND ERROR COULD INDICATE THAT THE VARIABLE DOES NOT EXIST IN THE dataDictionary.csv FILE"))
       }
 
@@ -278,9 +276,8 @@ startModelRun <- function(file.output.list,
   sparrow_state$sitegeolimits <- sitegeolimits
 
 
-  cat(" \nMonitoring station latitude and longitude minimums and maximums = \n ", sep = "")
+  message("Monitoring station latitude and longitude minimums and maximums = ")
   print(unlist(sitegeolimits))
-  cat("\n \n")
 
 
   vnumsites <- 0
@@ -417,17 +414,17 @@ startModelRun <- function(file.output.list,
 
 
   if (if_boot_estimate == "yes") {
-    cat(" \nBootstrap estimation run time\n ")
+    message("Bootstrap estimation run time")
     print(runTimes$BootEstRunTime)
   }
 
   if (if_boot_predict == "yes") {
-    cat(" \nBootstrap prediction run time\n ")
+    message("Bootstrap prediction run time")
     print(runTimes$BootPredictRunTime)
   }
 
   if (!is.na(master_map_list[1])) {
-    cat(" \nMap predictions run time\n ")
+    message("Map predictions run time")
     print(runTimes$MapPredictRunTime)
   }
 

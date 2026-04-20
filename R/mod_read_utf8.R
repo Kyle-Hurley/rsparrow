@@ -24,7 +24,7 @@ mod_read_utf8 <- function(con) {
   opts <- options(encoding = "native.enc")
   on.exit(options(opts), add = TRUE)
   x <- readLines(con, encoding = "UTF-8", warn = FALSE)
-  i <- xfun:::invalid_utf8(x)
+  i <- which(is.na(iconv(x, "UTF-8", "UTF-8")))
   n <- length(i)
   if (n > 0) {
     i <- sapply(i, function(x) x - 1)

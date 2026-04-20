@@ -35,7 +35,6 @@ read_dataDictionary <- function(file.output.list) {
   blankSparrow <- data_names[which(is.na(data_names$sparrowNames) | data_names$sparrowNames == ""), ]
   if (nrow(blankSparrow) != 0) {
     message(" \nsparrowName is BLANK in data dictionary at row(s) : ", paste(rownames(blankSparrow), collapse = ", "), ".  These rows have been removed.")
-    cat("\n \n")
   }
 
   data_names <- data_names[which(!is.na(data_names$sparrowNames) & data_names$sparrowNames != ""), ]
@@ -47,7 +46,6 @@ read_dataDictionary <- function(file.output.list) {
   if (!identical(NA, add_vars)) {
     if (any(!add_vars %in% data_names$sparrowNames)) {
       message(paste0("WARNING: add_vars MISSING FROM dataDictionary sparrowNames : ", paste(add_vars[which(!add_vars %in% data_names$sparrowNames)], collapse = ","), "\n \n"))
-      cat("\n \n")
       add_vars <- add_vars[which(add_vars %in% data_names$sparrowNames)]
     }
   }

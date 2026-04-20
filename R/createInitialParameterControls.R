@@ -57,11 +57,9 @@ createInitialParameterControls <- function(file.output.list) {
           file = paste0(dirname(path_results), .Platform$file.sep, "design_matrix.csv"), initialdesignMatrix,
           row.names = FALSE, col.names = TRUE, showProgress = FALSE, dec = csv_decimalSeparator, sep = csv_columnSeparator, na = "NA"
         )
-        cat("\n \n")
         message(paste0("INITIAL DESIGN_MATRIX FILE : ", paste0(dirname(path_results), .Platform$file.sep, "design_matrix.csv"), " AVAILABLE FOR EDIT"))
         # report missing SOURCE or DELIVF types
         missing <- as.character(missingTypes[which(missingTypes$varType %in% c("SOURCE", "DELIVF")), ]$varType)
-        cat("\n \n")
         if (length(missing) != 0) {
           message("MISSING varTypes FOR CREATING INITIAL DESIGN MATRIX :")
           for (i in missing) {
@@ -88,7 +86,6 @@ createInitialParameterControls <- function(file.output.list) {
           missingSources <- sources[which(!sources %in% initialdesignMatrix$sparrowNames)]
           missingDelivery <- delivery[which(!delivery %in% names(initialdesignMatrix))]
           # report missing SOURCE or DELIVF variables
-          cat("\n \n")
           if (length(missingSources) != 0) {
             message("MISSING SOURCE VARIABLES FOUND IN PARAMETERS CONTROL FILE :")
             for (i in missingSources) {
@@ -96,7 +93,6 @@ createInitialParameterControls <- function(file.output.list) {
             }
           } # if missingSources
           if (length(missingDelivery) != 0) {
-            cat("\n \n")
             message("MISSING DELIVF VARIABLES FOUND IN PARAMETERS CONTROL FILE :")
             for (i in missingDelivery) {
               message(i)
@@ -138,33 +134,27 @@ createInitialParameterControls <- function(file.output.list) {
             file = paste0(dirname(path_results), .Platform$file.sep, "parameters.csv"), initialBetas,
             row.names = FALSE, col.names = TRUE, showProgress = FALSE, dec = csv_decimalSeparator, sep = csv_columnSeparator, na = "NA"
           )
-          cat("\n \n")
           message(paste0("INITIAL PARAMETERS FILE : ", paste0(dirname(path_results), .Platform$file.sep, "parameters.csv"), " AVAILABLE FOR EDIT"))
 
           # report for missing types STRM or RESV
           missing <- as.character(missingTypes[which(missingTypes$varType %in% c("STRM", "RESV")), ]$varType)
-          cat("\n \n")
           if (length(missing) != 0) {
             message("MISSING varTypes FOR CREATING INITIAL PARAMETERS FILE :")
             for (i in missing) {
               message(i)
             }
           } # if missing
-          cat("\n \n")
           message("RUN EXECUTION TERMINATED")
           stop("RSPARROW run terminated due to errors.")
         } # if no betas or design
       } else { # if no design
-        cat("\n \n")
         message(paste0(paste0(dirname(path_results), .Platform$file.sep, "design_matrix.csv"), " ALREADY EXISTS.\n
 NEW DESIGN_MATRIX FILE NOT CREATED.\n
 SET create_initial_parameterControlFiles<-'no' to RUN RSPARROW WITH CURRENT DESIGN_MATRIX."))
         if (exists("initialBetas")) {
-          cat("\n \n")
           message("RUN EXECUTION TERMINATED")
           stop("RSPARROW run terminated due to errors.")
         } else { # if betas exist terminate
-          cat("\n \n")
         }
       } # end if no design
 
@@ -207,12 +197,10 @@ SET create_initial_parameterControlFiles<-'no' to RUN RSPARROW WITH CURRENT DESI
             file = paste0(dirname(path_results), .Platform$file.sep, "parameters.csv"), initialBetas,
             row.names = FALSE, col.names = TRUE, showProgress = FALSE, dec = csv_decimalSeparator, sep = csv_columnSeparator, na = "NA"
           )
-          cat("\n \n")
           message(paste0("INITIAL PARAMETERS FILE : ", paste0(dirname(path_results), .Platform$file.sep, "parameters.csv"), " AVAILABLE FOR EDIT"))
 
           # report for missing types STRM or RESV
           missing <- as.character(missingTypes[which(missingTypes$varType %in% allTypes), ]$varType)
-          cat("\n \n")
           if (length(missing) != 0) {
             message("MISSING varTypes FOR CREATING INITIAL PARAMETERS FILE :")
             for (i in missing) {
@@ -237,7 +225,6 @@ SET create_initial_parameterControlFiles<-'no' to RUN RSPARROW WITH CURRENT DESI
 
           missingDelivery <- names(initialdesignMatrix)[which(!names(initialdesignMatrix) %in% c("sparrowNames", delivery))]
           # report missing SOURCE or DELIVF variables
-          cat("\n \n")
           if (length(missingSources) != 0) {
             message("MISSING SOURCE VARIABLES FOUND IN DESIGN_MATRIX CONTROL FILE :")
             for (i in missingSources) {
@@ -245,18 +232,15 @@ SET create_initial_parameterControlFiles<-'no' to RUN RSPARROW WITH CURRENT DESI
             }
           } # if missingSources
           if (length(missingDelivery) != 0) {
-            cat("\n \n")
             message("MISSING DELIVF VARIABLES FOUND IN DESIGN_MATRIX CONTROL FILE :")
             for (i in missingDelivery) {
               message(i)
             }
           } # if missingDelivery
 
-          cat("\n \n")
           message("RUN EXECUTION TERMINATED")
           stop("RSPARROW run terminated due to errors.")
         } else { # if no betas file
-          cat("\n \n")
           message(paste0(paste0(dirname(path_results), .Platform$file.sep, "parameters.csv"), " ALREADY EXISTS.\n
 NEW PARAMETERS FILE NOT CREATED.\n
 SET create_initial_parameterControlFiles<-'no' to RUN RSPARROW WITH CURRENT PARAMETERS FILE.\n

@@ -91,10 +91,8 @@ estimateOptimize <- function(file.output.list, SelParmValues, estimate.input.lis
   # ndstep = Stepsize to use to computer numerical Jacobian approximatin. Default is 1e-7.
 
   xtime <- proc.time() - ptm
-  cat("\n \n")
-  cat("Time elapsed in optimization\n ")
+  message("Time elapsed in optimization")
   print(xtime)
-  cat("\n \n")
 
   sink(type = "message")
   sink()

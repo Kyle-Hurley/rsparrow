@@ -18,13 +18,14 @@
 checkFileEncoding <- function(con) {
   # determine file encoding
   f <- rawToChar(readBin(con, "raw", 1000000))
-  encodeTable <- as.data.frame(stringi::stri_enc_detect(f)[[1]])
-
-  # get highest confidence encoding
-  bestEnc <- encodeTable[[1, 1]]
-  message(paste0(
-    "data1.csv input file most likely file encoding has been determined to be ", bestEnc,
-    "\n", "alternate file encodings include \n"))
-  print(encodeTable)
-  
+  if (requireNamespace("stringi", quietly = TRUE)) {
+    encodeTable <- as.data.frame(stringi::stri_enc_detect(f)[[1]])
+    bestEnc <- encodeTable[[1, 1]]
+    message(paste0(
+      "data1.csv input file most likely file encoding has been determined to be ", bestEnc,
+      "\n", "alternate file encodings include \n"))
+    print(encodeTable)
+  } else {
+    message("Install the 'stringi' package for detailed encoding detection of data1.csv.")
+  }
 }
