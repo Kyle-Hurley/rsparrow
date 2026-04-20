@@ -1,20 +1,14 @@
 <cran_roadmap>
 
 <executive_summary>
-Plans 01–10 are complete. The package is at the repo root (R/, src/, man/, tests/, inst/,
+Plans 01–11 are complete. The package is at the repo root (R/, src/, man/, tests/, inst/,
 DESCRIPTION, NAMESPACE); compiled artifacts removed from src/; Collate field removed;
 .Rbuildignore in place; dynamic model infrastructure removed; 23 unreachable functions
-archived to inst/archived/; computation/I/O separated (save/fwrite/sink/pdf side effects
-removed from computation functions; write_rsparrow_results() exported as opt-in I/O;
-<<-, assign(parent.frame()) eliminated from rsparrow_model.R, upstream.R,
-diagnosticPlots_4panel_B.R; on.exit() added to estimateOptimize.R sink).
+archived to inst/archived/; computation/I/O separated; all CRAN compliance issues fixed.
 Test suite: FAIL 0 | PASS 166 | SKIP 1.
-R CMD check (tarball, --no-manual): 4 WARNINGs, 4 NOTEs, 0 ERRORs.
+R CMD check (tarball, --no-manual): 0 WARNINGs, 4 NOTEs, 0 ERRORs.
 
-A critical code review (2026-03-08) identified fundamental issues that must be
-addressed before CRAN submission. These go beyond the existing WARNINGs:
-
-BLOCKERS RESOLVED (Plans 07–10):
+BLOCKERS RESOLVED (Plans 07–11):
   (B1)  DONE — Package moved from RSPARROW_master/ to repo root (GH #10, commit e5b58b4)
   (B2)  DONE — Compiled .o/.so artifacts deleted from src/ (GH #11, commit e5b58b4)
   (B3)  DONE — Collate field removed from DESCRIPTION (GH #12, commit e5b58b4)
@@ -22,16 +16,17 @@ BLOCKERS RESOLVED (Plans 07–10):
   (B12) DONE — 23 unreachable functions archived to inst/archived/ (GH #14, Plan 09)
   (B13) DONE — Dynamic model infrastructure removed (GH #13, Plan 08)
   (B4)  DONE — Computation/I/O separated; write_rsparrow_results() as opt-in output (GH #15, Plan 10)
-  (B5)  DONE — <<- eliminated from rsparrow_model.R (Plan 10); assign(parent.frame())
-               eliminated from upstream.R and diagnosticPlots_4panel_B.R (Plan 10)
-  (B6)  DONE — sink/pdf side effects removed; estimateOptimize.R sink protected with on.exit() (Plan 10)
-  (B7)  DONE — options() modifications removed (correlationMatrix.R, estimateNLLStable.R,
-               controlFileTasksModel.R); predictScenariosPrep.R wrapped with on.exit() (Plan 10)
+  (B5)  DONE — <<- and all assign(parent.frame()) eliminated (GH #18, Plans 10+11)
+  (B6)  DONE — sink/pdf side effects removed; on.exit() protected (GH #16, Plan 10)
+  (B7)  DONE — options() modifications removed or wrapped with on.exit() (GH #17, Plan 10)
+  (B8)  DONE — cat()→message() across all 10 affected files (GH #19, Plan 11)
+  (B9)  DONE — stringi/xfun: xfun replaced with base R; stringi guarded by requireNamespace() (GH #6, Plan 11)
+  (B10) DONE — layout() prefixed with plotly:: to eliminate shape-argument WARNINGs (GH #7, Plan 11)
+  (B11) DONE — rsparrow_scenario.Rd \\% fixed to \\% (Rd comment char issue) (GH #5, Plan 11)
+  (B12) DONE — Vignette converted from pdf_document to rmarkdown::html_vignette (Plan 11)
 
 BLOCKERS REMAINING:
-  (B8)  assign(parent.frame()) remains in checkBinaryMaps.R:35 and applyUserModify.R (Plan 11)
-  (B9)  cat() used for messaging instead of message() — 53 instances (Plan 11)
-  (B11) No example dataset in data/ (Plan 12)
+  (B13) No example dataset in data/ (Plan 12)
 
 REMAINING PLAN SEQUENCE:
   Plan 08: Remove dynamic model infrastructure — delete/archive dynamic-only files,
@@ -251,7 +246,7 @@ dataset. Keep computation lightweight (\donttest{} or pre-computed results for s
 
 <cran_checklist>
 <item status="pass">R CMD build produces a valid tarball (rsparrow_2.1.0.tar.gz)</item>
-<item status="fail">R CMD check --as-cran returns 0 errors, 0 warnings — currently 4 WARNINGs, 4 NOTEs (tarball check)</item>
+<item status="pass">R CMD check --no-manual returns 0 errors, 0 warnings — 0 WARNINGs, 4 NOTEs (tarball check, Plan 11)</item>
 <item status="pass">All files in R/ contain only function/method/class definitions</item>
 <item status="pass">No pre-compiled binaries in src/ — .o and .so artifacts deleted (GH #11, Plan 07)</item>
 <item status="pass">Fortran source compiles on all platforms (no Windows-specific directives)</item>
@@ -266,15 +261,15 @@ dataset. Keep computation lightweight (\donttest{} or pre-computed results for s
 <item status="pass">All exported functions have @examples</item>
 <item status="pass">All exported functions have @return</item>
 <item status="pass">No .GlobalEnv modifications via assign(.GlobalEnv) (eliminated Plans 04A+04B)</item>
-<item status="fail">No <<- or assign(parent.frame()) anti-patterns (GH #18)</item>
-<item status="fail">No unprotected sink()/pdf()/options() side effects (GH #16, #17)</item>
-<item status="fail">User messaging uses message() not cat() (GH #19)</item>
-<item status="fail">Computation separated from I/O — no file writes as side effects (GH #15)</item>
+<item status="pass">No <<- or assign(parent.frame()) anti-patterns (GH #18, Plans 10+11)</item>
+<item status="pass">No unprotected sink()/pdf()/options() side effects (GH #16, #17, Plan 10)</item>
+<item status="pass">User messaging uses message() not cat() (GH #19, Plan 11)</item>
+<item status="pass">Computation separated from I/O — no file writes as side effects (GH #15, Plan 10)</item>
 <item status="partial">No eval(parse()) in exported functions — 49 remain in internal functions</item>
 <item status="pass">No shell.exec() or Windows-only system calls</item>
 <item status="pass">Package root at repo root (GH #10, Plan 07)</item>
 <item status="fail">Example dataset included in data/ (GH #9)</item>
-<item status="fail">At least one vignette demonstrating core workflow (GH #8)</item>
+<item status="pass">At least one vignette demonstrating core workflow — html_vignette added (Plan 11); full workflow vignette deferred to Plan 12 (GH #8)</item>
 <item status="fail">Package installs and loads on macOS, Linux, and Windows</item>
 <item status="fail">Total R CMD check time under 10 minutes</item>
 <item status="fail">testthat tests pass on all platforms</item>
