@@ -1,22 +1,20 @@
 #' @title diagnosticPlotsNLLS
 #'
 #' @description
-#' Creates diagnostic plots and maps. Returns a named list of plot objects. (Plan 05D:
-#' HTML rendering removed; make_modelEstPerfPlots and make_modelSimPerfPlots inlined;
-#' unPackList replaced with direct $ extractions; eval/parse+plotFunc replaced with
-#' direct function calls.)
+#' Creates diagnostic plots using base R graphics. Plots are drawn directly to
+#' the current graphics device. (Plan 05D: HTML rendering removed; make_modelEstPerfPlots and
+#' make_modelSimPerfPlots inlined; unPackList replaced with direct $ extractions;
+#' eval/parse+plotFunc replaced with direct function calls. Plan 16: base R plotting
+#' replaces plotly throughout.)
 #'
 #' Executed By: \itemize{
 #'              \item diagnosticPlotsValidate.R,
 #'              \item estimate.R}
 #'
 #' Executes Routines: \itemize{
-#'              \item addMarkerText.R,
 #'              \item checkBinaryMaps.R,
 #'              \item diagnosticPlots_4panel_A.R,
-#'              \item diagnosticPlots_4panel_B.R,
-#'              \item hline.R,
-#'              \item plotlyLayout.R}
+#'              \item diagnosticPlots_4panel_B.R}
 #'
 #' @param file.output.list list of control settings and relative paths used for input and
 #' output of external files.  Created by `generateInputList.R`
@@ -47,68 +45,14 @@
 
 diagnosticPlotsNLLS <- function(file.output.list, class.input.list, sitedata.demtarea.class,
                                 sitedata, sitedata.landuse, estimate.list, mapping.input.list,
-                                Cor.ExplanVars.list, data_names = NA, add_vars = NA, batch_mode,
+                                Cor.ExplanVars.list, data_names = NA, add_vars = NA, batch_mode = "no",
                                 validation = TRUE) {
 
-  # Direct extractions (replacing unPackList)
-  map_siteAttributes.list  <- mapping.input.list$map_siteAttributes.list
-  LineShapeGeo             <- mapping.input.list$LineShapeGeo
-  GeoLines                 <- mapping.input.list$GeoLines
-  enable_plotlyMaps        <- mapping.input.list$enable_plotlyMaps
-  map_years                <- mapping.input.list$map_years
-  map_seasons              <- mapping.input.list$map_seasons
-  mapPageGroupBy           <- mapping.input.list$mapPageGroupBy
-  mapsPerPage              <- mapping.input.list$mapsPerPage
-  pchPlotlyCross           <- mapping.input.list$pchPlotlyCross
-  diagnosticPlotPointStyle <- mapping.input.list$diagnosticPlotPointStyle
-  diagnosticPlotPointSize  <- mapping.input.list$diagnosticPlotPointSize
-  showPlotGrid             <- mapping.input.list$showPlotGrid
-  add_plotlyVars           <- mapping.input.list$add_plotlyVars
-  loadUnits                <- mapping.input.list$loadUnits
-  yieldUnits               <- mapping.input.list$yieldUnits
-  path_results             <- file.output.list$path_results
-  path_gis                 <- file.output.list$path_gis
-  classvar                 <- class.input.list$classvar
-  class_landuse            <- class.input.list$class_landuse
-
-  # Filter site attributes to those present in sitedata
-  map_siteAttributes.list <- map_siteAttributes.list[map_siteAttributes.list %in% names(sitedata)]
-
-  geoLinesResult <- checkBinaryMaps(LineShapeGeo, path_gis)
-  existGeoLines  <- geoLinesResult$fileLoaded
-  if (existGeoLines) GeoLines <- geoLinesResult$mapObj
-  msa_has_attr  <- length(map_siteAttributes.list) > 0
-  msa_not_na    <- !identical(NA, map_siteAttributes.list)
-
-  p.list <- list()
-
-  if (!validation) {
-
-    if (msa_has_attr & existGeoLines & msa_not_na) {
-
-      # CREATE CALIBRATION SITE MAPS
-      # make_siteAttrMaps removed in Plan 05D (map rendering disabled in Plan 05A)
-      p.list[["calsite_maps"]] <- NULL
-
-    }
-
-  }
-
-  # Build marker list (shared by est and sim plots)
-  pnch <- as.character(pchPlotlyCross[pchPlotlyCross$pch == diagnosticPlotPointStyle, ]$plotly)
-  markerSize <- diagnosticPlotPointSize * 10
-  if (requireNamespace("leaflet", quietly = TRUE)) {
-    markerCols <- leaflet::colorNumeric(c("black", "white"), 1:2)
-  } else {
-    markerCols <- function(x) c("black", "white")[x]
-  }
-  test <- regexpr("open", pnch) > 0
-  if (test) {
-    markerList <- list(symbol = pnch, size = markerSize, color = markerCols(1))
-  } else {
-    markerList <- list(symbol = pnch, size = markerSize, color = markerCols(1),
-                       line = list(color = markerCols(1), width = 0.8))
-  }
+  # Direct extractions
+  loadUnits     <- mapping.input.list$loadUnits
+  yieldUnits    <- mapping.input.list$yieldUnits
+  classvar      <- class.input.list$classvar
+  class_landuse <- class.input.list$class_landuse
 
   # Extract estimation diagnostics from Mdiagnostics.list
   Mdiag           <- estimate.list$Mdiagnostics.list
@@ -148,121 +92,94 @@ diagnosticPlotsNLLS <- function(file.output.list, class.input.list, sitedata.dem
     classvar2 <- NA
   }
 
-  # CREATE MODEL ESTIMATION PERFORMANCE PLOTS (p1-p8, !validation only)
+  # Helper: boxplot with h=1 reference for obs/pred ratio plots
+  .ratio_boxplot <- function(y, grp_var, xlab, ylab, main) {
+    boxplot(y ~ grp_var,
+            xlab = xlab, ylab = ylab, main = main,
+            las = 2, cex.axis = 0.7, col = "white", border = "black",
+            log = "y")
+    abline(h = 1, col = "red", lty = 2, lwd = 1.5)
+  }
+
+  ###########################################################################
+  # ESTIMATION PERFORMANCE PLOTS (only when validation = FALSE)
+  ###########################################################################
 
   if (!validation) {
 
-    est_plots <- list()
-
-    # p1: Obs vs Pred 4-panel (monitoring-adjusted)
-    est_plots[["p1"]] <- diagnosticPlots_4panel_A(
-      predict, Obs, yldpredict, yldobs, sitedata, Resids,
+    # p1: Obs vs Pred (monitoring-adjusted)
+    diagnosticPlots_4panel_A(
+      predict, Obs, yldpredict, yldobs, Resids,
       plotclass = NA,
       plotTitles = c(
-        "'MODEL ESTIMATION PERFORMANCE \n(Monitoring-Adjusted Predictions) \nObserved vs    Predicted Load'",
-        "'MODEL ESTIMATION PERFORMANCE \nObserved vs Predicted Yield'",
-        "'Residuals vs Predicted \nLoad'",
-        "'Residuals vs Predicted \nYield'"
+        "MODEL ESTIMATION PERFORMANCE\n(Monitoring-Adjusted Predictions)\nObserved vs Predicted Load",
+        "MODEL ESTIMATION PERFORMANCE\nObserved vs Predicted Yield",
+        "Residuals vs Predicted Load",
+        "Residuals vs Predicted Yield"
       ),
-      loadUnits, yieldUnits, showPlotGrid, markerList, add_plotlyVars,
-      pnch, markerCols, hline, filterClass = NA
+      loadUnits, yieldUnits, filterClass = NA
     )
 
     # p2: Box/Quantile residuals (estimation)
-    est_plots[["p2"]] <- diagnosticPlots_4panel_B(
-      sitedata, Resids, ratio.obs.pred, standardResids, predict,
+    diagnosticPlots_4panel_B(
+      Resids, ratio.obs.pred, standardResids, predict,
       plotTitles = c(
-        "'MODEL ESTIMATION PERFORMANCE \nResiduals'",
-        "'MODEL ESTIMATION PERFORMANCE \nObserved / Predicted Ratio'",
-        "'Normal Q-Q Plot'",
-        "'Squared Residuals vs Predicted Load'"
+        "MODEL ESTIMATION PERFORMANCE\nResiduals",
+        "MODEL ESTIMATION PERFORMANCE\nObserved / Predicted Ratio",
+        "Normal Q-Q Plot",
+        "Squared Residuals vs Predicted Load"
       ),
-      loadUnits, yieldUnits, showPlotGrid, markerList, add_plotlyVars,
-      pnch, markerCols, hline
+      loadUnits
     )
 
-    # p3: Monitoring-adjusted vs simulated loads
+    # p3: Monitoring-adjusted vs Simulated Loads
     {
-      markerText <- "~paste('</br> Simulated Load: ',ppredict,
-                   '</br> Predicted Load: ',predict"
-      df3 <- data.frame(ppredict = ppredict, predict = predict)
-      markerText <- addMarkerText(markerText, add_plotlyVars, df3, sitedata)$markerText
-      df3        <- addMarkerText(markerText, add_plotlyVars, df3, sitedata)$mapData
-      pp3 <- plotlyLayout(ppredict, predict,
-        log = "xy", nTicks = 5, digits = 0,
-        xTitle = paste0("Simulated Load (", loadUnits, ")"), xZeroLine = FALSE,
-        yTitle = paste0("Monitoring-Adjusted Load (", loadUnits, ")"), yZeroLine = FALSE,
-        plotTitle = "Monitoring-Adjusted vs. Simulated Loads",
-        legend = FALSE, showPlotGrid = showPlotGrid
-      )
-      pp3 <- plotly::add_trace(pp3, data = df3, x = ~ppredict, y = ~predict,
-        type = "scatter", mode = "markers", marker = markerList,
-        hoverinfo = "text", text = eval(parse(text = markerText)))
-      pp3 <- plotly::add_trace(pp3, x = ppredict, y = ppredict,
-        type = "scatter", mode = "lines", color = I("red"),
-        hoverinfo = "text", text = "Simulated Load")
-      est_plots[["p3"]] <- pp3
+      pos <- ppredict > 0 & predict > 0 & is.finite(ppredict) & is.finite(predict)
+      lim <- range(c(ppredict[pos], predict[pos]))
+      plot(ppredict[pos], predict[pos],
+           log  = "xy",
+           xlim = lim, ylim = lim,
+           xlab = paste0("Simulated Load (", loadUnits, ")"),
+           ylab = paste0("Monitoring-Adjusted Load (", loadUnits, ")"),
+           main = "Monitoring-Adjusted vs. Simulated Loads",
+           pch  = 19, cex = 0.6, col = "steelblue")
+      abline(0, 1, col = "red", lwd = 1.5)
     }
 
-    # p4: Ratio vs area-weighted ExplanVars
+    # p4: Obs/Pred ratio vs area-weighted explanatory variables
     if (!identical(Cor.ExplanVars.list, NA)) {
-      est_plots[["p4"]] <- vector("list", length = length(Cor.ExplanVars.list$names))
       for (i in seq_along(Cor.ExplanVars.list$names)) {
-        xv <- Cor.ExplanVars.list$cmatrixM_all[, i]
-        logStr <- if (min(xv) < 0 | max(xv) < 0) "" else "x"
-        markerText <- "~paste('</br>',Cor.ExplanVars.list$names[i],': ',xvar,
-                   '</br> RATIO OBSERVED TO PREDICTED: ',ratio.obs.pred"
-        df4 <- data.frame(xvar = xv, ratio.obs.pred = ratio.obs.pred)
-        markerText <- addMarkerText(markerText, add_plotlyVars, df4, sitedata)$markerText
-        df4        <- addMarkerText(markerText, add_plotlyVars, df4, sitedata)$mapData
-        est_plots[["p4"]][[i]] <- plotlyLayout(xv, ratio.obs.pred,
-          log = logStr, nTicks = 5, digits = 0,
-          xTitle = paste0("AREA-WEIGHTED EXPLANATORY VARIABLE (",
-                          Cor.ExplanVars.list$names[i], ")"),
-          xZeroLine = FALSE, yTitle = "RATIO OBSERVED TO PREDICTED", yZeroLine = FALSE,
-          plotTitle = paste("Observed to Predicted Ratio vs Area-Weighted Explanatory Variable",
-                            "\nFor Incremental Areas between Calibration Sites; Variable Name =",
-                            Cor.ExplanVars.list$names[i]),
-          legend = FALSE, showPlotGrid = showPlotGrid) |>
-          plotly::add_trace(data = df4, x = ~xvar, y = ~ratio.obs.pred,
-            type = "scatter", mode = "markers", marker = markerList,
-            hoverinfo = "text", text = eval(parse(text = markerText)))
+        xv      <- Cor.ExplanVars.list$cmatrixM_all[, i]
+        use_log <- if (min(xv, na.rm = TRUE) > 0) "x" else ""
+        plot(xv, ratio.obs.pred,
+             log  = use_log,
+             xlab = paste0("Area-Weighted Explanatory Variable (", Cor.ExplanVars.list$names[i], ")"),
+             ylab = "Ratio Observed to Predicted",
+             main = paste0("Obs/Pred Ratio vs ", Cor.ExplanVars.list$names[i]),
+             pch  = 19, cex = 0.6, col = "steelblue")
+        abline(h = 1, col = "red", lty = 2, lwd = 1.5)
       }
     }
 
-    # p5: Ratio by drainage area deciles
-    pp5 <- plotlyLayout(NA, ratio.obs.pred,
-      log = "y", nTicks = 7, digits = 0,
-      xTitle = "Upper Bound for Total Drainage Area Deciles (km2)", xZeroLine = FALSE,
-      xLabs = sort(as.numeric(unique(sitedata.demtarea.class))),
-      yTitle = "Observed to Predicted Ratio", yZeroLine = FALSE,
-      plotTitle = "Ratio Observed to Predicted by Deciles",
-      legend = FALSE, showPlotGrid = showPlotGrid)
-    pp5 <- plotly::add_trace(pp5, y = ratio.obs.pred, x = sitedata.demtarea.class,
-      type = "box", color = I("black"), fillcolor = "white")
-    est_plots[["p5"]] <- plotly::layout(pp5, shapes = list(hline(spatialAutoCorr = FALSE, 1)))
+    # p5: Obs/Pred ratio by drainage area deciles
+    .ratio_boxplot(ratio.obs.pred, sitedata.demtarea.class,
+                   xlab = "Upper Bound for Total Drainage Area Deciles (km\u00B2)",
+                   ylab = "Observed to Predicted Ratio",
+                   main = "Ratio Obs/Pred by Drainage Area Deciles")
 
-    # p6: Ratio by classvar
+    # p6: Obs/Pred ratio by classvar
     if (!identical(classvar, "sitedata.demtarea.class")) {
-      est_plots[["p6"]] <- vector("list", length = length(classvar))
       for (k in seq_along(classvar)) {
         vvar <- as.numeric(sitedata[[classvar[k]]])
-        est_plots[["p6"]][[k]] <- plotlyLayout(NA, ratio.obs.pred,
-          log = "y", nTicks = 7, digits = 0,
-          xTitle = classvar[k], xZeroLine = FALSE,
-          xLabs = sort(as.numeric(unique(vvar))),
-          yTitle = "Observed to Predicted Ratio", yZeroLine = FALSE,
-          plotTitle = "Ratio Observed to Predicted",
-          legend = FALSE, showPlotGrid = showPlotGrid) |>
-          plotly::add_trace(y = ratio.obs.pred, x = vvar, type = "box",
-            color = I("black"), fillcolor = "white") |>
-          plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 1)))
+        .ratio_boxplot(ratio.obs.pred, vvar,
+                       xlab = classvar[k],
+                       ylab = "Observed to Predicted Ratio",
+                       main = "Ratio Observed to Predicted")
       }
     }
 
-    # p7: Ratio by landuse deciles
+    # p7: Obs/Pred ratio by landuse deciles
     if (!is.na(class_landuse[1])) {
-      est_plots[["p7"]] <- vector("list", length = length(classvar2))
       for (k in seq_along(classvar2)) {
         vvar  <- as.numeric(sitedata.landuse[[classvar2[k]]])
         iprob <- 10
@@ -278,143 +195,100 @@ diagnosticPlotsNLLS <- function(file.output.list, class.input.list, sitedata.dem
               if (qvars[ii] == jj) qvars2[ii] <- round(avars[jj + 1], digits = 0)
             }
           }
-          xxlab <- paste0("Upper Bound for ", classvar2[k])
-          est_plots[["p7"]][[k]] <- plotlyLayout(NA, ratio.obs.pred,
-            log = "y", nTicks = 7, digits = 0,
-            xTitle = xxlab, xZeroLine = FALSE,
-            xLabs = sort(as.numeric(unique(qvars2))),
-            yTitle = "Observed to Predicted Ratio", yZeroLine = FALSE,
-            plotTitle = "Ratio Observed to Predicted by Deciles",
-            legend = FALSE, showPlotGrid = showPlotGrid) |>
-            plotly::add_trace(y = ratio.obs.pred, x = qvars2, type = "box",
-              color = I("black"), fillcolor = "white") |>
-            plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 1)))
+          .ratio_boxplot(ratio.obs.pred, qvars2,
+                         xlab = paste0("Upper Bound for ", classvar2[k]),
+                         ylab = "Observed to Predicted Ratio",
+                         main = "Ratio Obs/Pred by Deciles")
         } else {
-          est_plots[["p7"]][[k]] <- plotlyLayout(NA, ratio.obs.pred,
-            log = "y", nTicks = 7, digits = 0,
-            xTitle = classvar2[k], xZeroLine = FALSE,
-            xLabs = sort(as.numeric(unique(vvar))),
-            yTitle = "Observed to Predicted Ratio", yZeroLine = FALSE,
-            plotTitle = "Ratio Observed to Predicted",
-            legend = FALSE, showPlotGrid = showPlotGrid) |>
-            plotly::add_trace(y = ratio.obs.pred, x = vvar, type = "box",
-              color = I("black"), fillcolor = "white") |>
-            plotly::layout(shapes = list(hline(FALSE, 1)))
+          .ratio_boxplot(ratio.obs.pred, vvar,
+                         xlab = classvar2[k],
+                         ylab = "Observed to Predicted Ratio",
+                         main = "Ratio Observed to Predicted")
         }
       }
     }
 
     # p8: 4-panel by classvar group (estimation)
-    est_plots[["p8"]] <- vector("list", length = length(grp))
     for (i in seq_along(grp)) {
-      est_plots[["p8"]][[i]] <- diagnosticPlots_4panel_A(
-        predict, Obs, yldpredict, yldobs, sitedata, Resids,
+      nsites_i <- sum(!is.na(class[, 1]) & class[, 1] == grp[i])
+      diagnosticPlots_4panel_A(
+        predict, Obs, yldpredict, yldobs, Resids,
         plotclass = class[, 1],
         plotTitles = c(
-          "paste0('Observed vs Predicted Load \nCLASS Region = ',filterClass,'(n=',nsites,')')",
-          "'Observed vs Predicted \nYield'",
-          "'Residuals vs Predicted \nLoad'",
-          "'Residuals vs Predicted \nYield'"
+          paste0("Observed vs Predicted Load\nClass = ", grp[i], " (n=", nsites_i, ")"),
+          "Observed vs Predicted Yield",
+          "Residuals vs Predicted Load",
+          "Residuals vs Predicted Yield"
         ),
-        loadUnits, yieldUnits, showPlotGrid, markerList, add_plotlyVars,
-        pnch, markerCols, hline, filterClass = as.double(grp[i])
+        loadUnits, yieldUnits, filterClass = as.double(grp[i])
       )
     }
 
-    p.list[["est_perfplots"]] <- est_plots
+  } # end !validation
 
-  }
-
-  # CREATE MODEL SIMULATION PERFORMANCE PLOTS (p9-p15)
-
-  sim_plots <- list()
+  ###########################################################################
+  # SIMULATION PERFORMANCE PLOTS
+  ###########################################################################
 
   # p9: Simulation 4-panel obs vs pred
-  sim_plots[["p9"]] <- diagnosticPlots_4panel_A(
-    ppredict, Obs, pyldpredict, pyldobs, sitedata, pResids,
+  diagnosticPlots_4panel_A(
+    ppredict, Obs, pyldpredict, pyldobs, pResids,
     plotclass = NA,
     plotTitles = c(
-      "'MODEL SIMULATION PERFORMANCE \nObserved vs Predicted Load'",
-      "'MODEL SIMULATION PERFORMANCE \nObserved vs Predicted Yield'",
-      "'Residuals vs Predicted \nLoad'",
-      "'Residuals vs Predicted \nYield'"
+      "MODEL SIMULATION PERFORMANCE\nObserved vs Predicted Load",
+      "MODEL SIMULATION PERFORMANCE\nObserved vs Predicted Yield",
+      "Residuals vs Predicted Load",
+      "Residuals vs Predicted Yield"
     ),
-    loadUnits, yieldUnits, showPlotGrid, markerList, add_plotlyVars,
-    pnch, markerCols, hline, filterClass = NA
+    loadUnits, yieldUnits, filterClass = NA
   )
 
   # p10: Simulation box/quantile residuals
-  sim_plots[["p10"]] <- diagnosticPlots_4panel_B(
-    sitedata, pResids, pratio.obs.pred, NA, ppredict,
+  diagnosticPlots_4panel_B(
+    pResids, pratio.obs.pred, NA, ppredict,
     plotTitles = c(
-      "'MODEL SIMULATION PERFORMANCE \nResiduals'",
-      "'MODEL SIMULATION PERFORMANCE \nObserved / Predicted Ratio'",
-      "'Normal Q-Q Plot'",
-      "'Squared Residuals vs Predicted Load'"
+      "MODEL SIMULATION PERFORMANCE\nResiduals",
+      "MODEL SIMULATION PERFORMANCE\nObserved / Predicted Ratio",
+      "Normal Q-Q Plot",
+      "Squared Residuals vs Predicted Load"
     ),
-    loadUnits, yieldUnits, showPlotGrid, markerList, add_plotlyVars,
-    pnch, markerCols, hline
+    loadUnits
   )
 
-  # p11: Simulation ratio vs area-weighted ExplanVars (!validation only)
+  # p11: Simulation ratio vs area-weighted explanatory variables (!validation only)
   if (!validation && !identical(Cor.ExplanVars.list, NA)) {
-    sim_plots[["p11"]] <- vector("list", length = length(Cor.ExplanVars.list$names))
     for (i in seq_along(Cor.ExplanVars.list$names)) {
-      xv <- Cor.ExplanVars.list$cmatrixM_all[, i]
-      logStr <- if (min(xv) < 0 | max(xv) < 0) "" else "x"
-      markerText <- "~paste('</br>',Cor.ExplanVars.list$names[i],': ',xvar,
-                   '</br> RATIO OBSERVED TO PREDICTED: ',pratio.obs.pred"
-      df11 <- data.frame(xvar = xv, pratio.obs.pred = pratio.obs.pred)
-      markerText <- addMarkerText(markerText, add_plotlyVars, df11, sitedata)$markerText
-      df11       <- addMarkerText(markerText, add_plotlyVars, df11, sitedata)$mapData
-      sim_plots[["p11"]][[i]] <- plotlyLayout(xv, pratio.obs.pred,
-        log = logStr, nTicks = 5, digits = 0,
-        xTitle = paste0("AREA-WEIGHTED EXPLANATORY VARIABLE (",
-                        Cor.ExplanVars.list$names[i], ")"),
-        xZeroLine = FALSE, yTitle = "RATIO OBSERVED TO PREDICTED", yZeroLine = FALSE,
-        plotTitle = paste("Observed to Predicted Ratio vs Area-Weighted Explanatory Variable",
-                          "\nFor Incremental Areas between Calibration Sites; Variable Name =",
-                          Cor.ExplanVars.list$names[i]),
-        legend = FALSE, showPlotGrid = showPlotGrid) |>
-        plotly::add_trace(data = df11, x = ~xvar, y = ~pratio.obs.pred,
-          type = "scatter", mode = "markers", marker = markerList,
-          hoverinfo = "text", text = eval(parse(text = markerText)))
+      xv      <- Cor.ExplanVars.list$cmatrixM_all[, i]
+      use_log <- if (min(xv, na.rm = TRUE) > 0) "x" else ""
+      plot(xv, pratio.obs.pred,
+           log  = use_log,
+           xlab = paste0("Area-Weighted Explanatory Variable (", Cor.ExplanVars.list$names[i], ")"),
+           ylab = "Ratio Observed to Predicted",
+           main = paste0("Sim Obs/Pred Ratio vs ", Cor.ExplanVars.list$names[i]),
+           pch  = 19, cex = 0.6, col = "steelblue")
+      abline(h = 1, col = "red", lty = 2, lwd = 1.5)
     }
   }
 
   # p12: Simulation ratio by drainage area deciles
-  pp12 <- plotlyLayout(NA, pratio.obs.pred,
-    log = "y", nTicks = 7, digits = 0,
-    xTitle = "Upper Bound for Total Drainage Area Deciles (km2)", xZeroLine = FALSE,
-    xLabs = sort(as.numeric(unique(sitedata.demtarea.class))),
-    yTitle = "Observed to Predicted Ratio", yZeroLine = FALSE,
-    plotTitle = "Ratio Observed to Predicted by Deciles",
-    legend = FALSE, showPlotGrid = showPlotGrid)
-  pp12 <- plotly::add_trace(pp12, y = pratio.obs.pred, x = sitedata.demtarea.class,
-    type = "box", color = I("black"), fillcolor = "white")
-  sim_plots[["p12"]] <- plotly::layout(pp12, shapes = list(hline(spatialAutoCorr = FALSE, 1)))
+  .ratio_boxplot(pratio.obs.pred, sitedata.demtarea.class,
+                 xlab = "Upper Bound for Total Drainage Area Deciles (km\u00B2)",
+                 ylab = "Observed to Predicted Ratio",
+                 main = "Sim Ratio Obs/Pred by Drainage Area Deciles")
 
   # p13: Simulation ratio by classvar
   if (!identical(classvar, "sitedata.demtarea.class")) {
-    sim_plots[["p13"]] <- vector("list", length = length(classvar))
     for (k in seq_along(classvar)) {
       vvar <- as.numeric(sitedata[[classvar[k]]])
-      sim_plots[["p13"]][[k]] <- plotlyLayout(NA, pratio.obs.pred,
-        log = "y", nTicks = 7, digits = 0,
-        xTitle = classvar[k], xZeroLine = FALSE,
-        xLabs = sort(as.numeric(unique(vvar))),
-        yTitle = "Observed to Predicted Ratio", yZeroLine = FALSE,
-        plotTitle = "Ratio Observed to Predicted",
-        legend = FALSE, showPlotGrid = showPlotGrid) |>
-        plotly::add_trace(y = pratio.obs.pred, x = vvar, type = "box",
-          color = I("black"), fillcolor = "white") |>
-        plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 1)))
+      .ratio_boxplot(pratio.obs.pred, vvar,
+                     xlab = classvar[k],
+                     ylab = "Observed to Predicted Ratio",
+                     main = "Sim Ratio Observed to Predicted")
     }
   }
 
   # p14: Simulation ratio by landuse deciles
   if (!is.na(class_landuse[1])) {
-    sim_plots[["p14"]] <- vector("list", length = length(classvar2))
     for (l in seq_along(classvar2)) {
       vvar  <- as.numeric(sitedata.landuse[[classvar2[l]]])
       iprob <- 10
@@ -430,55 +304,35 @@ diagnosticPlotsNLLS <- function(file.output.list, class.input.list, sitedata.dem
             if (qvars[ii] == jj) qvars2[ii] <- round(avars[jj + 1], digits = 0)
           }
         }
-        xxlab <- paste0("Upper Bound for ", classvar2[l])
-        sim_plots[["p14"]][[l]] <- plotlyLayout(NA, pratio.obs.pred,
-          log = "y", nTicks = 7, digits = 0,
-          xTitle = xxlab, xZeroLine = FALSE,
-          xLabs = sort(as.numeric(unique(qvars2))),
-          yTitle = "Observed to Predicted Ratio", yZeroLine = FALSE,
-          plotTitle = "Ratio Observed to Predicted by Deciles",
-          legend = FALSE, showPlotGrid = showPlotGrid) |>
-          plotly::add_trace(y = pratio.obs.pred, x = qvars2, type = "box",
-            color = I("black"), fillcolor = "white") |>
-          plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 1)))
+        .ratio_boxplot(pratio.obs.pred, qvars2,
+                       xlab = paste0("Upper Bound for ", classvar2[l]),
+                       ylab = "Observed to Predicted Ratio",
+                       main = "Sim Ratio Obs/Pred by Deciles")
       } else {
-        sim_plots[["p14"]][[l]] <- plotlyLayout(NA, pratio.obs.pred,
-          log = "y", nTicks = 7, digits = 0,
-          xTitle = classvar2[l], xZeroLine = FALSE,
-          xLabs = sort(as.numeric(unique(vvar))),
-          yTitle = "Observed to Predicted Ratio", yZeroLine = FALSE,
-          plotTitle = "Ratio Observed to Predicted",
-          legend = FALSE, showPlotGrid = showPlotGrid) |>
-          plotly::add_trace(y = pratio.obs.pred, x = vvar, type = "box",
-            color = I("black"), fillcolor = "white") |>
-          plotly::layout(shapes = list(hline(FALSE, 1)))
+        .ratio_boxplot(pratio.obs.pred, vvar,
+                       xlab = classvar2[l],
+                       ylab = "Observed to Predicted Ratio",
+                       main = "Sim Ratio Observed to Predicted")
       }
     }
   }
 
   # p15: 4-panel by classvar group (simulation)
-  sim_plots[["p15"]] <- vector("list", length = length(grp))
   for (i in seq_along(grp)) {
-    sim_plots[["p15"]][[i]] <- diagnosticPlots_4panel_A(
-      ppredict, Obs, pyldpredict, pyldobs, sitedata, pResids,
+    nsites_i <- sum(!is.na(class[, 1]) & class[, 1] == grp[i])
+    diagnosticPlots_4panel_A(
+      ppredict, Obs, pyldpredict, pyldobs, pResids,
       plotclass = class[, 1],
       plotTitles = c(
-        "paste0('Observed vs Predicted Load \nCLASS Region = ',filterClass,'(n=',nsites,')')",
-        "'Observed vs Predicted \nYield'",
-        "'Residuals vs Predicted \nLoad'",
-        "'Residuals vs Predicted \nYield'"
+        paste0("Sim Observed vs Predicted Load\nClass = ", grp[i], " (n=", nsites_i, ")"),
+        "Observed vs Predicted Yield",
+        "Residuals vs Predicted Load",
+        "Residuals vs Predicted Yield"
       ),
-      loadUnits, yieldUnits, showPlotGrid, markerList, add_plotlyVars,
-      pnch, markerCols, hline, filterClass = as.double(grp[i])
+      loadUnits, yieldUnits, filterClass = as.double(grp[i])
     )
   }
 
-  p.list[["sim_perfplots"]] <- sim_plots
-
-  # CREATE MODEL RESIDUALS MAPS
-  # make_residMaps removed in Plan 05D (map rendering disabled in Plan 05A)
-  p.list[["resid_maps"]] <- NULL
-
-  invisible(p.list)
+  invisible(NULL)
 
 } # end function

@@ -12,21 +12,19 @@
 \item{type}{Character. One of \code{"residuals"}, \code{"sensitivity"}, or
 \code{"spatial"}. Selects the diagnostic plot type.}
 
-\item{...}{Additional arguments passed to the internal dispatch function.
-For \code{type = "residuals"}, the \code{panel} argument selects which
-4-panel group to display: \code{"A"} (observed vs. predicted and residuals),
-\code{"B"} (boxplots and Q-Q), or \code{"both"}.}
+\item{...}{Additional arguments. For \code{type = "residuals"}, the
+\code{panel} argument selects which 4-panel group to display: \code{"A"}
+(observed vs. predicted and residuals), \code{"B"} (boxplots and Q-Q),
+or \code{"both"}.}
 }
 \value{
-A named list of plotly plot objects, returned invisibly. For
-\code{type = "residuals"}, elements \code{panelA} and/or \code{panelB}. For
-\code{type = "sensitivity"} and \code{"spatial"}, whatever the underlying
-diagnostic function returns.
+Called for its side effects (plots drawn to the current graphics
+device). Returns \code{NULL} invisibly.
 }
 \description{
-Produces diagnostic plots for a fitted SPARROW model. Three plot types are
-available: residual panels (estimation performance), parameter sensitivity,
-and spatial autocorrelation of residuals.
+Produces diagnostic plots for a fitted SPARROW model using base R graphics.
+Three plot types are available: residual panels (estimation performance),
+parameter sensitivity, and spatial autocorrelation of residuals.
 }
 \examples{
 \donttest{

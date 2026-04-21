@@ -4,8 +4,9 @@
 #' Generates diagnostics for spatial dependence (autocorrelation) in the
 #' model residuals. SiteIDs are determined from hydseq sorted file to ensure consistency in hydrologic
 #' distance and other ID ordering across programs. Outputs Morans I stats to
-#' ~/estimate/summaryCSV/(run_id)_EuclideanMoransI.csv. Returns a named list of plotly plot
-#' objects (p19-p22). (Plan 05D: HTML rendering removed; p19-p22 plotFuncs inlined.)
+#' ~/estimate/summaryCSV/(run_id)_EuclideanMoransI.csv. Plots are drawn to the current
+#' graphics device using base R graphics. (Plan 05D: HTML rendering removed; p19-p22 plotFuncs
+#' inlined. Plan 16: base R plotting replaces plotly.)
 #'
 #' Executed By: controlFileTasksModel.R
 #'
@@ -43,11 +44,7 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
   csv_decimalSeparator <- file.output.list$csv_decimalSeparator
   csv_columnSeparator  <- file.output.list$csv_columnSeparator
   classvar             <- class.input.list$classvar
-  diagnosticPlotPointStyle <- mapping.input.list$diagnosticPlotPointStyle
-  diagnosticPlotPointSize  <- mapping.input.list$diagnosticPlotPointSize
   MoranDistanceWeightFunc  <- mapping.input.list$MoranDistanceWeightFunc
-  pchPlotlyCross           <- mapping.input.list$pchPlotlyCross
-  showPlotGrid             <- mapping.input.list$showPlotGrid
 
   data.index.list <- DataMatrix.list$data.index.list
   jdepvar <- data.index.list$jdepvar
@@ -58,21 +55,6 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
   Obs     <- Mdiagnostics.list$Obs
   predict <- Mdiagnostics.list$predict
   yldobs  <- Mdiagnostics.list$yldobs
-
-  pnch <- as.character(pchPlotlyCross[pchPlotlyCross$pch == diagnosticPlotPointStyle, ]$plotly)
-  markerSize <- diagnosticPlotPointSize * 10
-  if (requireNamespace("leaflet", quietly = TRUE)) {
-    markerCols <- leaflet::colorNumeric(c("black", "white"), 1:2)
-  } else {
-    markerCols <- function(x) c("black", "white")[x]
-  }
-  test <- regexpr('open', pnch) > 0
-  if (test) {
-    markerList <- list(symbol = pnch, size = markerSize, color = markerCols(1))
-  } else {
-    markerList <- list(symbol = pnch, size = markerSize, color = markerCols(1),
-                       line = list(color = markerCols(1), width = 0.8))
-  }
 
   data <- DataMatrix.list$data
 
@@ -269,24 +251,15 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
   y  <- Fn(sdist)
   plotData <- data.frame(sdist = sdist, y = y)
   plotData  <- plotData[order(plotData$sdist), ]
-  p <- plotlyLayout(plotData$sdist, plotData$y,
-    log = "", nTicks = 7, digits = 0,
-    xTitle = "Distance Between Sites", xZeroLine = FALSE, xminTick = 0,
-    yTitle = "Fn(x)", yZeroLine = FALSE, ymax = 1, ymin = 0, ymaxTick = 1,
-    plotTitle = "Station Hydrologic Distances",
-    legend = FALSE, showPlotGrid = showPlotGrid
-  ) |>
-    add_trace(
-      x = plotData$sdist, y = plotData$y, type = "scatter", mode = "lines", color = I("black"),
-      line = list(color = I("black"))
-    ) |>
-    plotly::layout(shapes = list(
-      hline(spatialAutoCorr = TRUE, 1, color = "black", dash = "dash"),
-      hline(spatialAutoCorr = TRUE, 0, color = "black", dash = "dash")
-    ))
 
-  p.list <- list()
-  p.list[["p19"]] <- p
+  plot(plotData$sdist, plotData$y,
+       type = "l", col = "black",
+       xlab = "Distance Between Sites",
+       ylab = "Fn(x)",
+       main = "Station Hydrologic Distances",
+       ylim = c(0, 1))
+  abline(h = 0, col = "black", lty = 2)
+  abline(h = 1, col = "black", lty = 2)
 
   ###############################################################################
   # p20: CDF of Station Euclidean Distances
@@ -305,23 +278,15 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
   y  <- Fn(edist)
   plotData <- data.frame(edist = edist, y = y)
   plotData  <- plotData[order(plotData$edist), ]
-  p <- plotlyLayout(plotData$edist, plotData$y,
-    log = "", nTicks = 7, digits = 0,
-    xTitle = "Distance Between Sites", xZeroLine = FALSE, xminTick = 0,
-    yTitle = "Fn(x)", yZeroLine = FALSE, ymax = 1, ymin = 0, ymaxTick = 1,
-    plotTitle = "Station Euclidean Distances (kilometers)",
-    legend = FALSE, showPlotGrid = showPlotGrid
-  ) |>
-    add_trace(
-      x = plotData$edist, y = plotData$y, type = "scatter", mode = "lines", color = I("black"),
-      line = list(color = I("black"))
-    ) |>
-    plotly::layout(shapes = list(
-      hline(spatialAutoCorr = TRUE, 1, color = "black", dash = "dash"),
-      hline(spatialAutoCorr = TRUE, 0, color = "black", dash = "dash")
-    ))
 
-  p.list[["p20"]] <- p
+  plot(plotData$edist, plotData$y,
+       type = "l", col = "black",
+       xlab = "Distance Between Sites (km)",
+       ylab = "Fn(x)",
+       main = "Station Euclidean Distances (kilometers)",
+       ylim = c(0, 1))
+  abline(h = 0, col = "black", lty = 2)
+  abline(h = 1, col = "black", lty = 2)
 
   ###############################################################################
   # p21: Moran's I by River Basin
@@ -420,78 +385,50 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
   bpmoran <- ifelse(bpmoran == 0.0, min(bpmoran[bpmoran > 0]), bpmoran)
 
   if (length(pmoran) == 0) cind <- character(0)
-  p <- plotlyLayout(NA, pmoran,
-    log = "", nTicks = 7, digits = 1,
-    xTitle = "River Basin ID Index", ymin = 0, ymax = 1,
-    xZeroLine = FALSE, xLabs = sort(as.numeric(unique(cind))),
-    yTitle = "P Value (Euclidean distance weighting within basin)", yZeroLine = FALSE,
-    plotTitle = "Moran's I P Value by River Basin",
-    legend = FALSE, showPlotGrid = showPlotGrid
-  )
-  p <- p |> add_trace(
-    y = pmoran, x = as.numeric(cind), type = "scatter", color = I("black"),
-    mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
-                                    line = list(color = "black", width = 3))
-  )
-  p_21a <- p |> plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
 
-  if (length(pmoran_dev) == 0) cind <- character(0)
-  p <- plotlyLayout(NA, pmoran_dev,
-    log = "", nTicks = 7, digits = 1,
-    xTitle = "River Basin ID Index", ymin = 0, ymax = 1,
-    xZeroLine = FALSE, xLabs = sort(as.numeric(unique(cind))),
-    yTitle = "Standard Deviate (Euclidean distance weighting\n within basin)", yZeroLine = FALSE,
-    plotTitle = "Moran's I Standard Deviate by River Basin",
-    legend = FALSE, showPlotGrid = showPlotGrid
-  )
-  p <- p |> add_trace(
-    y = pmoran_dev, x = as.numeric(cind), type = "scatter", color = I("black"),
-    mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
-                                    line = list(color = "black", width = 3))
-  )
-  p_21b <- p |> plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
+  # p21: 4-panel Moran's I by river basin
+  cind_num <- suppressWarnings(as.numeric(cind))
+  x_basin  <- if (length(cind_num) > 0) cind_num else seq_along(pmoran)
 
-  if (length(bpmoran) == 0) cind <- character(0)
-  p <- plotlyLayout(NA, bpmoran,
-    log = "", nTicks = 7, digits = 1,
-    xTitle = "River Basin ID Index", ymin = 0, ymax = 1,
-    xZeroLine = FALSE, xLabs = sort(as.numeric(unique(cind))),
-    yTitle = "P Value (Hydrologic distance weighting)", yZeroLine = FALSE,
-    plotTitle = "Moran's I P Value by River Basin",
-    legend = FALSE, showPlotGrid = showPlotGrid
-  )
-  p <- p |> add_trace(
-    y = bpmoran, x = as.numeric(cind), type = "scatter", color = I("black"),
-    mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
-                                    line = list(color = "black", width = 3))
-  )
-  p_21c <- p |> plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
+  op21 <- par(mfrow = c(2, 2), mar = c(4.5, 4.5, 3, 1))
+  on.exit(par(op21), add = TRUE)
 
-  if (length(bpmoran_dev) == 0) cind <- character(0)
-  p <- plotlyLayout(NA, bpmoran_dev,
-    log = "", nTicks = 7, digits = 1,
-    xTitle = "River Basin ID Index", ymin = 0, ymax = 1,
-    xZeroLine = FALSE, xLabs = sort(as.numeric(unique(cind))),
-    yTitle = "Standard Deviate (Hydrologic distance weighting)", yZeroLine = FALSE,
-    plotTitle = "Moran's I Standard Deviate by River Basin",
-    legend = FALSE, showPlotGrid = showPlotGrid
-  )
-  p <- p |> add_trace(
-    y = bpmoran_dev, x = as.numeric(cind), type = "scatter", color = I("black"),
-    mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
-                                    line = list(color = "black", width = 3))
-  )
-  p_21d <- p |> plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
+  plot(x_basin, pmoran,
+       pch = 4, cex = 1.2,
+       xlab = "River Basin ID Index",
+       ylab = "P Value (Euclidean distance weighting within basin)",
+       main = "Moran's I P Value by River Basin",
+       ylim = c(0, 1))
+  abline(h = 0.1, col = "red", lty = 2)
 
-  p.list[["p21"]] <- subplot(p_21a, p_21b, p_21c, p_21d,
-    nrows = 2, widths = c(0.5, 0.5),
-    titleX = TRUE, titleY = TRUE, margin = 0.08
-  )
+  plot(x_basin, pmoran_dev,
+       pch = 4, cex = 1.2,
+       xlab = "River Basin ID Index",
+       ylab = "Standard Deviate (Euclidean distance weighting within basin)",
+       main = "Moran's I Standard Deviate by River Basin")
+  abline(h = 0.1, col = "red", lty = 2)
+
+  plot(x_basin, bpmoran,
+       pch = 4, cex = 1.2,
+       xlab = "River Basin ID Index",
+       ylab = "P Value (Hydrologic distance weighting)",
+       main = "Moran's I P Value by River Basin",
+       ylim = c(0, 1))
+  abline(h = 0.1, col = "red", lty = 2)
+
+  plot(x_basin, bpmoran_dev,
+       pch = 4, cex = 1.2,
+       xlab = "River Basin ID Index",
+       ylab = "Standard Deviate (Hydrologic distance weighting)",
+       main = "Moran's I Standard Deviate by River Basin")
+  abline(h = 0.1, col = "red", lty = 2)
+
+  par(op21)
+  on.exit(NULL)  # clear on.exit after restoring par
 
   ###############################################################################
   # Between p21 and p22: river basin results and full-domain hydrological Moran's I
 
-  # Build sites_sigmoran from basin loop results (pmoran/bpmoran already min-replaced above)
   x1 <- data.frame(sitedata$station_name, sitedata$station_id, sitedata$staid, scount)
   x2 <- x1[(x1$scount > 0), ]
   xx <- data.frame(dsiteid, pmoran, pmoran_dev, bpmoran, bpmoran_dev)
@@ -608,41 +545,36 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
 
   pmoran <- ifelse(pmoran == 0.0, min(pmoran[pmoran > 0]), pmoran)
 
-  p <- plotlyLayout(NA, pmoran,
-    log = "", nTicks = 7, digits = 1,
-    xTitle = cindLabel, ymin = 0, ymax = 1,
-    xZeroLine = FALSE, xLabs = sort(as.numeric(unique(cind))),
-    yTitle = "Moran's P Value (Euclidean distance weighting)", yZeroLine = FALSE,
-    plotTitle = "Moran's I P Value by CLASS Variable",
-    legend = FALSE, showPlotGrid = showPlotGrid
-  )
-  p <- p |> add_trace(
-    y = pmoran, x = as.numeric(cind), type = "scatter", color = I("black"),
-    mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
-                                    line = list(color = "black", width = 3))
-  )
-  p_22a <- p |> plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
+  # p22: 2-panel Moran's I by class variable
+  # Use integer indices for x-axis; label with cind values
+  n22      <- length(pmoran)
+  x22      <- seq_len(n22)
+  xlabs22  <- cind
 
-  p <- plotlyLayout(NA, pmoran_dev,
-    log = "", nTicks = 7, digits = 1,
-    xTitle = cindLabel, ymin = 0, ymax = 1,
-    xZeroLine = FALSE, xLabs = sort(as.numeric(unique(cind))),
-    yTitle = "Moran's Standard Deviate\n (Euclidean distance weighting)", yZeroLine = FALSE,
-    plotTitle = "Moran's I Standard Deviate by CLASS Variable",
-    legend = FALSE, showPlotGrid = showPlotGrid
-  )
-  p <- p |> add_trace(
-    y = pmoran_dev, x = as.numeric(cind), type = "scatter", color = I("black"),
-    mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
-                                    line = list(color = "black", width = 3))
-  )
-  p_22b <- p |> plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
+  op22 <- par(mfrow = c(1, 2), mar = c(4.5, 4.5, 3, 1))
+  on.exit(par(op22), add = TRUE)
 
-  h <- if (!dynamic) c(1) else c(0.5)
-  p.list[["p22"]] <- subplot(p_22a, p_22b,
-    nrows = 1, widths = c(0.5, 0.5), heights = h,
-    titleX = TRUE, titleY = TRUE, margin = 0.08
-  )
+  plot(x22, pmoran,
+       pch = 4, cex = 1.2,
+       xaxt = "n",
+       xlab = cindLabel,
+       ylab = "Moran's P Value (Euclidean distance weighting)",
+       main = "Moran's I P Value by CLASS Variable",
+       ylim = c(0, 1))
+  axis(1, at = x22, labels = xlabs22, las = 2, cex.axis = 0.8)
+  abline(h = 0.1, col = "red", lty = 2)
+
+  plot(x22, pmoran_dev,
+       pch = 4, cex = 1.2,
+       xaxt = "n",
+       xlab = cindLabel,
+       ylab = "Moran's Standard Deviate (Euclidean distance weighting)",
+       main = "Moran's I Standard Deviate by CLASS Variable")
+  axis(1, at = x22, labels = xlabs22, las = 2, cex.axis = 0.8)
+  abline(h = 0.1, col = "red", lty = 2)
+
+  par(op22)
+  on.exit(NULL)
 
   # Output Moran's I p values to CSV
   if (!dynamic) {
@@ -663,6 +595,6 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
     saveList <- NULL
   }
 
-  invisible(list(plots = p.list, saveList = saveList))
+  invisible(saveList)
 
 } # end function

@@ -159,8 +159,6 @@ estimate <- function(if_estimate, if_predict, file.output.list,
     if (is.finite(JacobResults$mean_exp_weighted_error)) {
 
       # mean error and standardized residuals must be available
-      # Diagnostic plots require plotly (Suggests); skip gracefully if unavailable
-      if (requireNamespace("plotly", quietly = TRUE)) {
       diagnosticPlotsNLLS(
         file.output.list = file.output.list,
         class.input.list = class.input.list,
@@ -174,9 +172,6 @@ estimate <- function(if_estimate, if_predict, file.output.list,
         add_vars = add_vars,
         validation = FALSE
       )
-      } else {
-        message("Skipping diagnostic plots (plotly not available).")
-      }
       
       # output siteAttr shapefile
       if (outputESRImaps[4] == "yes") {
@@ -308,7 +303,6 @@ estimate <- function(if_estimate, if_predict, file.output.list,
     ##############################################
     ### 3. Sensitivity analyses for parameters ###
 
-    if (requireNamespace("plotly", quietly = TRUE)) {
     diagnosticSensitivity(
       file.output.list = file.output.list,
       class.input.list = class.input.list,
@@ -318,12 +312,9 @@ estimate <- function(if_estimate, if_predict, file.output.list,
       SelParmValues = SelParmValues,
       subdata = subdata,
       sitedata.demtarea.class = sitedata.demtarea.class,
-      mapping.input.list = mapping.input.list,dlvdsgn
+      mapping.input.list = mapping.input.list, dlvdsgn
     )
-    } else {
-      message("Skipping sensitivity analysis plots (plotly not available).")
-    }
-    
+
     #####################################
     ### 4. Output validation metrics  ###
     
@@ -494,7 +485,6 @@ estimate <- function(if_estimate, if_predict, file.output.list,
 
           ### Output diagnostic graphics (plots & maps) ###
           message("Running diagnostic plots and sensitivity analysis...")
-          if (requireNamespace("plotly", quietly = TRUE)) {
           diagnosticPlotsNLLS(
             file.output.list = file.output.list,
             class.input.list = class.input.list,
@@ -508,9 +498,6 @@ estimate <- function(if_estimate, if_predict, file.output.list,
             add_vars = add_vars,
             validation = FALSE
           )
-          } else {
-            message("Skipping diagnostic plots (plotly not available).")
-          }
           
           # output siteAttr shapefile
           if (outputESRImaps[4] == "yes") {
@@ -639,7 +626,6 @@ estimate <- function(if_estimate, if_predict, file.output.list,
 
           ### Sensitivity analyses for parameters ###
 
-          if (requireNamespace("plotly", quietly = TRUE)) {
           diagnosticSensitivity(
             file.output.list = file.output.list,
             class.input.list = class.input.list,
@@ -649,11 +635,8 @@ estimate <- function(if_estimate, if_predict, file.output.list,
             SelParmValues = SelParmValues,
             subdata = subdata,
             sitedata.demtarea.class = sitedata.demtarea.class,
-            mapping.input.list = mapping.input.list,dlvdsgn
+            mapping.input.list = mapping.input.list, dlvdsgn
           )
-          } else {
-            message("Skipping sensitivity analysis plots (plotly not available).")
-          }
           
         } else {
           # if no monitoring loads, store Jacobian estimates in object as list for use in making predictions only

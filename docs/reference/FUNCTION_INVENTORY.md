@@ -171,14 +171,17 @@ Computes/verifies reach attributes (hydseq, headflag, termflag, demtarea).
 </module>
 
 <module name="Diagnostics and Visualization">
-<function name="diagnosticPlotsNLLS" file="diagnosticPlotsNLLS.R" class="REFACTOR">Master diagnostic plots (HTML report). Heavy Rmd dependency.</function>
-<function name="diagnosticPlotsNLLS_dyn" file="diagnosticPlotsNLLS_dyn.R" class="REFACTOR">Dynamic model diagnostic plots.</function>
-<function name="diagnosticPlotsNLLS_timeSeries" file="diagnosticPlotsNLLS_timeSeries.R" class="REFACTOR">Time series diagnostic plots.</function>
-<function name="diagnosticPlotsValidate" file="diagnosticPlotsValidate.R" class="REFACTOR">Validation site diagnostic plots.</function>
-<function name="diagnosticPlots_4panel_A/B" file="diagnosticPlots_4panel_A.R" class="REFACTOR">Four-panel residual plots.</function>
+<function name="diagnosticPlotsNLLS" file="diagnosticPlotsNLLS.R" class="KEEP">Master diagnostic plots orchestrator. Draws estimation/simulation performance panels (p1–p15) using base R graphics. plotly removed in Plan 16.</function>
+<function name="diagnosticPlotsNLLS_dyn" file="archived/dynamic/" class="REMOVE" status="DELETED_08">Dynamic model diagnostic plots. Archived in Plan 08.</function>
+<function name="diagnosticPlotsValidate" file="diagnosticPlotsValidate.R" class="KEEP">Thin wrapper calling diagnosticPlotsNLLS with validation=TRUE. No plotly references.</function>
+<function name="diagnosticPlots_4panel_A" file="diagnosticPlots_4panel_A.R" class="KEEP">4-panel obs/pred and residuals scatter plots. Base R graphics (par/plot/abline). plotly removed in Plan 16.</function>
+<function name="diagnosticPlots_4panel_B" file="diagnosticPlots_4panel_B.R" class="KEEP">4-panel boxplot/Q-Q/squared-resid plots. Base R graphics (boxplot/qqnorm/qqline/plot). plotly removed in Plan 16.</function>
 <function name="diagnosticMaps" file="diagnosticMaps.R" class="REMOVE" status="DELETED_05A">Interactive diagnostic maps (59 eval/parse). Deleted in Plan 05A.</function>
-<function name="diagnosticSensitivity" file="diagnosticSensitivity.R" class="REFACTOR">Parameter sensitivity analysis and plots. Decoupled from create_diagnosticPlotList in Plan 05C.</function>
-<function name="diagnosticSpatialAutoCorr" file="diagnosticSpatialAutoCorr.R" class="REFACTOR">Moran's I spatial autocorrelation. Decoupled from create_diagnosticPlotList in Plan 05D.</function>
+<function name="diagnosticSensitivity" file="diagnosticSensitivity.R" class="KEEP">Parameter sensitivity analysis. Per-parameter boxplots and error-bar summary charts in base R. plotly removed in Plan 16.</function>
+<function name="diagnosticSpatialAutoCorr" file="diagnosticSpatialAutoCorr.R" class="KEEP">Moran's I spatial autocorrelation. CDF plots (p19/p20) and Moran's I panels (p21/p22) in base R. eval(parse()) for MoranDistanceWeightFunc preserved (deferred to Plan 16). plotly removed in Plan 16.</function>
+<function name="plotlyLayout" file="plotlyLayout.R" class="REMOVE" status="DELETED_16">plotly layout helper (8 eval/parse). Deleted in Plan 16 (base R plotting plan).</function>
+<function name="hline" file="hline.R" class="REMOVE" status="DELETED_16">plotly horizontal-line shape helper. Deleted in Plan 16.</function>
+<function name="addMarkerText" file="addMarkerText.R" class="REMOVE" status="DELETED_16">plotly hover-text builder. Deleted in Plan 16.</function>
 <function name="correlationMatrix" file="correlationMatrix.R" class="KEEP">Explanatory variable correlation computation.</function>
 <function name="mapSiteAttributes" file="mapSiteAttributes.R" class="REMOVE" status="DELETED_05A">Interactive site attribute maps (19 eval/parse). Deleted in Plan 05A.</function>
 <function name="predictMaps" file="predictMaps.R" class="REMOVE" status="DELETED_05A">Prediction mapping. Deleted in Plan 05A.</function>

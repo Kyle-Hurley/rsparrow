@@ -2,7 +2,6 @@
 #' @description Supports the creation of a list object by specifying unquoted variable names in
 #'            the argument list. \cr \cr
 #' Executed By: \itemize{\item batchRun.R
-#'             \item addMarkerText.R
 #'             \item applyUserModify.R
 #'             \item controlFileTasksModel.R
 #'             \item correlationMatrix.R
