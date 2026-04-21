@@ -30,8 +30,8 @@
 #' `cor.allValues` \tab output of `stats::cor()` function with spearman method applied to
 #'                       `cmatrix_all` \cr
 #' `cor.sampleValues` \tab output of `stats::cor()` function with spearman method applied
-#'                         to a sample of `cmatrix_all`.  Sampling created by `dplyr::sample_n()`
-#'                         function where number of samples is 500 unless `nrow(cmatrix_all)<0`
+#'                         to a sample of `cmatrix_all`.  Sample drawn with base R `sample()`
+#'                         where number of samples is 500 unless `nrow(cmatrix_all)<500`
 #'                         then number of samples equal to `nrow(cmatrix_all)`
 #' `cor.sampleLogValues` \tab similar to `cor.sampleValues` but applied to `log10(cmatrix_all)`
 #' `nsamples` \tab number of samples used to create `cor.sampleValues` and `cor.sampleLogValues`
@@ -52,8 +52,6 @@ correlationMatrix <- function(file.output.list, SelParmValues, subdata) {
 
   if (!requireNamespace("car", quietly = TRUE))
     stop("Package 'car' is needed. Install with: install.packages('car')", call. = FALSE)
-  if (!requireNamespace("dplyr", quietly = TRUE))
-    stop("Package 'dplyr' is needed. Install with: install.packages('dplyr')", call. = FALSE)
 
   rows <- nrow(subdata)
   cmatrix <- matrix(0, nrow = rows, ncol = length(names))
@@ -173,7 +171,7 @@ correlationMatrix <- function(file.output.list, SelParmValues, subdata) {
   nsamples <- ifelse(rows < maxsamples, rows, maxsamples)
 
   # Untransformed data
-  sdf <- dplyr::sample_n(df, nsamples)
+  sdf <- df[sample(nrow(df), min(nsamples, nrow(df))), , drop = FALSE]
   cor.sampleValues <- cor(sdf, method = c("spearman"), use = "pairwise.complete.obs")
   # maximum size limited to 6472 observations
   car::scatterplotMatrix(sdf,
@@ -192,7 +190,7 @@ correlationMatrix <- function(file.output.list, SelParmValues, subdata) {
   cmatrix <- data.frame(log10(cmatrix)) # log transformation
   df <- data.frame(cmatrix)
   colnames(df) <- names
-  sdf <- dplyr::sample_n(df, nsamples)
+  sdf <- df[sample(nrow(df), min(nsamples, nrow(df))), , drop = FALSE]
   cor.sampleLogValues <- cor(sdf, method = c("spearman"), use = "pairwise.complete.obs")
 
   # remove variables based on correlations with NAs and resample transformed data
@@ -227,7 +225,7 @@ correlationMatrix <- function(file.output.list, SelParmValues, subdata) {
   cmatrix <- data.frame(log10(cmatrix)) # log transformation
   df <- data.frame(cmatrix)
   nsamples <- ifelse(rows < maxsamples, rows, maxsamples)
-  sdf <- dplyr::sample_n(df, nsamples)
+  sdf <- df[sample(nrow(df), min(nsamples, nrow(df))), , drop = FALSE]
   # maximum size limited to 6472 observations
   car::scatterplotMatrix(sdf,
     diagonal = "boxplot", reg.line = FALSE, use = "pairwise.complete.obs", spread = FALSE,

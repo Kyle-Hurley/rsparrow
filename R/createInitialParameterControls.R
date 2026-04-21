@@ -24,7 +24,7 @@ createInitialParameterControls <- function(file.output.list) {
     NAMES <- c("varType", "sparrowNames", "data1UserNames", "varunits", "explanation")
 
     # read file
-    varnames <- data.table::fread(file = filein, sep = csv_columnSeparator,
+    varnames <- utils::read.csv(file = filein, sep = csv_columnSeparator,
       dec = csv_decimalSeparator, header = TRUE, colClasses = Ctype)
     varnames <- varnames[apply(varnames, 1, function(x) any(!is.na(x))), ]
     names(varnames) <- NAMES
@@ -53,9 +53,10 @@ createInitialParameterControls <- function(file.output.list) {
         names(initialdesignMatrix) <- c("sparrowNames", as.character(delivery))
 
         # write file
-        fwrite(
-          file = paste0(dirname(path_results), .Platform$file.sep, "design_matrix.csv"), initialdesignMatrix,
-          row.names = FALSE, col.names = TRUE, showProgress = FALSE, dec = csv_decimalSeparator, sep = csv_columnSeparator, na = "NA"
+        utils::write.csv(
+          initialdesignMatrix,
+          file = paste0(dirname(path_results), .Platform$file.sep, "design_matrix.csv"),
+          row.names = FALSE
         )
         message(paste0("INITIAL DESIGN_MATRIX FILE : ", paste0(dirname(path_results), .Platform$file.sep, "design_matrix.csv"), " AVAILABLE FOR EDIT"))
         # report missing SOURCE or DELIVF types
@@ -74,7 +75,7 @@ createInitialParameterControls <- function(file.output.list) {
           NAMES <- c("sparrowNames", "description", "parmUnits", "parmInit", "parmMin", "parmMax", "parmType", "parmCorrGroup")
 
           # read file
-          betas <- data.table::fread(file = filebetas, sep = csv_columnSeparator,
+          betas <- utils::read.csv(file = filebetas, sep = csv_columnSeparator,
             dec = csv_decimalSeparator, header = TRUE, colClasses = Ctype)
           betas <- betas[apply(betas, 1, function(x) any(!is.na(x))), ]
           names(betas) <- NAMES
@@ -130,9 +131,10 @@ createInitialParameterControls <- function(file.output.list) {
           ), names(initialBetas))]
 
           # write file
-          fwrite(
-            file = paste0(dirname(path_results), .Platform$file.sep, "parameters.csv"), initialBetas,
-            row.names = FALSE, col.names = TRUE, showProgress = FALSE, dec = csv_decimalSeparator, sep = csv_columnSeparator, na = "NA"
+          utils::write.csv(
+            initialBetas,
+            file = paste0(dirname(path_results), .Platform$file.sep, "parameters.csv"),
+            row.names = FALSE
           )
           message(paste0("INITIAL PARAMETERS FILE : ", paste0(dirname(path_results), .Platform$file.sep, "parameters.csv"), " AVAILABLE FOR EDIT"))
 
@@ -193,9 +195,10 @@ SET create_initial_parameterControlFiles<-'no' to RUN RSPARROW WITH CURRENT DESI
           ), names(initialBetas))]
 
           # write file
-          fwrite(
-            file = paste0(dirname(path_results), .Platform$file.sep, "parameters.csv"), initialBetas,
-            row.names = FALSE, col.names = TRUE, showProgress = FALSE, dec = csv_decimalSeparator, sep = csv_columnSeparator, na = "NA"
+          utils::write.csv(
+            initialBetas,
+            file = paste0(dirname(path_results), .Platform$file.sep, "parameters.csv"),
+            row.names = FALSE
           )
           message(paste0("INITIAL PARAMETERS FILE : ", paste0(dirname(path_results), .Platform$file.sep, "parameters.csv"), " AVAILABLE FOR EDIT"))
 

@@ -165,8 +165,5 @@ predictSummaryOutCSV <- function(file.output.list, estimate.input.list,
   } # end if class_landuse_percent
 
   fileout <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_summary_predictions.csv")
-  fwrite(outvars,
-    file = fileout, row.names = T, append = F, quote = F, col.names = TRUE, showProgress = FALSE,
-    dec = csv_decimalSeparator, sep = csv_columnSeparator, na = "NA"
-  )
+  utils::write.csv(outvars, file = fileout, row.names = TRUE)
 } # end function

@@ -46,7 +46,7 @@ createMasterDataDictionary <- function(file.output.list) {
 
     # read file
     data_names <- tryCatch({
-      tmp <- data.table::fread(file = filein, sep = csv_columnSeparator,
+      tmp <- utils::read.csv(file = filein, sep = csv_columnSeparator,
         dec = csv_decimalSeparator, header = TRUE, colClasses = Ctype)
       tmp <- as.data.frame(tmp[apply(tmp, 1, function(x) any(!is.na(x))), ])
       names(tmp) <- NAMES
@@ -91,8 +91,9 @@ createMasterDataDictionary <- function(file.output.list) {
       }
     } # valid data_names file
   } # end for f
-  fwrite(
-    file = paste0(dirname(path_results), .Platform$file.sep, "master_dataDictionary.csv"), master,
-    row.names = FALSE, col.names = TRUE, showProgress = FALSE, dec = csv_decimalSeparator, sep = csv_columnSeparator, na = "NA"
+  utils::write.csv(
+    master,
+    file = paste0(dirname(path_results), .Platform$file.sep, "master_dataDictionary.csv"),
+    row.names = FALSE
   )
 } # end function

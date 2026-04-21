@@ -23,7 +23,8 @@ and in-stream transport in river networks.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://code.usgs.gov/water/stats/RSPARROW}
+  \item \url{https://github.com/Kyle-Hurley/rsparrow}
+  \item Report bugs at \url{https://github.com/Kyle-Hurley/rsparrow/issues}
 }
 
 }

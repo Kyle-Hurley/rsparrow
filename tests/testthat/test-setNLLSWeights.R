@@ -9,10 +9,6 @@
 #   "default"       → weight = 1 (scalar)
 #   "lnload"/"user" → weight = sitedata$weight (pre-computed weights)
 #
-# NOTE: setNLLSWeights uses ddply() from plyr (a Suggests package) without
-# namespace qualification.  This is a known bug (see GitHub issue).
-# Tests load plyr explicitly as a workaround.
-#
 # Network topology used in these tests (3-reach linear network):
 #   Reach 1 (headwater, no monitoring) → Reach 2 (monitoring, staid=1) → Reach 3 (terminal)
 #   fnode/tnode: 1→10 / 10→11 / 11→99
@@ -24,9 +20,6 @@
 # the staidseq=1 row intact and tiarea is correctly computed as 4+3=7.
 
 testthat::skip_if_not_installed("rsparrow")
-testthat::skip_if_not_installed("plyr")
-testthat::skip_if_not_installed("dplyr")   # plyr uses dplyr::summarize internally
-suppressPackageStartupMessages(library(plyr, quietly = TRUE, warn.conflicts = FALSE))
 
 make_nlls_test_inputs <- function() {
   # 3-reach linear network: headwater → monitoring → terminal

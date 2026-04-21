@@ -18,8 +18,6 @@
 #'
 #' @useDynLib rsparrow, .registration = TRUE
 #'
-#' @importFrom data.table data.table fread fwrite setnames as.data.table
-#' @importFrom data.table is.data.table setDT copy rbindlist
 #' @importFrom nlmrt nlfb
 #' @importFrom numDeriv jacobian hessian
 #'

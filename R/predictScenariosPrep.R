@@ -210,17 +210,14 @@ predictScenariosPrep <- function(
       } else if (tolower(select_targetReachWatersheds) == "import") {
         # read flag file
         filein <- paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, "flag_TargetReachWatersheds.csv")
-        select_targetReachWatersheds <- fread(filein,
+        select_targetReachWatersheds <- utils::read.csv(filein,
           header = TRUE, stringsAsFactors = FALSE,
-          dec = csv_decimalSeparator, sep = csv_columnSeparator
+          sep = csv_columnSeparator, dec = csv_decimalSeparator
         )
 
         # save flag file to subdirectory
         fileout <- paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name, .Platform$file.sep, scenario_name, "_", run_id, "_flag_TargetReachWatersheds.csv")
-        fwrite(select_targetReachWatersheds,
-          file = fileout, row.names = F, append = F, showProgress = FALSE, col.names = TRUE,
-          dec = csv_decimalSeparator, sep = csv_columnSeparator, na = "NA"
-        )
+        utils::write.csv(select_targetReachWatersheds, file = fileout, row.names = FALSE)
 
         # extract only flagged waterids
         select_targetReachWatersheds <- select_targetReachWatersheds[which(select_targetReachWatersheds$flag == 1), ]$waterid
@@ -490,10 +487,7 @@ predictScenariosPrep <- function(
       colnames(negTest) <- dataNames
       negTest <- subdata[which(subdata$waterid %in% negTest[, 1]), ]
       fileout <- paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name, .Platform$file.sep, scenario_name, "_", run_id, "_NegativeLanduseFound.csv")
-      fwrite(negTest,
-        file = fileout, row.names = F, append = F, showProgress = FALSE, col.names = TRUE,
-        dec = csv_decimalSeparator, sep = csv_columnSeparator, na = "NA"
-      )
+      utils::write.csv(negTest, file = fileout, row.names = FALSE)
       message("\n \nWARNING : Invalid Landuse Conversion.  Negative landuse data found for ", nrow(negTest), " waterids, saved to \n", fileout)
     } else if (any(sumarea != 0) & errorLU) { # compound reductions
       message("\n \nWARNING : Invalid Landuse Conversion.  Compound reductions found.\nNO SCENARIO EXECUTED")

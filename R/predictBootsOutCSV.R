@@ -115,10 +115,7 @@ predictBootsOutCSV <- function(file.output.list, estimate.list, predictBoots.lis
   outvars2 <- outvars2[with(outvars2, order(outvars2$hydseq, outvars2$waterid)), ]
 
   fileout <- paste0(path_results, .Platform$file.sep, "predict", .Platform$file.sep, run_id, "_predicts_load_boots.csv")
-  fwrite(outvars2,
-    file = fileout, row.names = F, append = F, showProgress = FALSE,
-    dec = csv_decimalSeparator, sep = csv_columnSeparator, col.names = TRUE, na = "NA"
-  )
+  utils::write.csv(outvars2, file = fileout, row.names = FALSE)
 
   # Output yield predictions
   outvars <- as.data.frame(bootyldmatrix)
@@ -144,8 +141,5 @@ predictBootsOutCSV <- function(file.output.list, estimate.list, predictBoots.lis
   outvars2 <- outvars2[with(outvars2, order(outvars2$hydseq, outvars2$waterid)), ]
 
   fileout <- paste0(path_results, .Platform$file.sep, "predict", .Platform$file.sep, run_id, "_predicts_yield_boots.csv")
-  fwrite(outvars2,
-    file = fileout, row.names = F, append = F, showProgress = FALSE,
-    dec = csv_decimalSeparator, sep = csv_columnSeparator, col.names = TRUE, na = "NA"
-  )
+  utils::write.csv(outvars2, file = fileout, row.names = FALSE)
 } # end function

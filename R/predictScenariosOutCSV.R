@@ -157,19 +157,13 @@ predictScenariosOutCSV <- function(
   outvars2 <- outvars2[with(outvars2, order(outvars2$waterid)), ] # sort by waterid
 
   fileout <- paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name, .Platform$file.sep, scenario_name, "_", run_id, "_predicts_load_scenario.csv")
-  fwrite(outvars2,
-    file = fileout, row.names = F, append = F, showProgress = FALSE, col.names = TRUE,
-    dec = csv_decimalSeparator, sep = csv_columnSeparator, na = "NA"
-  )
+  utils::write.csv(outvars2, file = fileout, row.names = FALSE)
 
   # Output the prediction variable names and units to CSV file
   lunitsOut <- data.frame(oparmlist, loadunits)
   colnames(lunitsOut) <- c("Prediction Metric Name", "Units")
   fileout <- paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name, .Platform$file.sep, scenario_name, "_", run_id, "_predicts_load_scenario_units.csv")
-  fwrite(lunitsOut,
-    file = fileout, row.names = F, append = F, showProgress = FALSE,
-    dec = csv_decimalSeparator, sep = csv_columnSeparator, col.names = TRUE, na = "NA"
-  )
+  utils::write.csv(lunitsOut, file = fileout, row.names = FALSE)
 
 
   # Output load prediction changes (percent) from load-reduction scenarios
@@ -195,10 +189,7 @@ predictScenariosOutCSV <- function(
   outvars2 <- outvars2[with(outvars2, order(outvars2$waterid)), ] # sort by waterid
 
   fileout <- paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name, .Platform$file.sep, scenario_name, "_", run_id, "_predicts_loadchg_scenario.csv")
-  fwrite(outvars2,
-    file = fileout, row.names = F, append = F, showProgress = FALSE, col.names = TRUE,
-    dec = csv_decimalSeparator, sep = csv_columnSeparator, na = "NA"
-  )
+  utils::write.csv(outvars2, file = fileout, row.names = FALSE)
 
 
   # Output yield predictions with changes from load-reduction scenarios
@@ -227,19 +218,13 @@ predictScenariosOutCSV <- function(
   outvars2 <- outvars2[with(outvars2, order(outvars2$waterid)), ] # sort by waterid
 
   fileout <- paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name, .Platform$file.sep, scenario_name, "_", run_id, "_predicts_yield_scenario.csv")
-  fwrite(outvars2,
-    file = fileout, row.names = F, append = F, showProgress = FALSE,
-    dec = csv_decimalSeparator, sep = csv_columnSeparator, col.names = TRUE, na = "NA"
-  )
+  utils::write.csv(outvars2, file = fileout, row.names = FALSE)
 
   # Output the prediction variable names and units to CSV file
   yunitsOut <- data.frame(oyieldlist, yieldunits)
   colnames(yunitsOut) <- c("Prediction Metric Name", "Units")
   fileout <- paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name, .Platform$file.sep, scenario_name, "_", run_id, "_predicts_yield_scenario_units.csv")
-  fwrite(yunitsOut,
-    file = fileout, row.names = F, append = F, showProgress = FALSE,
-    dec = csv_decimalSeparator, sep = csv_columnSeparator, col.names = TRUE, na = "NA"
-  )
+  utils::write.csv(yunitsOut, file = fileout, row.names = FALSE)
 
   # Output yield prediction changes (percent) from load-reduction scenarios
   outvars <- yldmatrix_chg

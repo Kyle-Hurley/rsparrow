@@ -64,17 +64,17 @@ An S3 object of class \code{"rsparrow"} containing:
 \item{coefficients}{Named numeric vector of estimated parameters}
 \item{std_errors}{Standard errors of coefficients (Jacobian-based)}
 \item{vcov}{Variance-covariance matrix (Hessian-based; NULL if not
-  computed)}
+computed)}
 \item{residuals}{Residuals at monitoring sites}
 \item{fitted_values}{Fitted loads at monitoring sites}
 \item{fit_stats}{List with R2, RMSE, npar, nobs, convergence}
 \item{data}{Input data (reach network, sites, design matrices)}
 \item{predictions}{Reach-level load/yield predictions (NULL until
-  predict() called, or when if_predict = TRUE)}
+predict() called, or when if_predict = TRUE)}
 \item{bootstrap}{Bootstrap results (NULL until
-  rsparrow_bootstrap() called)}
+rsparrow_bootstrap() called)}
 \item{validation}{Validation results (NULL until
-  rsparrow_validate() called)}
+rsparrow_validate() called)}
 \item{metadata}{Package version, timestamp, run_id}
 }
 }
@@ -88,7 +88,7 @@ The function orchestrates the full SPARROW estimation workflow:
 \enumerate{
 \item Validates and prepares the four input data frames
 \item Computes hydrological sequencing via \code{\link{rsparrow_hydseq}}
-  (if not already present in \code{reaches})
+(if not already present in \code{reaches})
 \item Prepares data matrices for optimization
 \item Calls nonlinear least squares optimizer
 \item Computes fit statistics and diagnostics

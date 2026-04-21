@@ -125,19 +125,13 @@ predictOutCSV <- function(file.output.list, estimate.list, predict.list,
   outvars2 <- outvars2[with(outvars2, order(outvars2$waterid)), ] # sort by waterid
 
   fileout <- paste0(path_results, .Platform$file.sep, "predict", .Platform$file.sep, run_id, "_predicts_load.csv")
-  fwrite(outvars2,
-    file = fileout, row.names = F, append = F, showProgress = FALSE,
-    dec = csv_decimalSeparator, sep = csv_columnSeparator, col.names = TRUE, na = "NA"
-  )
+  utils::write.csv(outvars2, file = fileout, row.names = FALSE)
 
   # Output the prediction variable names and units to CSV file
   lunitsOut <- data.frame(oparmlist, loadunits, oparmlistExpl)
   colnames(lunitsOut) <- c("Prediction Metric Name", "Units", "Metric Explanation")
   fileout <- paste0(path_results, .Platform$file.sep, "predict", .Platform$file.sep, run_id, "_predicts_load_units.csv")
-  fwrite(lunitsOut,
-    file = fileout, row.names = F, append = F, showProgress = FALSE,
-    dec = csv_decimalSeparator, sep = csv_columnSeparator, col.names = TRUE, na = "NA"
-  )
+  utils::write.csv(lunitsOut, file = fileout, row.names = FALSE)
 
   # Output yield predictions
   # prep for output to CSV
@@ -164,17 +158,11 @@ predictOutCSV <- function(file.output.list, estimate.list, predict.list,
   outvars2 <- outvars2[with(outvars2, order(outvars2$waterid)), ] # sort by waterid
 
   fileout <- paste0(path_results, .Platform$file.sep, "predict", .Platform$file.sep, run_id, "_predicts_yield.csv")
-  fwrite(outvars2,
-    file = fileout, row.names = F, append = F, showProgress = FALSE,
-    dec = csv_decimalSeparator, sep = csv_columnSeparator, col.names = TRUE, na = "NA"
-  )
+  utils::write.csv(outvars2, file = fileout, row.names = FALSE)
 
   # Output the prediction variable names and units to CSV file
   yunitsOut <- data.frame(oyieldlist, yieldunits, oyieldlistExpl)
   colnames(yunitsOut) <- c("Prediction Metric Name", "Units", "Metric Explanation")
   fileout <- paste0(path_results, .Platform$file.sep, "predict", .Platform$file.sep, run_id, "_predicts_yield_units.csv")
-  fwrite(yunitsOut,
-    file = fileout, row.names = F, append = F, showProgress = FALSE,
-    dec = csv_decimalSeparator, sep = csv_columnSeparator, col.names = TRUE, na = "NA"
-  )
+  utils::write.csv(yunitsOut, file = fileout, row.names = FALSE)
 } # end function
