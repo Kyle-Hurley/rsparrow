@@ -1,31 +1,41 @@
 <architecture>
 
 <overview>
-rsparrow (formerly RSPARROW) lives entirely in RSPARROW_master/. The repo root also contains
-UserTutorial/, UserTutorialDynamic/ (example model projects), and documentation files. The
-package is NOT in the repo root, which prevents standard devtools workflows. R CMD build
-produces rsparrow_2.1.0.tar.gz successfully.
+rsparrow (formerly RSPARROW) package lives at the repo root (moved from RSPARROW_master/ in
+Plan 07). Version 2.1.0. R CMD build produces rsparrow_2.1.0.tar.gz. Package is CRAN-ready
+after Plans 01–16 (as of 2026-04-21).
+
+Key API change (Plan 13): rsparrow_model() now accepts 4 data frames directly — no CSV files
+required. output_dir=NULL (default) → pure in-memory run, no disk I/O.
+
+Dependency state (Plans 14–16):
+  Imports (2): nlmrt, numDeriv
+  Suggests (8): car, stringi, knitr, leaflet, rmarkdown, sf, spdep, testthat
+  Removed from Suggests (Plans 14–16): plyr, dplyr, data.table, plotly, ggplot2, gridExtra,
+    gplots, mapview, magrittr (9 packages removed total from Plans 14–16)
 </overview>
 
 <directory_structure>
-<dir path="RSPARROW_master/">
-  <dir path="R/">153 R source files (140 internal + 13 exported; all 13 exports implemented as of Plan 04D)</dir>
-  <dir path="src/">6 Fortran source files (.f) only (pre-compiled DLLs removed; renamed .for->.f in Plan 03)</dir>
-  <dir path="man/">14 roxygen2 .Rd files (137 old pages deleted in Plan 03; 14 new for exported API + package doc)</dir>
-  <dir path="tests/testthat/">16 test files + fixtures/ + helper.R</dir>
-  <dir path="vignettes/">1 vignette (RSPARROW_vignette.Rmd/pdf)</dir>
-  <dir path="inst/doc/">Full PDF documentation (RSPARROW_docV2.1.pdf), master_sparrow_control.R, figures/</dir>
-  <dir path="inst/tables/">Function metadata CSVs (funcTypes.csv, functionDescriptions.csv, etc.)</dir>
-  <dir path="inst/legacy/">runRsparrow.R (preserved for reference; removed from R/)</dir>
-  <dir path="inst/shiny_dss/">25 Shiny/GUI files (separated from R/ in Plan 02; excluded from build)</dir>
-  <file path="DESCRIPTION">Package: rsparrow, Version: 2.1.0, License: CC0, 3 Imports, 15 Suggests, R >= 4.4.0</file>
+<dir path="[repo root]/">
+  <dir path="R/">~78 active R source files (post Plan 16 removals; 13 exported + ~65 internal)</dir>
+  <dir path="src/">6 Fortran source files (.f) only</dir>
+  <dir path="man/">15 roxygen2 .Rd files (13 exported functions + package doc + sparrow_example dataset)</dir>
+  <dir path="tests/testthat/">22 test files + fixtures/ + helper.R (163 passing tests post-Plan 13)</dir>
+  <dir path="vignettes/">1 vignette (RSPARROW_vignette.Rmd)</dir>
+  <dir path="inst/doc/">Full PDF documentation (RSPARROW_docV2.1.pdf)</dir>
+  <dir path="inst/archived/">~40 archived R files in dynamic/ legacy_api/ legacy_data_import/ mapping/ utilities/</dir>
+  <dir path="inst/legacy/">runRsparrow.R (preserved for reference)</dir>
+  <dir path="inst/shiny_dss/">33 Shiny/GUI files (excluded from build)</dir>
+  <file path="DESCRIPTION">Package: rsparrow, Version: 2.1.0, License: CC0, 2 Imports, 8 Suggests, R >= 4.4.0, LazyData: true</file>
   <file path="NAMESPACE">6 export() + 7 S3method() + selective importFrom() + useDynLib(rsparrow, .registration = TRUE)</file>
-  <file path=".Rbuildignore">Excludes non-package files, inst/legacy/, inst/shiny_dss/ from build</file>
+  <file path=".Rbuildignore">Excludes UserTutorial/, UserTutorialDynamic/, docs/, scripts/, inst/legacy/, inst/shiny_dss/</file>
 </dir>
-<dir path="UserTutorial/">Static TN model tutorial: data/data1.csv, gis/*.shp, results/Model1-8/</dir>
-<dir path="UserTutorialDynamic/">Dynamic TP model tutorial: similar structure, seasonal models</dir>
-<note>Removed in Plan 01: batch/, inst/sas/, R-4.4.2.zip, code.json, Thumbs.db.
-Removed in Plan 02: 19 legacy scaffolding files from R/, 25 Shiny/GUI files moved to inst/shiny_dss/.</note>
+<dir path="UserTutorial/">Static TN model tutorial (gitignored): data/data1.csv, gis/*.shp</dir>
+<dir path="UserTutorialDynamic/">Dynamic TP model tutorial (gitignored)</dir>
+<note>Removed in Plan 01: batch/, inst/sas/, R-4.4.2.zip, code.json.
+Removed in Plan 02: 19 legacy scaffolding files, 25 Shiny/GUI files moved to inst/shiny_dss/.
+Moved to repo root in Plan 07 (was in RSPARROW_master/).
+Archived in Plans 08-16: ~40 files in inst/archived/.</note>
 </directory_structure>
 
 <execution_flow>
@@ -35,22 +45,32 @@ runRsparrow.R. This was a SCRIPT (not a function) that checked global state, loa
 via dyn.load(), and called executeRSPARROW(). Moved to inst/legacy/ in Plan 01.
 </stage>
 
-<stage name="Entry (New API — Plan 13)">
-rsparrow_model(reaches, parameters, design_matrix, data_dictionary) →
+<stage name="Entry (New API — Plan 13, post Plans 14-16)">
+rsparrow_model(reaches, parameters, design_matrix, data_dictionary,
+               run_id="run1", output_dir=NULL, if_estimate=TRUE, if_predict=TRUE, if_validate=FALSE) →
   prep_sparrow_inputs() [validates + transforms 4 data frames] →
   startModelRun() [receives betavalues/dmatrixin directly; skips CSV reads] →
-  controlFileTasksModel() → rsparrow S3 object.
-output_dir=NULL (default): no file I/O; path_results=NULL suppresses all disk writes.
-All 13 exported functions implemented:
-  rsparrow_model()       — full estimation entry point
-  read_sparrow_data()    — reads data1.csv + dataDictionary.csv, returns file.output.list + data
+  controlFileTasksModel() → rsparrow S3 object
+
+output_dir=NULL (default): pure in-memory run; no file I/O. All 35 dir.create/save/fwrite
+calls are gated on output_dir != NULL (Plan 10).
+
+All 13 exported functions implemented (read_sparrow_data removed in Plan 13):
+  rsparrow_model()       — full estimation entry point (4-data-frame API)
   print/summary/coef/residuals/vcov.rsparrow() — S3 accessor methods
   predict.rsparrow()     — calls predict_sparrow() for reach-level load/yield predictions
   rsparrow_bootstrap()   — calls estimateBootstraps() for Monte Carlo uncertainty
   rsparrow_validate()    — calls validateMetrics() (requires if_validate="yes" at estimation)
   rsparrow_scenario()    — calls predictScenarios(Rshiny=FALSE) with source multipliers
-  plot.rsparrow()        — stub; diagnostic plots deferred to Plan 05
+  plot.rsparrow()        — base R graphics (Plans 05D + 16); type="residuals"/"sensitivity"/"spatial"
+  write_rsparrow_results() — opt-in file output function (Plan 10)
   rsparrow_hydseq()      — hydrological sequencing helper
+
+Plotting pipeline (Plan 16 — base R graphics; no Suggests required):
+  plot.rsparrow(type="residuals")  → diagnosticPlotsNLLS → diagnosticPlots_4panel_A/B
+  plot.rsparrow(type="sensitivity") → diagnosticSensitivity
+  plot.rsparrow(type="spatial")    → diagnosticSpatialAutoCorr (requires spdep Suggests)
+
 Wrapper functions access internal state via model$data, which stores estimate.list, data_names,
 mapping.input.list, Vsites.list, classvar, and all other objects needed by internal functions.
 </stage>
@@ -120,24 +140,29 @@ Purpose: Hydrological sequencing, upstream accumulation, delivery fractions
 Essential for CRAN: YES
 </module>
 
-<module name="Data Preparation" files="20+">
-dataInputPrep.R, readData.R, readParameters.R, readDesignMatrix.R, readForecast.R,
-createSubdataSorted.R, createDataMatrix.R, selectParmValues.R, selectDesignMatrix.R,
-selectCalibrationSites.R, selectValidationSites.R, setNLLSWeights.R,
-checkData1NavigationVars.R, checkMissing*.R, checkClassificationVars.R, checkDrainagearea*.R,
-createVerifyReachAttr.R, verifyDemtarea.R, calcHeadflag.R, calcTermflag.R, etc.
-Purpose: Data loading, validation, filtering, matrix construction
-Essential for CRAN: YES (core data prep); validation checks are partially essential
+<module name="Data Preparation" files="~20 active">
+Active R/ files: createSubdataSorted.R, createDataMatrix.R, selectParmValues.R,
+selectDesignMatrix.R, selectCalibrationSites.R, selectValidationSites.R, setNLLSWeights.R,
+checkAnyMissingSubdataVars.R, checkMissingSubdataVars.R, checkClassificationVars.R,
+checkFileEncoding.R, checkingMissingVars.R, startEndmodifySubdata.R,
+createMasterDataDictionary.R, createInitialParameterControls.R, assignIncremSiteIDs.R, etc.
+Purpose: Data validation, filtering, matrix construction (Plan 13: reads from data frames)
+Essential for CRAN: YES
+Archived (Plans 13+09): readData, readParameters, readDesignMatrix, read_dataDictionary,
+  applyUserModify, dataInputPrep, checkData1NavigationVars, createVerifyReachAttr, etc.
 </module>
 
-<module name="Diagnostics and Visualization" files="25+">
-diagnosticPlotsNLLS.R, diagnosticPlotsNLLS_dyn.R, diagnosticPlotsValidate.R,
-diagnosticPlots_4panel_A/B.R, diagnosticMaps.R, diagnosticSensitivity.R,
-diagnosticSpatialAutoCorr.R, mapSiteAttributes.R, correlationMatrix.R,
-create_diagnosticPlotList.R, make_*.R, makeReport_*.R, plotlyLayout.R, mapBreaks.R,
-mapLoopStr.R, etc.
-Purpose: Diagnostic plots, maps, reports (HTML via Rmd)
-Essential for CRAN: PARTIALLY (basic diagnostics yes; elaborate mapping/reports no)
+<module name="Diagnostics and Visualization" files="7 active">
+Active R/ files: diagnosticPlotsNLLS.R, diagnosticPlots_4panel_A/B.R,
+diagnosticSensitivity.R, diagnosticSpatialAutoCorr.R, correlationMatrix.R, plot.rsparrow.R
+Purpose: Diagnostic plots (base R graphics; no Suggests required except spdep for spatial)
+Essential for CRAN: YES
+Plan 16 changes: plotlyLayout.R/hline.R/addMarkerText.R deleted; all plotly code replaced
+with base R (par/plot/abline/boxplot/qqnorm/qqline).
+Archived: diagnosticPlotsValidate.R (Plan 16 — inlined into estimate.R),
+  diagnosticPlotsNLLS_dyn.R (Plan 08), diagnosticMaps.R/mapSiteAttributes.R/predictMaps.R
+  (Plan 05D), create_diagnosticPlotList.R/make_*.R/makeReport_*.R (Plan 05D),
+  mapBreaks.R/mapLoopStr.R (Plan 09)
 </module>
 
 <module name="Shiny / GUI" files="25" location="inst/shiny_dss/ (MOVED in Plan 02)">

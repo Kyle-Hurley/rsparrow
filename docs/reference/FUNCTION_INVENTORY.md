@@ -19,13 +19,13 @@ eval(parse()) inlined (Plan 04B). Should be merged with estimateFeval via parame
 <function name="estimateOptimize" file="estimateOptimize.R" lines="125" class="KEEP">
 NLLS optimization wrapper around nlmrt::nlfb(). Sets up bounds, calls optimizer, saves results.
 </function>
-<function name="estimateNLLSmetrics" file="estimateNLLSmetrics.R" lines="832" class="REFACTOR">
+<function name="estimateNLLSmetrics" file="estimateNLLSmetrics.R" lines="661" class="REFACTOR">
 Computes all diagnostic metrics (Jacobian SE, Hessian, leverage, ANOVA, eigenvalues).
-Must be split into 5+ focused functions. 832 lines is unmanageable.
+5 natural seams documented (Plan 16 seam comment). GH issue opened for Plan 17+ decomposition.
 </function>
-<function name="estimateNLLStable" file="estimateNLLStable.R" lines="692" class="REFACTOR">
-Formats and writes text/CSV summary output. Uses sink() extensively. Should return structured
-objects; let caller handle file output.
+<function name="estimateNLLStable" file="estimateNLLStable.R" lines="550" class="REFACTOR">
+Formats and writes text/CSV summary output. sink() now on.exit protected (Plan 10).
+4 natural seams documented (Plan 16 seam comment). GH issue opened for Plan 17+ decomposition.
 </function>
 <function name="estimateWeightedErrors" file="estimateWeightedErrors.R" lines="97" class="KEEP">
 Computes observation weights via power function regression. Standalone utility.
@@ -33,10 +33,11 @@ Computes observation weights via power function regression. Standalone utility.
 <function name="estimateBootstraps" file="estimateBootstraps.R" lines="197" class="KEEP">
 Parametric bootstrap for coefficient uncertainty. Has recursive retry without depth limit.
 </function>
-<function name="estimate" file="estimate.R" lines="889" class="REFACTOR">
+<function name="estimate" file="estimate.R" lines="693" class="REFACTOR">
 Master estimation orchestrator. Mixes estimation, diagnostics, validation, shapefile output.
-All 4 assign(.GlobalEnv) removed (Plan 04B). Stale predict() call fixed to predict_sparrow()
-(Plan 04B). Must be decomposed into focused functions.
+All 4 assign(.GlobalEnv) removed (Plan 04B). 6 natural seams documented (Plan 16 seam comment).
+diagnosticPlotsValidate call inlined as diagnosticPlotsNLLS(validation=TRUE) (Plan 16 merge).
+GH issue opened for Plan 17+ decomposition.
 </function>
 <function name="validateMetrics" file="validateMetrics.R" lines="~200" class="KEEP">
 Computes validation site metrics. Called from estimate.R when if_validate="yes".
@@ -173,7 +174,7 @@ Computes/verifies reach attributes (hydseq, headflag, termflag, demtarea).
 <module name="Diagnostics and Visualization">
 <function name="diagnosticPlotsNLLS" file="diagnosticPlotsNLLS.R" class="KEEP">Master diagnostic plots orchestrator. Draws estimation/simulation performance panels (p1–p15) using base R graphics. plotly removed in Plan 16.</function>
 <function name="diagnosticPlotsNLLS_dyn" file="archived/dynamic/" class="REMOVE" status="DELETED_08">Dynamic model diagnostic plots. Archived in Plan 08.</function>
-<function name="diagnosticPlotsValidate" file="diagnosticPlotsValidate.R" class="KEEP">Thin wrapper calling diagnosticPlotsNLLS with validation=TRUE. No plotly references.</function>
+<function name="diagnosticPlotsValidate" file="archived/utilities/" class="MERGED" status="ARCHIVED_16">Thin wrapper calling diagnosticPlotsNLLS with validation=TRUE. Merged Plan 16: call inlined into estimate.R as direct diagnosticPlotsNLLS(..., validation=TRUE). Archived inst/archived/utilities/.</function>
 <function name="diagnosticPlots_4panel_A" file="diagnosticPlots_4panel_A.R" class="KEEP">4-panel obs/pred and residuals scatter plots. Base R graphics (par/plot/abline). plotly removed in Plan 16.</function>
 <function name="diagnosticPlots_4panel_B" file="diagnosticPlots_4panel_B.R" class="KEEP">4-panel boxplot/Q-Q/squared-resid plots. Base R graphics (boxplot/qqnorm/qqline/plot). plotly removed in Plan 16.</function>
 <function name="diagnosticMaps" file="diagnosticMaps.R" class="REMOVE" status="DELETED_05A">Interactive diagnostic maps (59 eval/parse). Deleted in Plan 05A.</function>
@@ -235,19 +236,26 @@ Moved to inst/legacy/ in Plan 01: runRsparrow.R
 <function name="calcClassLandusePercent" file="calcClassLandusePercent.R" class="KEEP">Land use percent by class.</function>
 <function name="eigensort" file="eigensort.R" class="KEEP">Eigenvalue sorting utility.</function>
 <function name="getdindx/getuindx" file="getdindx.R, getuindx.R" class="KEEP">Index helpers for hydseq.</function>
-<function name="replaceNAs" file="replaceNAs.R" class="KEEP">NA replacement utility.</function>
-<function name="syncVarNames" file="syncVarNames.R" class="KEEP">Variable name synchronization.</function>
-<function name="addVars" file="addVars.R" class="REFACTOR">Add variables to data dictionary.</function>
-<function name="applyUserModify" file="applyUserModify.R" class="REFACTOR">Apply user data modifications.</function>
-<function name="checkDynamic" file="checkDynamic.R" class="KEEP">Check if model is dynamic (has year/season).</function>
-<function name="modelCompare" file="modelCompare.R" class="REMOVE">Model comparison (file-based).</function>
+<function name="replaceNAs" file="archived/utilities/" class="ARCHIVED" status="ARCHIVED_16">NA replacement utility. ARCHIVED Plan 16: 0 active callers (applyUserModify archived Plan 13; mapSiteAttributes archived Plan 09). Had eval(parse(envir=parent.frame())) antipattern.</function>
+<function name="syncVarNames" file="archived/utilities/" class="ARCHIVED" status="ARCHIVED_09">Variable name synchronization. Archived Plan 09.</function>
+<function name="addVars" file="archived/legacy_data_import/" class="ARCHIVED" status="ARCHIVED_09">Add variables to data dictionary. Archived Plan 09.</function>
+<function name="applyUserModify" file="archived/legacy_data_import/" class="ARCHIVED" status="ARCHIVED_13">Apply user data modifications. Archived Plan 13 (if_userModifyData pathway removed).</function>
+<function name="checkDynamic" file="archived/dynamic/" class="ARCHIVED" status="ARCHIVED_08">Check if model is dynamic. Archived Plan 08 (dynamic model removed).</function>
 </module>
 
 <summary>
-After Plan 02: 139 R files in R/ + 25 in inst/shiny_dss/ + 6 Fortran = 170
-  (44 files removed from R/: 25 moved to inst/shiny_dss/, 19 deleted)
-Remaining classification: KEEP ~45, REFACTOR ~25, MERGE ~5, REMOVE ~65
-Estimated CRAN package size: ~50-60 functions (down from original 184)
+After Plans 01–16 (as of 2026-04-21):
+  Active R/ files: ~78 (down from 153 original; 13 exported + ~65 internal)
+  Archived in inst/archived/: ~40 files across dynamic/, legacy_api/, legacy_data_import/,
+    mapping/, utilities/ subdirectories
+  Plan 16 additions to inst/archived/utilities/:
+    checkBinaryMaps.R (0 active callers), replaceNAs.R (0 active callers),
+    diagnosticPlotsValidate.R (merged into estimate.R)
+  Exported functions: 13 (read_sparrow_data removed Plan 13; write_rsparrow_results added Plan 10)
+  Man pages: 15
+  Imports: nlmrt, numDeriv (2 packages; data.table removed Plan 14)
+  Suggests: car, stringi, knitr, leaflet, rmarkdown, sf, spdep, testthat (8; plotly removed Plan 16)
+  CRAN-blocking issues: NONE remaining
 </summary>
 
 </function_inventory>

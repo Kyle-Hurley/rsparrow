@@ -1,3 +1,8 @@
+# Archived Plan 16 (Function Audit): all active callers were archived in Plans 09+13
+# (checkDrainageareaErrors → archived; mapSiteAttributes → archived; predictMaps → archived;
+#  diagnosticPlotsNLLS.R and diagnosticPlotsValidate.R reference only in Rdoc comments).
+# 0 active callers in R/ verified before archiving.
+
 #' @title checkBinaryMaps
 #' @description Checks if binary mapping objects exist and loads binary files \cr \cr
 #' Executed By: \itemize{\item checkDrainageareaErrors.R

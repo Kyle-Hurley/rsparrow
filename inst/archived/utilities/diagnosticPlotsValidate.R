@@ -1,3 +1,7 @@
+# Archived Plan 16 (Function Audit): thin wrapper — call inlined into estimate.R.
+# diagnosticPlotsNLLS() already has a `validation` parameter; the wrapper added no logic.
+# Replaced in estimate.R with a direct call to diagnosticPlotsNLLS(..., validation=TRUE).
+
 #' @title diagnosticPlotsValidate
 #'
 #' @description

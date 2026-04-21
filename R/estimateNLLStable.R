@@ -55,6 +55,18 @@ estimateNLLStable <- function(file.output.list, if_estimate, if_estimate_simulat
                               Cor.ExplanVars.list,
                               if_validate, vANOVA.list, vMdiagnostics.list,
                               betavalues, Csites.weights.list) {
+  # MONOLITH NOTE (Plan 16 — GH issue opened for decomposition):
+  # This function is ~550 lines. Natural seams for future decomposition (Plan 17+):
+  #   Seam 1 (~lines 52–165):  Header + ANOVA performance summary (RSQ, RMSE, bias)
+  #   Seam 2 (~lines 165–260): Parameter coefficient table (Jacobian estimates, SE, t-stats,
+  #                             p-values, VIF, parameter type)
+  #   Seam 3 (~lines 260–530): Site residuals table (leverage, Cook's D, standardized resids,
+  #                             observed/predicted loads/yields for calibration + validation)
+  #   Seam 4 (~lines 530–550): Jacobian derivatives appended to residuals CSV
+  # After Plan 10 removed sink(), this function writes to CSV files directly.
+  # Extraction candidate: separate formatEstimateHeader(), formatParamTable(),
+  #   formatResidualTable() helpers — each writing their CSV section.
+
   path_results <- file.output.list$path_results
   run_id <- file.output.list$run_id
   csv_decimalSeparator <- file.output.list$csv_decimalSeparator

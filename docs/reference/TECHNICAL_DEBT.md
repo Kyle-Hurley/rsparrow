@@ -31,38 +31,27 @@ Zero unPackList() calls remain in R/.
 </issue>
 
 <issue name="eval(parse(text=...)) Anti-Pattern" status="PARTIALLY_RESOLVED">
-~25 occurrences remain across R files (down from 339 across 61 files; 49 post-05D; reduced
-by Plans 08+09 archiving dynamic files and dead-code files). Remaining by file:
-COMPLEX/deferred (deferred to future plans):
-- plotlyLayout.R (8) — plotly layout spec evaluation; deferred.
-- diagnosticSpatialAutoCorr.R (5) — spatial autocorrelation diagnostics; deferred.
-- predictScenariosPrep.R (4) — 3 guarded Shiny DSS, 1 deferred.
-- applyUserModify.R (2) — outer eval of user-supplied function; hardened with tryCatch.
-- replaceNAs.R (1) — parent.frame() injection antipattern; deferred.
-- createSubdataSorted.R (1) — user filter string; hardened with tryCatch.
-Hardened hover-text (non-arbitrary; brought in from inlined make_*.R files):
-- diagnosticPlotsNLLS.R (3), predict_core.R (1)
-Archived (Plans 08+09 — no longer in R/):
-- mapLoopStr.R (11), unPackList.R (1), naOmitFuncStr.R (1) — archived Plan 09
-- aggDynamicMapdata.R (5), diagnosticPlotsNLLS_dyn.R (2),
-  diagnosticPlotsNLLS_timeSeries.R (2) — archived Plan 08
-- checkDrainageareaErrors.R (1) — archived Plan 09
-Resolved in Plan 04B: 21 specification-string calls inlined in 7 core math files.
-Resolved in Plan 04C: dynamic column access replaced with [[]] in 6 files
-  (checkingMissingVars.R, replaceData1Names.R, setNAdf.R, readForecast.R, validateFevalNoadj.R,
-  checkDrainageareaMapPrep.R).
-Resolved in Plan 05B: 18 dynamic source variable calls (predict.R×6, predictBoot.R×6,
-  predictScenarios.R×6) eliminated; pload_src named lists replace assign+eval.
-Resolved in Plan 05C: 20 calls in diagnosticPlots_4panel_A/B.R (markerList/markerText/plotTitles
-  replaced with direct list construction / gsub / as.formula); 9 S_ bare-variable patterns in
-  predictScenariosPrep.R replaced with scenario_mods/lc_mods named lists; 4 inner eval/parse in
-  applyUserModify.R replaced with assign() loops + mget()/get()/[[]] access; 3+1 plotFunc
-  dispatch calls in diagnosticSensitivity.R + diagnosticSpatialAutoCorr.R inlined as direct
-  plotly code (diagnosticSensitivity.R now fully independent of create_diagnosticPlotList.R).
-Resolved in Plan 05D: REMOVE-list files (diagnosticMaps.R×59, predictMaps_single.R×23,
-  mapSiteAttributes.R×19, make_*.R/makeReport_*.R/create_diagnosticPlotList.R) all deleted;
-  those eval/parse calls are gone. Hardened hover-text patterns from make_*.R were preserved
-  when inlined into diagnosticPlotsNLLS.R and related REFACTOR files.
+9 occurrences remain across R/ (down from 339 across 61 files originally; 25 post-Plan 09;
+10 post-Plan 15; 9 after Plan 16 archives replaceNAs.R).
+Remaining in active R/ (all NECESSARY or DEFERRED — each has a GH issue):
+- diagnosticSpatialAutoCorr.R (5, GH #21): MoranDistanceWeightFunc is a user-supplied R
+  expression string for spatial weight computation. Cannot remove without API change.
+  Suggested fix: accept function object as alternative to string.
+- predictScenariosPrep.R (3, GH #22): Shiny DSS reactive expressions, guarded by Rshiny=TRUE.
+  Never executed in CRAN-tested code paths. Suggested fix: evaluateShinyFunc() helper.
+- createSubdataSorted.R (1, GH #23): filter_data1_conditions is a user-supplied character
+  vector of R filter expressions. Hardened with tryCatch (Plan 05C).
+  Suggested fix: accept function(data1) as alternative form.
+Archived/Resolved (Plans 08–16):
+- replaceNAs.R (1): ARCHIVED Plan 16 — 0 active callers (applyUserModify + mapSiteAttributes both archived)
+- plotlyLayout.R (8): DELETED Plan 16 (base R plotting) — file deleted
+- applyUserModify.R (2): ARCHIVED Plan 13 — file archived to legacy_data_import/
+- diagnosticPlotsNLLS.R hover-text (3) + predict_core.R (1): REMOVED Plan 15/16 — plotly removed
+- mapLoopStr.R (11), unPackList.R (1), naOmitFuncStr.R (1): ARCHIVED Plan 09
+- aggDynamicMapdata.R (5), diagnosticPlotsNLLS_dyn.R (2), _timeSeries.R (2): ARCHIVED Plan 08
+- checkDrainageareaErrors.R (1): ARCHIVED Plan 09
+- diagnosticMaps.R (59), predictMaps_single.R (23), mapSiteAttributes.R (19): DELETED Plan 05D
+Resolved in Plans 04B/04C/05B/05C/05D: 300+ calls eliminated across all core math files.
 </issue>
 
 <issue name="Exported API Functions Were Stubs" status="RESOLVED">
@@ -142,13 +131,18 @@ dlvdsgn added as explicit parameter to predictScenarios() (was implicit via glob
 All 18 dynamic source variable eval(parse()) calls eliminated; pload_src named lists used.
 </issue>
 
-<issue name="Monolithic Functions">
-estimate.R: 889 lines (estimation + diagnostics + validation + shapefile output)
-estimateNLLSmetrics.R: 832 lines (all diagnostic metric computation)
-estimateNLLStable.R: 692 lines (text/CSV output formatting)
-predictScenarios.R: 523 lines (scenario logic + embedded prediction + maps; was 821, reduced in Plan 05B)
-controlFileTasksModel.R: 525 lines (task dispatch)
-Impact: Impossible to test individual behaviors. Nesting depth up to 8 levels.
+<issue name="Monolithic Functions" status="PARTIALLY_RESOLVED">
+Post-Plan 16 line counts (Plans 05B+10 reduced these from original sizes):
+- estimate.R: 693 lines — seam comments added Plan 16; GH #24 opened for Plan 17+ decomposition
+  6 natural seams documented: setup → estimateOptimize → metrics/table → diagnostic plots →
+  simulation loop → prediction pathway. Extraction candidate: estimateDiagnostics().
+- estimateNLLSmetrics.R: 661 lines — seam comments added Plan 16; GH #25 opened
+  5 seams: setup → Jacobian/leverage/VIF → residual diagnostics → ANOVA → assembly
+- estimateNLLStable.R: 550 lines — seam comments added Plan 16; GH #25 opened
+  4 seams: header/ANOVA → parameter table → residuals table → Jacobian derivatives
+- predictScenarios.R: 523 lines — reduced from 821 in Plan 05B; no further action this cycle
+- controlFileTasksModel.R: ~525 lines — task dispatch; acceptable for orchestrator role
+Impact: Individual seams untestable. Addressed in Plan 17+.
 </issue>
 
 <issue name="Blanket Package Imports" status="RESOLVED">
@@ -176,10 +170,10 @@ Resolution: Converted to Authors@R format with Kyle Hurley as cre (maintainer) i
 
 <severity_medium>
 
-<issue name="sink() for File Output">
-Multiple files redirect console output via sink() to write text files. If an error occurs
-between sink() and sink() close, console output is permanently redirected. No tryCatch/on.exit
-protection. estimateOptimize.R, estimateNLLStable.R, controlFileTasksModel.R affected.
+<issue name="sink() for File Output" status="RESOLVED">
+Plan 10 (GH #16): All sink() calls now protected with on.exit(sink(), add=TRUE).
+estimateOptimize.R, estimateNLLStable.R, controlFileTasksModel.R all fixed.
+Note: sink() calls only execute when output_dir is set; pure in-memory runs skip them.
 </issue>
 
 <issue name="Hardcoded Path Construction">
@@ -262,5 +256,56 @@ Resolution: Deleted in Plan 01.
 </issue>
 
 </severity_low>
+
+<resolved_plans_13_16>
+
+<issue name="CSV API — read_sparrow_data + CSV readers" status="RESOLVED">
+Plan 13: rsparrow_model() now accepts 4 data frames (reaches, parameters, design_matrix,
+data_dictionary). read_sparrow_data() archived to inst/archived/legacy_api/.
+readData, readParameters, readDesignMatrix, read_dataDictionary, applyUserModify
+archived to inst/archived/legacy_data_import/. if_userModifyData pathway removed.
+prep_sparrow_inputs() added as public API boundary for data validation + transformation.
+</issue>
+
+<issue name="plyr/dplyr/data.table in active code" status="RESOLVED">
+Plan 14 (GH #20): 6 plyr::ddply → aggregate(); 3 dplyr::sample_n → sample();
+all data.table::fwrite/fread → utils::write.csv/read.csv.
+DESCRIPTION Imports: nlmrt, numDeriv only (2 packages — data.table removed).
+</issue>
+
+<issue name="plotly/ggplot2/gridExtra/gplots required for any plot" status="RESOLVED">
+Plan 15: Removed ggplot2, gridExtra, gplots, magrittr from Suggests.
+Plan 16 (base R plotting): plotly removed from Suggests; plotlyLayout.R (8 eval/parse)
+deleted; hline.R and addMarkerText.R deleted.
+All 4 diagnostic plot functions (diagnosticPlotsNLLS, diagnosticPlots_4panel_A/B,
+diagnosticSensitivity, diagnosticSpatialAutoCorr) rewrote to use base R graphics
+(par/plot/abline/boxplot/qqnorm/qqline). plot(model) works with zero Suggests installed.
+8 Suggests remain: car, stringi, knitr, leaflet, rmarkdown, sf, spdep, testthat.
+</issue>
+
+<issue name="Dead functions with 0 active callers (Plan 16 audit)" status="RESOLVED">
+Plan 16 (Function Audit): 3 functions archived after 0-caller verification:
+- checkBinaryMaps.R → inst/archived/utilities/ (callers: checkDrainageareaErrors, mapSiteAttributes,
+  predictMaps — all previously archived; only docstring ref in diagnosticPlotsNLLS.R, not call)
+- replaceNAs.R → inst/archived/utilities/ (callers: applyUserModify — archived Plan 13;
+  mapSiteAttributes — archived Plan 09; eval(parse(envir=parent.frame()) antipattern never fixed)
+- diagnosticPlotsValidate.R → inst/archived/utilities/ (merged: thin wrapper inlined into
+  estimate.R as direct diagnosticPlotsNLLS(..., validation=TRUE) call)
+</issue>
+
+<issue name="Remaining technical debt (post Plan 16)" status="OPEN">
+The following items are known but not blocking CRAN submission:
+- eval(parse()): 9 remaining (5+3+1, all NECESSARY or Shiny-only); GH issues opened Plan 16
+- Monolith decomposition: estimate.R (693L), estimateNLLSmetrics.R (661L),
+  estimateNLLStable.R (550L); seam comments added Plan 16; GH issues opened
+- "yes"/"no" string flags: ~50 control settings use character not logical; converting them
+  would touch ~20 files and is a Plan 17+ item; isolated from public API by prep_sparrow_inputs()
+- .Platform$file.sep path construction: should be file.path(); scattered throughout
+- Missing ORCID iDs for authors in DESCRIPTION
+- Cross-platform testing (macOS, Windows untested)
+- Test coverage: core math (estimateFeval, predict, deliver, hydseq) has zero unit tests
+</issue>
+
+</resolved_plans_13_16>
 
 </technical_debt>

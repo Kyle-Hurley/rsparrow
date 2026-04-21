@@ -9,7 +9,6 @@
 #' 
 #' Executes Routines: \itemize{
 #'              \item diagnosticPlotsNLLS.R,
-#'              \item diagnosticPlotsValidate.R,
 #'              \item diagnosticSensitivity.R,
 #'              \item estimateFevalNoadj.R, 
 #'              \item estimateNLLSmetrics.R, 
@@ -86,7 +85,17 @@ estimate <- function(if_estimate, if_predict, file.output.list,
                      mapping.input.list, betavalues,
                      if_estimate_simulation,
                      add_vars, data_names) {
-  #########################################
+  # MONOLITH NOTE (Plan 16 — GH issue opened for decomposition):
+  # This function is ~693 lines. Natural seams for future decomposition (Plan 17+):
+  #   Seam 1 (~lines 88–105):  Parameter extraction from input lists (setup)
+  #   Seam 2 (~lines 106–115): NLLS optimization → estimateOptimize()
+  #   Seam 3 (~lines 116–160): Metrics + table → estimateNLLSmetrics(), estimateNLLStable()
+  #   Seam 4 (~lines 161–305): Diagnostic plots → diagnosticPlotsNLLS(), diagnosticSensitivity()
+  #   Seam 5 (~lines 306–660): Simulation mode loop (mirrors seams 2–4 for simulated run)
+  #   Seam 6 (~lines 660–693): Prediction pathway (if_predict == "yes")
+  # The bulk of the file (seams 4–5) mixes diagnostic plot calls with CSV/shapefile I/O.
+  # Extraction candidate: estimateDiagnostics(estimate.list, file.output.list, ...)
+  # would reduce this function to ~200 lines of pure orchestration.
 
   ifHess <- estimate.input.list$ifHess
   yieldFactor <- estimate.input.list$yieldFactor
@@ -320,16 +329,19 @@ estimate <- function(if_estimate, if_predict, file.output.list,
     
     if (if_validate == "yes") {
       
-      diagnosticPlotsValidate(
+      # Inlined from diagnosticPlotsValidate.R (merged Plan 16 — wrapper archived)
+      diagnosticPlotsNLLS(
         file.output.list = file.output.list,
         class.input.list = class.input.list,
-        vsitedata.demtarea.class = vsitedata.demtarea.class,
-        vsitedata = vsitedata,
-        vsitedata.landuse = vsitedata.landuse,
+        sitedata.demtarea.class = vsitedata.demtarea.class,
+        sitedata = vsitedata,
+        sitedata.landuse = vsitedata.landuse,
         estimate.list = estimate.list,
         mapping.input.list = mapping.input.list,
-        add_vars = add_vars,
-        data_names = data_names
+        Cor.ExplanVars.list = NA,
+        data_names = data_names,
+        add_vars = NA,  # validation plots do not use add_vars
+        validation = TRUE
       )
       
       # output residuals shapefile

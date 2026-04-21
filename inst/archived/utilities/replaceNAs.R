@@ -1,3 +1,7 @@
+# Archived Plan 16 (Function Audit): 0 active callers in R/.
+# Both listed callers (applyUserModify.R → archived Plan 13; mapSiteAttributes.R → archived Plan 09)
+# are no longer in active R/. eval(parse(envir=parent.frame())) antipattern was never fixed.
+
 # TODO Plan 05 — parent.frame() injection antipattern (same as unPackList). Only active caller
 #   is applyUserModify.R (inside dynamic function string, also TODO Plan 05).
 #' @title replaceNAs

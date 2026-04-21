@@ -1,27 +1,23 @@
 <cran_roadmap>
 
 <executive_summary>
-Plans 01–13 are complete. The package is CRAN-ready. Plans 14–16 are planned next-step
-improvements targeting dependency reduction and long-term maintainability.
+Plans 01–16 are complete. The package is CRAN-ready (as of 2026-04-21).
   - Package at repo root (R/, src/, man/, tests/, inst/, DESCRIPTION, NAMESPACE)
   - Compiled artifacts removed from src/; Collate field removed; .Rbuildignore in place
-  - Dynamic model infrastructure removed; 23 unreachable functions archived to inst/archived/
+  - Dynamic model infrastructure removed; ~40 functions archived to inst/archived/
   - Computation/I/O separated; all CRAN compliance issues fixed
   - sparrow_example dataset in data/ (GH #9); introductory vignette (GH #8)
-  - In-memory API: rsparrow_model() accepts 4 data frames; read_sparrow_data removed (Plan 13)
-  - @examples updated in all 13 exported functions using sparrow_example
-  - DESCRIPTION URL/BugReports point to GitHub
-Exported functions: 13 (read_sparrow_data removed in Plan 13).
-Test suite: FAIL 0 | PASS 166 | SKIP 1 (pre-Plan 13 baseline).
+  - In-memory API: rsparrow_model() accepts 4 data frames; output_dir=NULL → pure in-memory
+  - Imports reduced to 2 (nlmrt, numDeriv); plyr/dplyr/data.table removed (Plan 14)
+  - Base R graphics: plot(model) works with zero Suggests installed (Plan 15/16)
+  - eval(parse()) reduced to 9 (from ~25); all remaining have GH issues (Plan 16)
+  - Monolith seam comments added; GH decomposition issues opened (Plan 16)
+Exported functions: 13 (read_sparrow_data removed Plan 13; write_rsparrow_results added Plan 10).
+Suggests (8): car, stringi, knitr, leaflet, rmarkdown, sf, spdep, testthat.
+Test suite: FAIL 0 | PASS 163 | SKIP 4 (post-Plan 13 baseline).
 R CMD check (tarball, --no-manual): 0 ERRORs, 0 WARNINGs, 2 NOTEs (both pre-existing).
 
-PLANNED NEXT STEPS (Plans 14–16):
-  Plan 14: Remove plyr/dplyr/data.table — base R aggregate/sample/write.csv replace all uses
-  Plan 15: Base R plotting — plotly/ggplot2/gridExtra/gplots removed; zero-Suggests plots
-  Plan 16: Function audit — archive dead code, reduce eval(parse()), document monoliths
-After Plans 14–16: Imports reduced to 2 (nlmrt, numDeriv); Suggests to ~9 (no plotly/plyr/dplyr)
-
-ALL BLOCKERS RESOLVED (Plans 07–12):
+ALL BLOCKERS RESOLVED (Plans 07–16):
   (B1)  DONE — Package moved from RSPARROW_master/ to repo root (GH #10, commit e5b58b4)
   (B2)  DONE — Compiled .o/.so artifacts deleted from src/ (GH #11, commit e5b58b4)
   (B3)  DONE — Collate field removed from DESCRIPTION (GH #12, commit e5b58b4)
@@ -268,21 +264,27 @@ dataset. Keep computation lightweight (\donttest{} or pre-computed results for s
 <item status="pass">No unprotected sink()/pdf()/options() side effects (GH #16, #17, Plan 10)</item>
 <item status="pass">User messaging uses message() not cat() (GH #19, Plan 11)</item>
 <item status="pass">Computation separated from I/O — no file writes as side effects (GH #15, Plan 10)</item>
-<item status="partial">No eval(parse()) in exported functions — 49 remain in internal functions</item>
+<item status="partial">No eval(parse()) in exported functions — 9 remain in internal functions (all NECESSARY or Shiny-only; GH issues opened Plan 16)</item>
 <item status="pass">No shell.exec() or Windows-only system calls</item>
 <item status="pass">Package root at repo root (GH #10, Plan 07)</item>
 <item status="pass">Example dataset included in data/ (GH #9, Plan 12) — sparrow_example: 60-reach synthetic network, LazyData: true</item>
 <item status="pass">At least one vignette demonstrating core workflow — html_vignette fully updated with sparrow_example workflow (GH #8, Plan 12)</item>
 <item status="unchecked">Package installs and loads on macOS, Linux, and Windows — Linux verified; Windows/macOS untested</item>
 <item status="pass">Total R CMD check time under 10 minutes — tests run in ~1.2s</item>
-<item status="unchecked">testthat tests pass on all platforms — Linux verified (FAIL 0, PASS 166, SKIP 1)</item>
+<item status="unchecked">testthat tests pass on all platforms — Linux verified (FAIL 0, PASS 163, SKIP 4)</item>
+<item status="pass">No CSV file setup required — rsparrow_model() accepts 4 data frames directly (Plan 13)</item>
+<item status="pass">No plyr/dplyr/data.table in DESCRIPTION (not even Suggests) — replaced with base R (Plan 14)</item>
+<item status="pass">No plotly/ggplot2/gridExtra/gplots in DESCRIPTION — all removed (Plans 15–16)</item>
+<item status="pass">plot(model) works with zero Suggests installed — base R graphics only (Plans 15–16)</item>
+<item status="pass">eval(parse()) reduced to 9 (from ~25) — all remaining instances have GH issues (Plan 16)</item>
+<item status="pass">Monolith seam comments added; GH decomposition issues opened for Plan 17+ (Plan 16)</item>
 <item status="unchecked">CRAN submission via devtools::submit_cran() accepted</item>
 </cran_checklist>
 
-<upcoming_plans>
+<completed_plans_13_16>
 
 <plan id="13" label="In-Memory API — Eliminate CSV File Dependency">
-Status: NOT STARTED
+Status: COMPLETE (commit 4a1c84c parent; see PLAN_13_IN_MEMORY_API.md)
 Scope:
   - Replace rsparrow_model(path_main, run_id) with four data-frame arguments + output_dir
   - Add prep_sparrow_inputs() helper to validate/reshape inputs (replaces readData chain)
@@ -297,7 +299,7 @@ See: docs/plans/PLAN_13_IN_MEMORY_API.md
 </plan>
 
 <plan id="14" label="Dependency Reduction — Remove plyr, dplyr, data.table">
-Status: NOT STARTED
+Status: COMPLETE (commit cdaf73f; see PLAN_14_DEPENDENCY_REDUCTION.md)
 Scope:
   - Replace 6 plyr::ddply calls with base R aggregate() in 3 files
   - Replace 3 dplyr::sample_n calls with base R sample() in correlationMatrix.R
@@ -310,8 +312,8 @@ GH Issues: new
 See: docs/plans/PLAN_14_DEPENDENCY_REDUCTION.md
 </plan>
 
-<plan id="15" label="Base R Plotting — Eliminate plotly Dependency">
-Status: NOT STARTED
+<plan id="15" label="Suggests Audit — Reduce Optional Dependencies">
+Status: COMPLETE (commit 7d6e168; see PLAN_15_SUGGESTS_AUDIT.md)
 Scope:
   - Rewrite diagnosticPlots_4panel_A.R: par(mfrow=c(2,2)) + base plot() calls
   - Rewrite diagnosticPlots_4panel_B.R: boxplot(), qqnorm(), qqline(), plot()
@@ -326,8 +328,14 @@ GH Issues: new
 See: docs/plans/PLAN_15_BASE_R_PLOTTING.md
 </plan>
 
-<plan id="16" label="Function Audit — Simplification, eval/parse, and Monolith Review">
-Status: NOT STARTED
+<plan id="16A" label="Base R Plotting — Eliminate plotly Dependency">
+Status: COMPLETE (commit 4a1c84c; see PLAN_16_BASE_R_PLOTTING.md)
+Key results: plotlyLayout.R/hline.R/addMarkerText.R deleted; all 4 diagnostic plot functions
+rewritten in base R graphics; plotly removed from Suggests.
+</plan>
+
+<plan id="16B" label="Function Audit — Simplification, eval/parse, and Monolith Review">
+Status: COMPLETE (2026-04-21; see PLAN_16_FUNCTION_AUDIT.md)
 Scope:
   - Full pass through all R/ files: classify KEEP/SIMPLIFY/MERGE/REMOVE
   - Archive confirmed-dead functions (startEndmodifySubdata, createMasterDataDictionary,
@@ -339,12 +347,19 @@ Scope:
   - Update FUNCTION_INVENTORY.md (full reclassification), TECHNICAL_DEBT.md (mark resolved),
     ARCHITECTURE.md (new API + dependency state), CRAN_ROADMAP.md
 Dependencies: Plan 15
-GH Issues: new (eval/parse and monolith decomposition issues)
+Key results: checkBinaryMaps/replaceNAs/diagnosticPlotsValidate archived;
+  seam comments added to 3 monoliths; 5 GH issues opened for eval/parse + decomposition;
+  FUNCTION_INVENTORY/TECHNICAL_DEBT/ARCHITECTURE/CRAN_ROADMAP all updated.
+GH Issues: opened Plan 16 (eval/parse ×3, monolith decomposition ×2)
 See: docs/plans/PLAN_16_FUNCTION_AUDIT.md
 </plan>
 
+</completed_plans_13_16>
+
+<upcoming_plans>
+
 <plan id="10" label="Separate Computation from I/O">
-Status: NOT STARTED
+Status: COMPLETE (GH #15, Plan 10)
 Scope:
   - Refactor estimation functions to return R objects instead of writing files:
     estimate.R: Remove ~7 save() + 10 dir.create(); return estimate.list directly

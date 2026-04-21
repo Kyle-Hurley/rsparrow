@@ -47,6 +47,17 @@ estimateNLLSmetrics <- function(if_estimate, if_estimate_simulation, if_sparrowE
                                 file.output.list, classvar, dlvdsgn,
                                 Csites.weights.list, estimate.input.list,
                                 Csites.list, SelParmValues, subdata, sitedata, DataMatrix.list) {
+  # MONOLITH NOTE (Plan 16 — GH issue opened for decomposition):
+  # This function is ~661 lines. Natural seams for future decomposition (Plan 17+):
+  #   Seam 1 (~lines 46–135):  Setup: parameter extraction, class variables, site counts
+  #   Seam 2 (~lines 136–280): Jacobian results: leverage, influence, VIF, eigenvalues
+  #   Seam 3 (~lines 281–415): Residual diagnostics: Cook's D, bootstrap residuals, PPCC,
+  #                             Shapiro-Wilk normality test
+  #   Seam 4 (~lines 416–560): ANOVA table: RSQ, RMSE, DF, SSE, weighted error
+  #   Seam 5 (~lines 561–661): Assembly: named.list construction, simulation-mode path
+  # Each seam corresponds to a coherent statistical operation and could be extracted
+  # into a compute_*() helper returning a sub-list.
+
   path_results <- file.output.list$path_results
   run_id <- file.output.list$run_id
   ifHess <- estimate.input.list$ifHess

@@ -8,11 +8,9 @@
 #' replaces plotly throughout.)
 #'
 #' Executed By: \itemize{
-#'              \item diagnosticPlotsValidate.R,
 #'              \item estimate.R}
 #'
 #' Executes Routines: \itemize{
-#'              \item checkBinaryMaps.R,
 #'              \item diagnosticPlots_4panel_A.R,
 #'              \item diagnosticPlots_4panel_B.R}
 #'
