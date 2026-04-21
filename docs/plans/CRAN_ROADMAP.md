@@ -1,24 +1,25 @@
 <cran_roadmap>
 
 <executive_summary>
-Plans 01–12 are complete. The package is CRAN-ready. Plans 13–16 are planned next-step
-improvements targeting API ergonomics, dependency reduction, and long-term maintainability.
+Plans 01–13 are complete. The package is CRAN-ready. Plans 14–16 are planned next-step
+improvements targeting dependency reduction and long-term maintainability.
   - Package at repo root (R/, src/, man/, tests/, inst/, DESCRIPTION, NAMESPACE)
   - Compiled artifacts removed from src/; Collate field removed; .Rbuildignore in place
   - Dynamic model infrastructure removed; 23 unreachable functions archived to inst/archived/
   - Computation/I/O separated; all CRAN compliance issues fixed
   - sparrow_example dataset in data/ (GH #9); introductory vignette (GH #8)
-  - @examples updated in all 14 exported functions using sparrow_example
+  - In-memory API: rsparrow_model() accepts 4 data frames; read_sparrow_data removed (Plan 13)
+  - @examples updated in all 13 exported functions using sparrow_example
   - DESCRIPTION URL/BugReports point to GitHub
-Test suite: FAIL 0 | PASS 166 | SKIP 1.
+Exported functions: 13 (read_sparrow_data removed in Plan 13).
+Test suite: FAIL 0 | PASS 166 | SKIP 1 (pre-Plan 13 baseline).
 R CMD check (tarball, --no-manual): 0 ERRORs, 0 WARNINGs, 2 NOTEs (both pre-existing).
 
-PLANNED NEXT STEPS (Plans 13–16):
-  Plan 13: In-memory API — rsparrow_model() accepts data frames; no CSV setup required
+PLANNED NEXT STEPS (Plans 14–16):
   Plan 14: Remove plyr/dplyr/data.table — base R aggregate/sample/write.csv replace all uses
   Plan 15: Base R plotting — plotly/ggplot2/gridExtra/gplots removed; zero-Suggests plots
   Plan 16: Function audit — archive dead code, reduce eval(parse()), document monoliths
-After Plans 13–16: Imports reduced to 2 (nlmrt, numDeriv); Suggests to ~9 (no plotly/plyr/dplyr)
+After Plans 14–16: Imports reduced to 2 (nlmrt, numDeriv); Suggests to ~9 (no plotly/plyr/dplyr)
 
 ALL BLOCKERS RESOLVED (Plans 07–12):
   (B1)  DONE — Package moved from RSPARROW_master/ to repo root (GH #10, commit e5b58b4)

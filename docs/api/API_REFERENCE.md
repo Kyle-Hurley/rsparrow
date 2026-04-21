@@ -48,27 +48,27 @@ standards.
 #' Estimate a SPARROW Water Quality Model
 #'
 #' Estimates a SPARROW (SPAtially Referenced Regressions On Watershed attributes)
-#' model using nonlinear least squares. Reads input data from CSV control files,
-#' validates the reach network, computes hydrological sequencing, and optimizes
-#' model parameters using the nlmrt package.
+#' model using nonlinear least squares. Accepts four input data frames directly —
+#' no CSV files or directories required.
 #'
 #' The function orchestrates the full SPARROW estimation workflow:
 #' \enumerate{
-#'   \item Reads and validates control files (parameters.csv, design_matrix.csv)
-#'   \item Loads reach network and monitoring site data
-#'   \item Computes hydrological sequencing via rsparrow_hydseq()
+#'   \item Validates and prepares the four input data frames
+#'   \item Computes hydrological sequencing via rsparrow_hydseq() if needed
 #'   \item Prepares data matrices for optimization
 #'   \item Calls nonlinear least squares optimizer
 #'   \item Computes fit statistics and diagnostics
 #' }
 #'
-#' @param path_main Character. Path to the main directory containing control files
-#'   and data. Must contain parameters.csv, design_matrix.csv, dataDictionary.csv.
-#' @param run_id Character. Name of the model run (default: "run1"). Used to match
-#'   parameter specifications in the control files.
-#' @param model_type Character. Either "static" for long-term mean annual models
-#'   or "dynamic" for seasonal/annual time-varying models. Default: "static".
-#' @param ... Additional arguments passed to the internal estimation routine.
+#' @param reaches Data frame. Reach network with topology and attributes.
+#' @param parameters Data frame. Parameter configuration (SOURCE and DELIVF rows).
+#' @param design_matrix Data frame. Binary source-delivery interaction matrix.
+#' @param data_dictionary Data frame. Maps SPARROW variable names to data columns.
+#' @param run_id Character. Name of the model run (default: "run1").
+#' @param output_dir Character or NULL. Path for file output. NULL = in-memory only.
+#' @param if_estimate Logical. TRUE (default) to run NLLS estimation.
+#' @param if_predict Logical. TRUE (default) to compute predictions.
+#' @param if_validate Logical. FALSE (default). TRUE to split calibration/validation.
 #'
 #' @return An S3 object of class "rsparrow" containing:
 #'   \describe{
@@ -87,30 +87,23 @@ standards.
 #' @export
 #'
 #' @seealso \code{\link{predict.rsparrow}}, \code{\link{summary.rsparrow}},
-#'   \code{\link{read_sparrow_data}}
+#'   \code{\link{rsparrow_hydseq}}
 #'
 #' @examples
-#' \dontrun{
-#' # Estimate a static SPARROW model
+#' \donttest{
 #' model <- rsparrow_model(
-#'   path_main = "~/sparrow_projects/my_watershed/",
-#'   run_id = "baseline_2020",
-#'   model_type = "static"
+#'   sparrow_example$reaches,
+#'   sparrow_example$parameters,
+#'   sparrow_example$design_matrix,
+#'   sparrow_example$data_dictionary
 #' )
-#'
-#' # View estimation results
 #' print(model)
-#' summary(model)
-#'
-#' # Extract coefficients
 #' coef(model)
-#'
-#' # Generate predictions
-#' model <- predict(model, type = "all")
 #' }
-rsparrow_model <- function(path_main, run_id = "run1", model_type = "static", ...) {
-  stop("Not yet implemented - see Plan 04: State Elimination")
-}
+rsparrow_model <- function(reaches, parameters, design_matrix, data_dictionary,
+                            run_id = "run1", output_dir = NULL,
+                            if_estimate = TRUE, if_predict = TRUE,
+                            if_validate = FALSE) { ... }
 ```
 </example>
 </template>

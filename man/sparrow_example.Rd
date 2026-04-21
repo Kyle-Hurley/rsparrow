@@ -58,20 +58,15 @@ included. The network topology is a Y-shaped dendritic structure with
 (drainage areas accumulate correctly downstream; streamflow is
 proportional to total drainage area).
 
-To run a full rsparrow model using this dataset, write the control CSV
-files to a temporary directory and call \code{\link{rsparrow_model}}:
+To run a full rsparrow model using this dataset, pass the data frames
+directly to \code{\link{rsparrow_model}}:
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{td <- file.path(tempdir(), "sparrow_run")
-dir.create(td, showWarnings = FALSE)
-write.csv(sparrow_example$reaches,
-          file.path(td, "data", "data1.csv"),
-          row.names = FALSE)
-write.csv(sparrow_example$parameters,
-          file.path(td, "parameters.csv"), row.names = FALSE)
-write.csv(sparrow_example$design_matrix,
-          file.path(td, "design_matrix.csv"), row.names = TRUE)
-write.csv(sparrow_example$data_dictionary,
-          file.path(td, "dataDictionary.csv"), row.names = FALSE)
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{model <- rsparrow_model(
+  sparrow_example$reaches,
+  sparrow_example$parameters,
+  sparrow_example$design_matrix,
+  sparrow_example$data_dictionary
+)
 }\if{html}{\out{</div>}}
 }
 \examples{
@@ -84,7 +79,6 @@ net <- rsparrow_hydseq(sparrow_example$reaches)
 head(net[order(net$hydseq), c("waterid", "fnode", "tnode", "hydseq")])
 }
 \seealso{
-\code{\link{rsparrow_hydseq}}, \code{\link{rsparrow_model}},
-\code{\link{read_sparrow_data}}
+\code{\link{rsparrow_hydseq}}, \code{\link{rsparrow_model}}
 }
 \keyword{datasets}

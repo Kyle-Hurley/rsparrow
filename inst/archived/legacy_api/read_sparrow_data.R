@@ -1,3 +1,4 @@
+# Archived in Plan 13: replaced by in-memory API (rsparrow_model() data-frame arguments)
 #' Read and Validate SPARROW Input Data
 #'
 #' Reads SPARROW input data from CSV control files and returns the raw data
@@ -26,8 +27,6 @@
 #'       dataDictionary.csv (columns: varType, sparrowNames, data1UserNames,
 #'       varunits, explanation).}
 #'   }
-#'
-#' @export
 #'
 #' @seealso \code{\link{rsparrow_model}}, \code{\link{rsparrow_hydseq}}
 #'

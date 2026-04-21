@@ -1,3 +1,4 @@
+# Archived in Plan 13: replaced by in-memory API (rsparrow_model() data-frame arguments)
 #' @title readData
 #' @description Reads the users input data (either .csv or binary format) \cr \cr
 #' Executed By: \itemize{\item createInitialDataDictionary.R

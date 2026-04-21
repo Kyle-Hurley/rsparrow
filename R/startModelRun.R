@@ -2,8 +2,7 @@
 #' @description executes sparrowSetup and sparrowExecution functions \cr \cr
 #' Executed By: \itemize{\item batchRun.R
 #'             \item executeRSPARROW.R} \cr
-#' Executes Routines: \itemize{\item applyUserModify.R
-#'             \item calcDemtareaClass.R
+#' Executes Routines: \itemize{\item calcDemtareaClass.R
 #'             \item calcIncremLandUse.R
 #'             \item checkAnyMissingSubdataVars.R
 #'             \item checkClassificationVars.R
@@ -15,8 +14,6 @@
 #'             \item createSubdataSorted.R
 #'             \item findMinMaxLatLon.R
 #'             \item named.list.R
-#'             \item readDesignMatrix.R
-#'             \item readParameters.R
 #'             \item selectCalibrationSites.R
 #'             \item selectDesignMatrix.R
 #'             \item selectParmValues.R
@@ -36,8 +33,6 @@
 #' @param filter_data1_conditions User specified additional DATA1 variables (and conditions) to
 #'       be used to filter reaches from sparrow_control
 #' @param data1 input data (data1)
-#' @param if_userModifyData yes/no indicating whether or not the userModifyData.R control file
-#'       is to be applied
 #' @param data_names data.frame of variable metadata from data_Dictionary.csv file
 #' @param class.input.list list of control settings related to classification variables
 #' @param min.sites.list named list of control settings `minimum_headwater_site_area`,
@@ -72,8 +67,6 @@ startModelRun <- function(file.output.list,
                           if_boot_estimate, if_boot_predict,
                           # createSubdataSorted
                           filter_data1_conditions, data1,
-                          # applyUserModify
-                          if_userModifyData,
                           data_names,
                           # checkClassificationVars
                           class.input.list,
@@ -89,7 +82,10 @@ startModelRun <- function(file.output.list,
                           scenario.input.list,
                           # shinyMap2
                           add_vars,
-                          RSPARROW_errorOption) {
+                          RSPARROW_errorOption,
+                          # pre-parsed inputs from prep_sparrow_inputs()
+                          betavalues,
+                          dmatrixin) {
   # Extract frequently used variables from input lists
   path_results <- file.output.list$path_results
   run_id <- file.output.list$run_id
@@ -108,21 +104,20 @@ startModelRun <- function(file.output.list,
   ConcFactor <- mapping.input.list$ConcFactor
   sparrow_state <- list()
 
-  # compile master_dataDictionary
-  createMasterDataDictionary(file.output.list)
+  # compile master_dataDictionary (skipped when running in-memory)
+  if (!is.null(file.output.list$path_results)) {
+    createMasterDataDictionary(file.output.list)
+  }
 
   message("Reading parameters and design matrix...")
   # (A) input parameters and settings
-  betavalues <- readParameters(
-    file.output.list, if_estimate, if_estimate_simulation
-  )
+  # betavalues is pre-parsed by prep_sparrow_inputs() and passed in directly
+  stopifnot(!is.null(betavalues))
   sparrow_state$betavalues <- betavalues
 
   # (B) Setup the parameter and system variables
   SelParmValues <- selectParmValues(betavalues, if_estimate, if_estimate_simulation)
   sparrow_state$SelParmValues <- SelParmValues
-
-  # SelParmValues
 
   # deactivates unnecessary computation of parameter correlations, Eigenvalues in cases of one predictor variable
   if (SelParmValues$bcols == 1) {
@@ -131,7 +126,8 @@ startModelRun <- function(file.output.list,
   }
 
   # (C) input source-delivery interaction matrix (includes all possible variables)
-  dmatrixin <- readDesignMatrix(file.output.list, betavalues)
+  # dmatrixin is pre-parsed by prep_sparrow_inputs() and passed in directly
+  stopifnot(!is.null(dmatrixin))
   sparrow_state$dmatrixin <- dmatrixin
   # (D) Setup design/interaction matrix
   dlvdsgn <- selectDesignMatrix(SelParmValues, betavalues, dmatrixin)
@@ -144,35 +140,9 @@ startModelRun <- function(file.output.list,
   # (A) Create 'subdata' by filtering DATA1
   subdata <- createSubdataSorted(filter_data1_conditions, data1)
 
-  # (B) DATA MODIFICATIONS FUNCTION allows user-specified modification
-  #        of data and parameter variables in SUBDATA
-  if (if_userModifyData == "yes") {
-    tryIt <- try(
-      {
-        subdata <- applyUserModify(
-          file.output.list,
-          # modifySubdata arguments
-          betavalues, data_names, subdata, class_landuse, lon_limit
-        )
-      },
-      TRUE
-    ) # end try
-
-    if (class(tryIt) == "try-error") { # if an error occured
-      message(paste0(
-        "AN ERROR OCCURRED IN PROCESSING _userModifyData.R\n",
-        geterrmessage(), "RUN EXECUTION TERMINATED."
-      ))
-
-      if (regexpr("not found", geterrmessage()) > 0) {
-        message(paste("OBJECT NOT FOUND ERROR COULD INDICATE THAT THE VARIABLE DOES NOT EXIST IN THE dataDictionary.csv FILE"))
-      }
-
-      stop("RSPARROW run terminated due to errors.")
-    }
-  } else {
-    subdata <- startEndmodifySubdata(data_names, class_landuse, data1)
-  }
+  # (B) Apply standard variable name mapping (data modifications should be
+  #     applied to the data frames before calling rsparrow_model())
+  subdata <- startEndmodifySubdata(data_names, class_landuse, data1)
   sparrow_state$subdata <- subdata
 
   message("Testing for missing variables in subdata...")
@@ -444,7 +414,7 @@ startModelRun <- function(file.output.list,
   estimate.list <- runTimes$estimate.list
   sparrow_state$estimate.list <- estimate.list  # expose to rsparrow_model()
   sparrow_state$predict.list  <- runTimes$predict.list  # expose to rsparrow_model()
-  if (!is.null(estimate.list)) {
+  if (!is.null(estimate.list) && !is.null(path_results)) {
     # setup for interactive Mapping
     shinyArgs <- named.list(
       file.output.list, map_uncertainties, BootUncertainties,
@@ -461,7 +431,6 @@ startModelRun <- function(file.output.list,
       add_vars,
       RSPARROW_errorOption
     )
-
 
     save(shinyArgs, file = paste0(path_results, .Platform$file.sep, "maps", .Platform$file.sep, "shinyArgs"))
   }

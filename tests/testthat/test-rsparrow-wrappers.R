@@ -48,27 +48,42 @@ test_that("rsparrow_scenario stops with informative error for non-rsparrow input
   )
 })
 
-test_that("rsparrow_model has correct formal arguments", {
+test_that("rsparrow_model has correct formal arguments (Plan 13 in-memory API)", {
   args <- names(formals(rsparrow_model))
-  expect_true("path_main"    %in% args)
-  expect_true("run_id"       %in% args)
-  expect_true("if_estimate"  %in% args)
-  expect_true("if_predict"   %in% args)
-  expect_true("if_validate"  %in% args)
-  expect_false("model_type"  %in% args)
+  expect_true("reaches"         %in% args)
+  expect_true("parameters"      %in% args)
+  expect_true("design_matrix"   %in% args)
+  expect_true("data_dictionary" %in% args)
+  expect_true("run_id"          %in% args)
+  expect_true("output_dir"      %in% args)
+  expect_true("if_estimate"     %in% args)
+  expect_true("if_predict"      %in% args)
+  expect_true("if_validate"     %in% args)
+  expect_false("path_main"      %in% args)
 })
 
-test_that("rsparrow_model stops with clear error for non-existent path_main", {
+test_that("rsparrow_model stops with clear error for missing required reaches columns", {
   expect_error(
-    rsparrow_model("/nonexistent/path/xyz"),
-    regexp = "exist|path_main"
+    rsparrow_model(
+      reaches         = data.frame(x = 1),
+      parameters      = sparrow_example$parameters,
+      design_matrix   = sparrow_example$design_matrix,
+      data_dictionary = sparrow_example$data_dictionary
+    ),
+    regexp = "missing required columns|reaches"
   )
 })
 
-test_that("rsparrow_model stops with clear error for missing control files", {
-  td <- tempdir()
+test_that("rsparrow_model stops with clear error for missing SOURCE in parameters", {
+  bad_params <- sparrow_example$parameters
+  bad_params$parmType <- "DELIVF"  # no SOURCE row
   expect_error(
-    rsparrow_model(td),
-    regexp = "exist|path_main|control|file|sparrow"
+    rsparrow_model(
+      reaches         = sparrow_example$reaches,
+      parameters      = bad_params,
+      design_matrix   = sparrow_example$design_matrix,
+      data_dictionary = sparrow_example$data_dictionary
+    ),
+    regexp = "SOURCE"
   )
 })

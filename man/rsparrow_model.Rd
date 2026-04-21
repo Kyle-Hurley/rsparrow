@@ -5,61 +5,90 @@
 \title{Estimate a SPARROW Water Quality Model}
 \usage{
 rsparrow_model(
-  path_main,
+  reaches,
+  parameters,
+  design_matrix,
+  data_dictionary,
   run_id = "run1",
-  if_estimate = "yes",
-  if_predict = "yes",
-  if_validate = "no",
-  ...
+  output_dir = NULL,
+  if_estimate = TRUE,
+  if_predict = TRUE,
+  if_validate = FALSE
 )
 }
 \arguments{
-\item{path_main}{Character. Path to the main directory containing control files
-and data. Must contain parameters.csv, design_matrix.csv, dataDictionary.csv.}
+\item{reaches}{Data frame. Reach network with topology and attributes.
+Required columns: \code{waterid} (integer), \code{fnode} (integer),
+\code{tnode} (integer), \code{hydseq} (numeric), \code{demiarea}
+(numeric), \code{demtarea} (numeric), \code{frac} (numeric),
+\code{iftran} (integer), \code{rchtype} (integer), \code{calsites}
+(integer), \code{depvar} (numeric). Use \code{\link{rsparrow_hydseq}}
+to compute \code{hydseq} if it is not already present.}
 
-\item{run_id}{Character. Name of the model run (default: "run1"). Used to match
-parameter specifications in the control files.}
+\item{parameters}{Data frame. Model parameter configuration. Required
+columns: \code{sparrowNames} (character), \code{parmInit} (numeric),
+\code{parmMin} (numeric), \code{parmMax} (numeric),
+\code{parmType} (character, values \code{"SOURCE"} or \code{"DELIVF"}).
+Optional columns: \code{description}, \code{parmUnits},
+\code{parmCorrGroup}.}
 
-\item{if_estimate}{Character. "yes" to run NLLS estimation, "no" to use
-previously saved parameter estimates. Default: "yes".}
+\item{design_matrix}{Data frame. Binary matrix associating source
+parameters (rows) with delivery parameters (columns). The first column
+must be named \code{sparrowNames} and contain the SOURCE parameter names;
+remaining columns are DELIVF parameter names with values 0 or 1.}
 
-\item{if_predict}{Character. "yes" to compute reach-level load and yield
-predictions after estimation. Default: "yes".}
+\item{data_dictionary}{Data frame. Maps internal SPARROW variable names to
+data column names. Required columns: \code{varType}, \code{sparrowNames},
+\code{data1UserNames}, \code{varunits}. Optional: \code{explanation}.}
 
-\item{if_validate}{Character. "yes" to split monitoring sites into calibration
-and validation sets. Default: "no".}
+\item{run_id}{Character. Name of the model run (default: \code{"run1"}).
+Used in output file names when \code{output_dir} is provided.}
 
-\item{...}{Additional arguments passed to the internal estimation routine.}
+\item{output_dir}{Character or \code{NULL}. Path to a directory for file
+output (CSV results, plots, diagnostic files). \code{NULL} (the default)
+runs the model entirely in memory with no file I/O side effects.}
+
+\item{if_estimate}{Logical. \code{TRUE} (default) to run NLLS estimation.
+\code{FALSE} to use initial parameter values as fixed estimates.}
+
+\item{if_predict}{Logical. \code{TRUE} (default) to compute reach-level
+load and yield predictions after estimation.}
+
+\item{if_validate}{Logical. \code{FALSE} (default). \code{TRUE} to split
+monitoring sites into calibration and validation sets.}
 }
 \value{
-An S3 object of class "rsparrow" containing:
+An S3 object of class \code{"rsparrow"} containing:
 \describe{
 \item{call}{The matched function call}
 \item{coefficients}{Named numeric vector of estimated parameters}
 \item{std_errors}{Standard errors of coefficients (Jacobian-based)}
-\item{vcov}{Variance-covariance matrix (Hessian-based; NULL if not computed)}
+\item{vcov}{Variance-covariance matrix (Hessian-based; NULL if not
+  computed)}
 \item{residuals}{Residuals at monitoring sites}
 \item{fitted_values}{Fitted loads at monitoring sites}
 \item{fit_stats}{List with R2, RMSE, npar, nobs, convergence}
 \item{data}{Input data (reach network, sites, design matrices)}
-\item{predictions}{Reach-level load/yield predictions (NULL until predict() called)}
-\item{bootstrap}{Bootstrap results (NULL until rsparrow_bootstrap() called)}
-\item{validation}{Validation results (NULL until rsparrow_validate() called)}
-\item{metadata}{Package version, timestamp, run_id, path_main}
+\item{predictions}{Reach-level load/yield predictions (NULL until
+  predict() called, or when if_predict = TRUE)}
+\item{bootstrap}{Bootstrap results (NULL until
+  rsparrow_bootstrap() called)}
+\item{validation}{Validation results (NULL until
+  rsparrow_validate() called)}
+\item{metadata}{Package version, timestamp, run_id}
 }
 }
 \description{
-Estimates a SPARROW (SPAtially Referenced Regressions On Watershed attributes)
-model using nonlinear least squares. Reads input data from CSV control files,
-validates the reach network, computes hydrological sequencing, and optimizes
-model parameters using the nlmrt package.
+Estimates a SPARROW (SPAtially Referenced Regressions On Watershed
+attributes) model using nonlinear least squares. Accepts the four input
+data frames directly, without requiring CSV files on disk.
 }
 \details{
 The function orchestrates the full SPARROW estimation workflow:
 \enumerate{
-\item Reads and validates control files (parameters.csv, design_matrix.csv)
-\item Loads reach network and monitoring site data
+\item Validates and prepares the four input data frames
 \item Computes hydrological sequencing via \code{\link{rsparrow_hydseq}}
+  (if not already present in \code{reaches})
 \item Prepares data matrices for optimization
 \item Calls nonlinear least squares optimizer
 \item Computes fit statistics and diagnostics
@@ -67,21 +96,17 @@ The function orchestrates the full SPARROW estimation workflow:
 }
 \examples{
 \donttest{
-td <- tempdir()
-write.csv(sparrow_example$data_dictionary,
-          file.path(td, "dataDictionary.csv"), row.names = FALSE)
-write.csv(sparrow_example$parameters,
-          file.path(td, "parameters.csv"), row.names = FALSE)
-write.csv(sparrow_example$design_matrix,
-          file.path(td, "design_matrix.csv"), row.names = FALSE)
-reaches <- rsparrow_hydseq(sparrow_example$reaches)
-write.csv(reaches, file.path(td, "data1.csv"), row.names = FALSE)
-model <- rsparrow_model(td, run_id = "ex")
+model <- rsparrow_model(
+  sparrow_example$reaches,
+  sparrow_example$parameters,
+  sparrow_example$design_matrix,
+  sparrow_example$data_dictionary
+)
 print(model)
 coef(model)
 }
 }
 \seealso{
 \code{\link{predict.rsparrow}}, \code{\link{summary.rsparrow}},
-\code{\link{read_sparrow_data}}
+\code{\link{rsparrow_hydseq}}
 }

@@ -1,8 +1,9 @@
 <exports_specification>
 
 <overview>
-This document specifies the 13 functions that form the user-facing API for the rsparrow package.
-These functions will be exported via @export roxygen2 tags and documented with complete
+This document specifies the 13 functions that form the user-facing API for the rsparrow package
+(Plan 13: read_sparrow_data removed; rsparrow_model updated to in-memory signature).
+These functions are exported via @export roxygen2 tags and documented with complete
 @param, @return, and @examples sections.
 </overview>
 
@@ -10,17 +11,22 @@ These functions will be exported via @export roxygen2 tags and documented with c
 <description>Main entry points for SPARROW modeling</description>
 
 <function name="rsparrow_model">
-<purpose>Main entry point for SPARROW model estimation</purpose>
+<purpose>Main entry point for SPARROW model estimation (Plan 13: in-memory API)</purpose>
 <current_equivalent>startModelRun() + controlFileTasksModel() + estimate()</current_equivalent>
-<signature>rsparrow_model(path_main, run_id = "run1", model_type = "static", ...)</signature>
+<signature>rsparrow_model(reaches, parameters, design_matrix, data_dictionary, run_id = "run1", output_dir = NULL, if_estimate = TRUE, if_predict = TRUE, if_validate = FALSE)</signature>
 <parameters>
-<param name="path_main">Character. Path to main directory containing control files</param>
+<param name="reaches">Data frame. Reach network with topology and attributes.</param>
+<param name="parameters">Data frame. Parameter configuration (SOURCE and DELIVF rows).</param>
+<param name="design_matrix">Data frame. Binary source-delivery interaction matrix. First column 'sparrowNames' contains SOURCE row labels.</param>
+<param name="data_dictionary">Data frame. Maps SPARROW variable names to data column names.</param>
 <param name="run_id">Character. Name of model run (default: "run1")</param>
-<param name="model_type">Character. Either "static" or "dynamic" (default: "static")</param>
-<param name="...">Additional arguments passed to estimation routine</param>
+<param name="output_dir">Character or NULL. Path for file output. NULL = in-memory only.</param>
+<param name="if_estimate">Logical. TRUE (default) to run NLLS estimation.</param>
+<param name="if_predict">Logical. TRUE (default) to compute reach-level predictions.</param>
+<param name="if_validate">Logical. FALSE (default). TRUE to split calibration/validation sites.</param>
 </parameters>
 <returns>S3 object of class "rsparrow"</returns>
-<notes>Wrapper that orchestrates data loading, validation, estimation. Does NOT mutate .GlobalEnv.</notes>
+<notes>Accepts data frames directly — no CSV files or directory structure required. output_dir=NULL (default) produces no file I/O side effects.</notes>
 </function>
 
 <function name="predict.rsparrow">
@@ -37,17 +43,6 @@ These functions will be exported via @export roxygen2 tags and documented with c
 <notes>Standard S3 method; users call predict(model)</notes>
 </function>
 
-<function name="read_sparrow_data">
-<purpose>Read and validate SPARROW input data from CSV control files</purpose>
-<current_equivalent>startModelRun.R (data loading portion)</current_equivalent>
-<signature>read_sparrow_data(path_main, run_id = "run1")</signature>
-<parameters>
-<param name="path_main">Character. Path to main directory</param>
-<param name="run_id">Character. Name of model run</param>
-</parameters>
-<returns>List with subdata, SelParmValues, design matrices</returns>
-<notes>Separates I/O from computation; enables programmatic data construction</notes>
-</function>
 
 </primary_interface>
 

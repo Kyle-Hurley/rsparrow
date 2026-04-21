@@ -35,8 +35,12 @@ runRsparrow.R. This was a SCRIPT (not a function) that checked global state, loa
 via dyn.load(), and called executeRSPARROW(). Moved to inst/legacy/ in Plan 01.
 </stage>
 
-<stage name="Entry (New API — Plan 04D)">
-rsparrow_model(path_main, run_id) → read_sparrow_data() → startModelRun() → rsparrow S3 object.
+<stage name="Entry (New API — Plan 13)">
+rsparrow_model(reaches, parameters, design_matrix, data_dictionary) →
+  prep_sparrow_inputs() [validates + transforms 4 data frames] →
+  startModelRun() [receives betavalues/dmatrixin directly; skips CSV reads] →
+  controlFileTasksModel() → rsparrow S3 object.
+output_dir=NULL (default): no file I/O; path_results=NULL suppresses all disk writes.
 All 13 exported functions implemented:
   rsparrow_model()       — full estimation entry point
   read_sparrow_data()    — reads data1.csv + dataDictionary.csv, returns file.output.list + data

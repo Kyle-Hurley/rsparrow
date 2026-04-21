@@ -1,3 +1,4 @@
+# Archived in Plan 13: replaced by in-memory API (rsparrow_model() data-frame arguments)
 #' @title read_dataDictionary
 #' @description Reads the 'dataDictionary.csv' file. \cr \cr
 #' Executed By: dataInputPrep.R \cr

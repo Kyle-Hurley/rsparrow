@@ -1,3 +1,4 @@
+# Archived in Plan 13: replaced by in-memory API (rsparrow_model() data-frame arguments)
 #' @title applyUserModify
 #' @description reads `userModifyData.R` control file as text, unpacks all variables in the
 #'            data1 file and applies user modifications, creates the `subdata` object for use in all model

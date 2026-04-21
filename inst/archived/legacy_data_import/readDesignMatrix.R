@@ -1,3 +1,4 @@
+# Archived in Plan 13: replaced by in-memory API (rsparrow_model() data-frame arguments)
 #' @title readDesignMatrix
 #' @description Reads the land-to-water and source interaction matrix in the
 #'            'design_matrix.csv' file.  \cr \cr

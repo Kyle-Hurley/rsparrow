@@ -1,3 +1,4 @@
+# Archived in Plan 13: replaced by in-memory API (rsparrow_model() data-frame arguments)
 #' @title readParameters
 #' @description Reads the 'parameters.csv' file. \cr \cr
 #' Executed By: startModelRun.R \cr

@@ -9,7 +9,6 @@
 #'   \item \code{\link{rsparrow_model}}: Estimate a SPARROW model
 #'   \item \code{\link{predict.rsparrow}}: Predict loads and yields
 #'   \item \code{\link{summary.rsparrow}}: Summarize estimation results
-#'   \item \code{\link{read_sparrow_data}}: Read and validate input data
 #'   \item \code{\link{rsparrow_hydseq}}: Compute hydrological sequencing
 #' }
 #'
