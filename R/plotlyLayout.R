@@ -147,7 +147,7 @@ plotlyLayout <- function(x, y, log, nTicks, digits,
 
 
   if (exists("xAxis.list")) {
-    p <- p %>% plotly::layout(
+    p <- p |>plotly::layout(
       xaxis = xAxis.list,
       yaxis = yAxis.list,
       showlegend = legend,
@@ -155,7 +155,7 @@ plotlyLayout <- function(x, y, log, nTicks, digits,
       margin = list(t = 100)
     )
   } else {
-    p <- p %>% plotly::layout(
+    p <- p |>plotly::layout(
       yaxis = yAxis.list,
       showlegend = legend,
       annotations = a,

@@ -217,15 +217,19 @@ estimate <- function(if_estimate, if_predict, file.output.list,
         if (!dir.exists(paste0(esri_path, "siteAttributes", .Platform$file.sep))) {
           dir.create(paste0(esri_path, "siteAttributes", .Platform$file.sep), showWarnings = FALSE)
         }
-        sf::st_write(
-          sf::st_as_sf(siteAttrshape, coords = c("xlon", "xlat"), crs = sf::st_crs(CRStext)),
-          paste0(esri_path, "siteAttributes", .Platform$file.sep, "siteAttrshape.shp"),
-          driver = "ESRI Shapefile", 
-          overwrite = TRUE
-          
-        )
+        if (!requireNamespace("sf", quietly = TRUE)) {
+          message("Skipping siteAttributes shapefile: 'sf' package not available. ",
+                  "Install with: install.packages('sf')")
+        } else {
+          sf::st_write(
+            sf::st_as_sf(siteAttrshape, coords = c("xlon", "xlat"), crs = sf::st_crs(CRStext)),
+            paste0(esri_path, "siteAttributes", .Platform$file.sep, "siteAttrshape.shp"),
+            driver = "ESRI Shapefile",
+            overwrite = TRUE
+          )
+        }
       }
-      
+
       # output residuals shapefile
       if (outputESRImaps[3] == "yes") {
         Resids <- estimate.list$sparrowEsts$resid
@@ -286,17 +290,21 @@ estimate <- function(if_estimate, if_predict, file.output.list,
         if (!dir.exists(paste0(esri_path, "residuals", .Platform$file.sep))) {
           dir.create(paste0(esri_path, "residuals", .Platform$file.sep), showWarnings = FALSE)
         }
-        
-        sf::st_write(
-          sf::st_as_sf(residShape, coords = c("xlon", "xlat"), crs = sf::st_crs(CRStext)),
-          paste0(esri_path, "residuals", .Platform$file.sep, "residShape.shp"),
-          driver = "ESRI Shapefile",
-          overwrite = TRUE
-        )
+        if (!requireNamespace("sf", quietly = TRUE)) {
+          message("Skipping residuals shapefile: 'sf' package not available. ",
+                  "Install with: install.packages('sf')")
+        } else {
+          sf::st_write(
+            sf::st_as_sf(residShape, coords = c("xlon", "xlat"), crs = sf::st_crs(CRStext)),
+            paste0(esri_path, "residuals", .Platform$file.sep, "residShape.shp"),
+            driver = "ESRI Shapefile",
+            overwrite = TRUE
+          )
+        }
       }
-      
+
     }
-    
+
     ##############################################
     ### 3. Sensitivity analyses for parameters ###
 
@@ -382,16 +390,20 @@ estimate <- function(if_estimate, if_predict, file.output.list,
         if (!dir.exists(paste0(esri_path, "residuals", .Platform$file.sep))) {
           dir.create(paste0(esri_path, "residuals", .Platform$file.sep), showWarnings = FALSE)
         }
-        
-        sf::st_write(
-          sf::st_as_sf(validationResidShape, coords = c("xlon", "xlat"), crs = sf::st_crs(CRStext)),
-          paste0(esri_path, "residuals", .Platform$file.sep, "validationResidShape.shp"),
-          driver = "ESRI Shapefile", 
-          overwrite = TRUE
-        )
-        
+        if (!requireNamespace("sf", quietly = TRUE)) {
+          message("Skipping validation residuals shapefile: 'sf' package not available. ",
+                  "Install with: install.packages('sf')")
+        } else {
+          sf::st_write(
+            sf::st_as_sf(validationResidShape, coords = c("xlon", "xlat"), crs = sf::st_crs(CRStext)),
+            paste0(esri_path, "residuals", .Platform$file.sep, "validationResidShape.shp"),
+            driver = "ESRI Shapefile",
+            overwrite = TRUE
+          )
+        }
+
       }
-      
+
     } # end validate loop
     ##########################################
   } else {
@@ -539,15 +551,19 @@ estimate <- function(if_estimate, if_predict, file.output.list,
             if (!dir.exists(paste0(esri_path, "siteAttributes", .Platform$file.sep))) {
               dir.create(paste0(esri_path, "siteAttributes", .Platform$file.sep), showWarnings = FALSE)
             }
-            sf::st_write(
-              sf::st_as_sf(siteAttrshape, coords = c("xlon", "xlat"), crs = sf::st_crs(CRStext)),
-              paste0(esri_path, "siteAttributes", .Platform$file.sep, "siteAttrshape.shp"),
-              driver = "ESRI Shapefile", 
-              overwrite = TRUE
-              
-            )
+            if (!requireNamespace("sf", quietly = TRUE)) {
+              message("Skipping siteAttributes shapefile: 'sf' package not available. ",
+                      "Install with: install.packages('sf')")
+            } else {
+              sf::st_write(
+                sf::st_as_sf(siteAttrshape, coords = c("xlon", "xlat"), crs = sf::st_crs(CRStext)),
+                paste0(esri_path, "siteAttributes", .Platform$file.sep, "siteAttrshape.shp"),
+                driver = "ESRI Shapefile",
+                overwrite = TRUE
+              )
+            }
           }
-          
+
           # output residuals shapefile
           if (outputESRImaps[3] == "yes") {
             Resids <- estimate.list$sparrowEsts$resid
@@ -608,15 +624,19 @@ estimate <- function(if_estimate, if_predict, file.output.list,
             if (!dir.exists(paste0(esri_path, "residuals", .Platform$file.sep))) {
               dir.create(paste0(esri_path, "residuals", .Platform$file.sep), showWarnings = FALSE)
             }
-            
-            sf::st_write(
-              sf::st_as_sf(residShape, coords = c("xlon", "xlat"), crs = sf::st_crs(CRStext)),
-              paste0(esri_path, "residuals", .Platform$file.sep, "residShape.shp"),
-              driver = "ESRI Shapefile",
-              overwrite = TRUE
-            )
+            if (!requireNamespace("sf", quietly = TRUE)) {
+              message("Skipping residuals shapefile: 'sf' package not available. ",
+                      "Install with: install.packages('sf')")
+            } else {
+              sf::st_write(
+                sf::st_as_sf(residShape, coords = c("xlon", "xlat"), crs = sf::st_crs(CRStext)),
+                paste0(esri_path, "residuals", .Platform$file.sep, "residShape.shp"),
+                driver = "ESRI Shapefile",
+                overwrite = TRUE
+              )
+            }
           }
-          
+
           ### Sensitivity analyses for parameters ###
 
           if (requireNamespace("plotly", quietly = TRUE)) {

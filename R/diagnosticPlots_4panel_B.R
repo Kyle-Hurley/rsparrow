@@ -44,7 +44,7 @@ diagnosticPlots_4panel_B <- function(sitedata, plotResids, plot.ratio.obs.pred, 
     plotTitle = gsub("^'|'$", "", plotTitles[1]),
     legend = FALSE, showPlotGrid = showPlotGrid
   )
-  p1 <- p1 %>% add_trace(
+  p1 <- p1 |>add_trace(
     y = plotResids, type = "box", name = "Resids", color = I("black"),
     fillcolor = "white"
   )
@@ -59,7 +59,7 @@ diagnosticPlots_4panel_B <- function(sitedata, plotResids, plot.ratio.obs.pred, 
     plotTitle = gsub("^'|'$", "", plotTitles[2]),
     legend = FALSE, showPlotGrid = showPlotGrid
   )
-  p2 <- p2 %>% add_trace(y = plot.ratio.obs.pred, type = "box", name = "Ratio", color = I("black"), fillcolor = "white")
+  p2 <- p2 |>add_trace(y = plot.ratio.obs.pred, type = "box", name = "Ratio", color = I("black"), fillcolor = "white")
 
 
 
@@ -111,7 +111,7 @@ diagnosticPlots_4panel_B <- function(sitedata, plotResids, plot.ratio.obs.pred, 
     legend = FALSE, showPlotGrid = showPlotGrid
   )
 
-  p3 <- p3 %>% add_trace(
+  p3 <- p3 |>add_trace(
     data = data, x = ~x.norm, y = ~plot.standardResids,
     type = "scatter",
     mode = "markers",
@@ -119,7 +119,7 @@ diagnosticPlots_4panel_B <- function(sitedata, plotResids, plot.ratio.obs.pred, 
     hoverinfo = "text",
     text = as.formula(markerText)
   )
-  p3 <- p3 %>% add_trace(
+  p3 <- p3 |>add_trace(
     data = data, x = ~x.norm, y = ~y.theo,
     type = "scatter",
     mode = "lines",
@@ -152,7 +152,7 @@ diagnosticPlots_4panel_B <- function(sitedata, plotResids, plot.ratio.obs.pred, 
     plotTitle = "Squared Residuals vs Predicted Load",
     legend = FALSE, showPlotGrid = showPlotGrid
   )
-  p4 <- p4 %>% add_trace(
+  p4 <- p4 |>add_trace(
     data = data, x = ~plotpredict, y = ~Resids2,
     type = "scatter",
     mode = "markers",
@@ -160,7 +160,7 @@ diagnosticPlots_4panel_B <- function(sitedata, plotResids, plot.ratio.obs.pred, 
     hoverinfo = "text",
     text = as.formula(markerText)
   )
-  p4 <- p4 %>% add_trace(
+  p4 <- p4 |>add_trace(
     x = lwx, y = lwy,
     type = "scatter",
     mode = "lines",

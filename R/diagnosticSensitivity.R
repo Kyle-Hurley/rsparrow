@@ -94,7 +94,7 @@ diagnosticSensitivity <- function(file.output.list, class.input.list, estimate.i
       yTitle = "Prediction Change (%) Relative to 1% Change", yZeroLine = FALSE,
       plotTitle = paste0("Parameter Sensitivity:  ", Parmnames[i]),
       legend = FALSE, showPlotGrid = showPlotGrid
-    ) %>%
+    ) |>
       add_trace(
         y = parmsens$x1, x = parmsens$xclass, type = "box", name = Parmnames[i],
         color = I("black"), fillcolor = "white"
@@ -153,17 +153,17 @@ diagnosticSensitivity <- function(file.output.list, class.input.list, estimate.i
       yTitle = "CHANGE IN PREDICTED VALUES (%)", yZeroLine = FALSE, ymin = ymin_p, ymax = ymax_p,
       plotTitle = "PARAMETER SENSITIVITY TO 1% CHANGE",
       legend = TRUE, showPlotGrid = showPlotGrid
-    ) %>%
+    ) |>
       add_trace(
         data = data_p, x = ~xparm, y = ~xmed, type = "scatter", mode = "markers",
         color = I("#0000FF"), name = "90% Interval",
         error_y = ~ list(symetric = FALSE, array = supper, arrayminus = slower, color = "#0000FF")
-      ) %>%
+      ) |>
       add_trace(
         data = data_p, x = ~xparm, y = ~xmed, type = "scatter", mode = "markers",
         color = I("#FF0000"), name = "50% Interval",
         error_y = ~ list(symetric = FALSE, array = xupper, arrayminus = xlower, color = "#FF0000")
-      ) %>%
+      ) |>
       add_trace(
         data = data_p, x = ~xparm, y = ~xmed, type = "scatter", mode = "markers",
         color = I("black"), name = "median"
@@ -179,17 +179,17 @@ diagnosticSensitivity <- function(file.output.list, class.input.list, estimate.i
       yTitle = "CHANGE IN PREDICTED VALUES (%)", yZeroLine = FALSE, ymin = ymin_p, ymax = ymax_p,
       plotTitle = "PARAMETER SENSITIVITY TO 1% CHANGE",
       legend = TRUE, showPlotGrid = showPlotGrid
-    ) %>%
+    ) |>
       add_trace(
         data = data_p, x = ~xparm, y = ~xmed, type = "scatter", mode = "markers",
         color = I("#0000FF"), name = "90% Interval",
         error_y = ~ list(symetric = FALSE, array = supper, arrayminus = slower, color = "#0000FF")
-      ) %>%
+      ) |>
       add_trace(
         data = data_p, x = ~xparm, y = ~xmed, type = "scatter", mode = "markers",
         color = I("#FF0000"), name = "50% Interval",
         error_y = ~ list(symetric = FALSE, array = xupper, arrayminus = xlower, color = "#FF0000")
-      ) %>%
+      ) |>
       add_trace(
         data = data_p, x = ~xparm, y = ~xmed, type = "scatter", mode = "markers",
         color = I("black"), name = "median"

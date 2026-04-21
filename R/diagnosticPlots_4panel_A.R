@@ -63,7 +63,7 @@ diagnosticPlots_4panel_A <- function(plotpredict, plotObs, plotyldpredict, ploty
   )
 
 
-  p1 <- p1 %>% add_trace(
+  p1 <- p1 |>add_trace(
     data = df, x = ~plotpredict, y = ~plotObs,
     type = "scatter",
     mode = "markers",
@@ -71,7 +71,7 @@ diagnosticPlots_4panel_A <- function(plotpredict, plotObs, plotyldpredict, ploty
     hoverinfo = "text",
     text = as.formula(markerText)
   )
-  p1 <- p1 %>% add_trace(
+  p1 <- p1 |>add_trace(
     data = df, x = ~plotObs, y = ~plotObs,
     type = "scatter",
     mode = "lines",
@@ -104,7 +104,7 @@ diagnosticPlots_4panel_A <- function(plotpredict, plotObs, plotyldpredict, ploty
   )
 
 
-  p2 <- p2 %>% add_trace(
+  p2 <- p2 |>add_trace(
     data = df, x = ~plotyldpredict, y = ~plotyldobs,
     type = "scatter",
     mode = "markers",
@@ -112,7 +112,7 @@ diagnosticPlots_4panel_A <- function(plotpredict, plotObs, plotyldpredict, ploty
     hoverinfo = "text",
     text = as.formula(markerText)
   )
-  p2 <- p2 %>% add_trace(
+  p2 <- p2 |>add_trace(
     data = df, x = ~plotyldobs, y = ~plotyldobs,
     type = "scatter",
     mode = "lines",
@@ -145,7 +145,7 @@ diagnosticPlots_4panel_A <- function(plotpredict, plotObs, plotyldpredict, ploty
   )
 
 
-  p3 <- p3 %>% add_trace(
+  p3 <- p3 |>add_trace(
     data = df, x = ~plotpredict, y = ~plotResids,
     type = "scatter",
     mode = "markers",
@@ -153,7 +153,7 @@ diagnosticPlots_4panel_A <- function(plotpredict, plotObs, plotyldpredict, ploty
     hoverinfo = "text",
     text = as.formula(markerText)
   )
-  p3 <- p3 %>% plotly::layout(shapes = list(hline(spatialAutoCorr=FALSE, 0)))
+  p3 <- p3 |>plotly::layout(shapes = list(hline(spatialAutoCorr=FALSE, 0)))
 
 
   # yield residual plot
@@ -179,7 +179,7 @@ diagnosticPlots_4panel_A <- function(plotpredict, plotObs, plotyldpredict, ploty
   )
 
 
-  p4 <- p4 %>% add_trace(
+  p4 <- p4 |>add_trace(
     data = df, x = ~plotyldpredict, y = ~plotResids,
     type = "scatter",
     mode = "markers",
@@ -187,7 +187,7 @@ diagnosticPlots_4panel_A <- function(plotpredict, plotObs, plotyldpredict, ploty
     hoverinfo = "text",
     text = as.formula(markerText)
   )
-  p4 <- p4 %>% plotly::layout(shapes = list(hline(spatialAutoCorr=FALSE, 0)))
+  p4 <- p4 |>plotly::layout(shapes = list(hline(spatialAutoCorr=FALSE, 0)))
 
   p <- subplot(p1, p2, p3, p4,
     nrows = 2, widths = c(0.5, 0.5), heights = c(0.5, 0.5),

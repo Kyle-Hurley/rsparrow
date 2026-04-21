@@ -81,6 +81,10 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
     sapply(classvar, function(var) as.numeric(sitedata[[var]]))
   )
 
+  if (!requireNamespace("spdep", quietly = TRUE))
+    stop("Package 'spdep' is required for spatial autocorrelation diagnostics. ",
+         "Install with: install.packages('spdep')", call. = FALSE)
+
   set.ZeroPolicyOption(TRUE) # setting required for hydrological distance tests
 
   numsites      <- length(sitedata$waterid)
@@ -271,11 +275,11 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
     yTitle = "Fn(x)", yZeroLine = FALSE, ymax = 1, ymin = 0, ymaxTick = 1,
     plotTitle = "Station Hydrologic Distances",
     legend = FALSE, showPlotGrid = showPlotGrid
-  ) %>%
+  ) |>
     add_trace(
       x = plotData$sdist, y = plotData$y, type = "scatter", mode = "lines", color = I("black"),
       line = list(color = I("black"))
-    ) %>%
+    ) |>
     plotly::layout(shapes = list(
       hline(spatialAutoCorr = TRUE, 1, color = "black", dash = "dash"),
       hline(spatialAutoCorr = TRUE, 0, color = "black", dash = "dash")
@@ -307,11 +311,11 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
     yTitle = "Fn(x)", yZeroLine = FALSE, ymax = 1, ymin = 0, ymaxTick = 1,
     plotTitle = "Station Euclidean Distances (kilometers)",
     legend = FALSE, showPlotGrid = showPlotGrid
-  ) %>%
+  ) |>
     add_trace(
       x = plotData$edist, y = plotData$y, type = "scatter", mode = "lines", color = I("black"),
       line = list(color = I("black"))
-    ) %>%
+    ) |>
     plotly::layout(shapes = list(
       hline(spatialAutoCorr = TRUE, 1, color = "black", dash = "dash"),
       hline(spatialAutoCorr = TRUE, 0, color = "black", dash = "dash")
@@ -424,12 +428,12 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
     plotTitle = "Moran's I P Value by River Basin",
     legend = FALSE, showPlotGrid = showPlotGrid
   )
-  p <- p %>% add_trace(
+  p <- p |> add_trace(
     y = pmoran, x = as.numeric(cind), type = "scatter", color = I("black"),
     mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
                                     line = list(color = "black", width = 3))
   )
-  p_21a <- p %>% plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
+  p_21a <- p |> plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
 
   if (length(pmoran_dev) == 0) cind <- character(0)
   p <- plotlyLayout(NA, pmoran_dev,
@@ -440,12 +444,12 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
     plotTitle = "Moran's I Standard Deviate by River Basin",
     legend = FALSE, showPlotGrid = showPlotGrid
   )
-  p <- p %>% add_trace(
+  p <- p |> add_trace(
     y = pmoran_dev, x = as.numeric(cind), type = "scatter", color = I("black"),
     mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
                                     line = list(color = "black", width = 3))
   )
-  p_21b <- p %>% plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
+  p_21b <- p |> plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
 
   if (length(bpmoran) == 0) cind <- character(0)
   p <- plotlyLayout(NA, bpmoran,
@@ -456,12 +460,12 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
     plotTitle = "Moran's I P Value by River Basin",
     legend = FALSE, showPlotGrid = showPlotGrid
   )
-  p <- p %>% add_trace(
+  p <- p |> add_trace(
     y = bpmoran, x = as.numeric(cind), type = "scatter", color = I("black"),
     mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
                                     line = list(color = "black", width = 3))
   )
-  p_21c <- p %>% plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
+  p_21c <- p |> plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
 
   if (length(bpmoran_dev) == 0) cind <- character(0)
   p <- plotlyLayout(NA, bpmoran_dev,
@@ -472,12 +476,12 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
     plotTitle = "Moran's I Standard Deviate by River Basin",
     legend = FALSE, showPlotGrid = showPlotGrid
   )
-  p <- p %>% add_trace(
+  p <- p |> add_trace(
     y = bpmoran_dev, x = as.numeric(cind), type = "scatter", color = I("black"),
     mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
                                     line = list(color = "black", width = 3))
   )
-  p_21d <- p %>% plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
+  p_21d <- p |> plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
 
   p.list[["p21"]] <- subplot(p_21a, p_21b, p_21c, p_21d,
     nrows = 2, widths = c(0.5, 0.5),
@@ -612,12 +616,12 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
     plotTitle = "Moran's I P Value by CLASS Variable",
     legend = FALSE, showPlotGrid = showPlotGrid
   )
-  p <- p %>% add_trace(
+  p <- p |> add_trace(
     y = pmoran, x = as.numeric(cind), type = "scatter", color = I("black"),
     mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
                                     line = list(color = "black", width = 3))
   )
-  p_22a <- p %>% plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
+  p_22a <- p |> plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
 
   p <- plotlyLayout(NA, pmoran_dev,
     log = "", nTicks = 7, digits = 1,
@@ -627,12 +631,12 @@ diagnosticSpatialAutoCorr <- function(file.output.list, sitedata, estimate.list,
     plotTitle = "Moran's I Standard Deviate by CLASS Variable",
     legend = FALSE, showPlotGrid = showPlotGrid
   )
-  p <- p %>% add_trace(
+  p <- p |> add_trace(
     y = pmoran_dev, x = as.numeric(cind), type = "scatter", color = I("black"),
     mode = "markers", marker = list(symbol = "line-ew-open", size = 15,
                                     line = list(color = "black", width = 3))
   )
-  p_22b <- p %>% plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
+  p_22b <- p |> plotly::layout(shapes = list(hline(spatialAutoCorr = FALSE, 0.1)))
 
   h <- if (!dynamic) c(1) else c(0.5)
   p.list[["p22"]] <- subplot(p_22a, p_22b,

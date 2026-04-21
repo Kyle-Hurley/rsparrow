@@ -126,7 +126,8 @@ correlationMatrix <- function(file.output.list, SelParmValues, subdata) {
         -Boxplots of the logged raw values of the explanatory variables
       ")
 
-    gplots::textplot(strExplanation, valign = "top", cex = 0.7)
+    graphics::plot.new()
+    graphics::text(0.5, 0.95, strExplanation, cex = 0.7, adj = c(0.5, 1))
     title("Correlation Results for Explanatory Variables (Site Inc. Areas)")
 
     # plots
@@ -158,7 +159,8 @@ correlationMatrix <- function(file.output.list, SelParmValues, subdata) {
           log-transformed data)
       ")
 
-  gplots::textplot(strExplanation, valign = "top", cex = 0.7)
+  graphics::plot.new()
+  graphics::text(0.5, 0.95, strExplanation, cex = 0.7, adj = c(0.5, 1))
   title("Correlation Results for Explanatory Variables (Reaches)")
 
 
