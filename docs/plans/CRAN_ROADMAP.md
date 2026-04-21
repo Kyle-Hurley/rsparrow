@@ -1,7 +1,8 @@
 <cran_roadmap>
 
 <executive_summary>
-Plans 01–12 are complete. The package is CRAN-ready.
+Plans 01–12 are complete. The package is CRAN-ready. Plans 13–16 are planned next-step
+improvements targeting API ergonomics, dependency reduction, and long-term maintainability.
   - Package at repo root (R/, src/, man/, tests/, inst/, DESCRIPTION, NAMESPACE)
   - Compiled artifacts removed from src/; Collate field removed; .Rbuildignore in place
   - Dynamic model infrastructure removed; 23 unreachable functions archived to inst/archived/
@@ -11,6 +12,13 @@ Plans 01–12 are complete. The package is CRAN-ready.
   - DESCRIPTION URL/BugReports point to GitHub
 Test suite: FAIL 0 | PASS 166 | SKIP 1.
 R CMD check (tarball, --no-manual): 0 ERRORs, 0 WARNINGs, 2 NOTEs (both pre-existing).
+
+PLANNED NEXT STEPS (Plans 13–16):
+  Plan 13: In-memory API — rsparrow_model() accepts data frames; no CSV setup required
+  Plan 14: Remove plyr/dplyr/data.table — base R aggregate/sample/write.csv replace all uses
+  Plan 15: Base R plotting — plotly/ggplot2/gridExtra/gplots removed; zero-Suggests plots
+  Plan 16: Function audit — archive dead code, reduce eval(parse()), document monoliths
+After Plans 13–16: Imports reduced to 2 (nlmrt, numDeriv); Suggests to ~9 (no plotly/plyr/dplyr)
 
 ALL BLOCKERS RESOLVED (Plans 07–12):
   (B1)  DONE — Package moved from RSPARROW_master/ to repo root (GH #10, commit e5b58b4)
@@ -271,6 +279,68 @@ dataset. Keep computation lightweight (\donttest{} or pre-computed results for s
 </cran_checklist>
 
 <upcoming_plans>
+
+<plan id="13" label="In-Memory API — Eliminate CSV File Dependency">
+Status: NOT STARTED
+Scope:
+  - Replace rsparrow_model(path_main, run_id) with four data-frame arguments + output_dir
+  - Add prep_sparrow_inputs() helper to validate/reshape inputs (replaces readData chain)
+  - Remove if_userModifyData / applyUserModify() from startModelRun.R
+  - Archive: readData.R, readParameters.R, readDesignMatrix.R, read_dataDictionary.R,
+    applyUserModify.R, read_sparrow_data.R (export removed; 13 → 13 functions, -1 export)
+  - Vignette: remove "Set Up a Model Directory" section; show 3-step in-memory workflow
+  - file.output.list: all path fields NULL when output_dir = NULL (no file I/O side effects)
+Dependencies: Plan 12
+GH Issues: new
+See: docs/plans/PLAN_13_IN_MEMORY_API.md
+</plan>
+
+<plan id="14" label="Dependency Reduction — Remove plyr, dplyr, data.table">
+Status: NOT STARTED
+Scope:
+  - Replace 6 plyr::ddply calls with base R aggregate() in 3 files
+  - Replace 3 dplyr::sample_n calls with base R sample() in correlationMatrix.R
+  - Replace data.table::fwrite with utils::write.csv in 5 output functions
+  - DESCRIPTION: remove data.table from Imports, plyr + dplyr from Suggests
+  - NAMESPACE: remove all importFrom(data.table/plyr/dplyr, ...) directives
+  - Final Imports: nlmrt, numDeriv (2 packages)
+Dependencies: Plan 13 (archives CSV readers that used data.table::fread)
+GH Issues: new
+See: docs/plans/PLAN_14_DEPENDENCY_REDUCTION.md
+</plan>
+
+<plan id="15" label="Base R Plotting — Eliminate plotly Dependency">
+Status: NOT STARTED
+Scope:
+  - Rewrite diagnosticPlots_4panel_A.R: par(mfrow=c(2,2)) + base plot() calls
+  - Rewrite diagnosticPlots_4panel_B.R: boxplot(), qqnorm(), qqline(), plot()
+  - Simplify diagnosticPlotsNLLS.R: remove plotly subplot/saveWidget; save PNG when output_dir set
+  - Rewrite diagnosticSpatialAutoCorr.R: replace plotly::layout(shapes=hline) with abline()
+  - Delete plotlyLayout.R (no callers after plotly removal)
+  - Remove plotly, ggplot2, gridExtra, gplots from DESCRIPTION Suggests
+  - plot(model, type="residuals"/"sensitivity") works with zero Suggests installed
+  - Spatial autocorrelation: requireNamespace("spdep") guard; message() if absent
+Dependencies: Plan 14
+GH Issues: new
+See: docs/plans/PLAN_15_BASE_R_PLOTTING.md
+</plan>
+
+<plan id="16" label="Function Audit — Simplification, eval/parse, and Monolith Review">
+Status: NOT STARTED
+Scope:
+  - Full pass through all R/ files: classify KEEP/SIMPLIFY/MERGE/REMOVE
+  - Archive confirmed-dead functions (startEndmodifySubdata, createMasterDataDictionary,
+    hline if plotly-only, others found in audit)
+  - Evaluate diagnosticPlotsValidate.R MERGE into diagnosticPlotsNLLS.R
+  - Audit ~15 remaining eval(parse()): fix REFACTOREABLE instances; open GH issues for DEFERRED
+  - Add seam-documentation comments to estimate.R, estimateNLLSmetrics.R, estimateNLLStable.R;
+    open GH decomposition issues for each monolith
+  - Update FUNCTION_INVENTORY.md (full reclassification), TECHNICAL_DEBT.md (mark resolved),
+    ARCHITECTURE.md (new API + dependency state), CRAN_ROADMAP.md
+Dependencies: Plan 15
+GH Issues: new (eval/parse and monolith decomposition issues)
+See: docs/plans/PLAN_16_FUNCTION_AUDIT.md
+</plan>
 
 <plan id="10" label="Separate Computation from I/O">
 Status: NOT STARTED
