@@ -34,17 +34,73 @@ write_rsparrow_results <- function(model, path, what = "all") {
 
   written <- character(0)
 
+  # Build a minimal file.output.list pointing at user's path
+  run_id      <- model$metadata$run_id
+  path_results <- paste0(normalizePath(path, mustWork = FALSE), .Platform$file.sep)
+  fol <- list(
+    path_results         = path_results,
+    run_id               = run_id,
+    add_vars             = model$data$file.output.list$add_vars,
+    csv_decimalSeparator = model$data$file.output.list$csv_decimalSeparator,
+    csv_columnSeparator  = model$data$file.output.list$csv_columnSeparator
+  )
+
+  estimate.list       <- model$data$estimate.list
+  estimate.input.list <- model$data$estimate.input.list
+  SelParmValues       <- model$data$SelParmValues
+  subdata             <- model$data$subdata
+  data_names          <- model$data$data_names
+  predict.list        <- model$predictions
+  add_vars            <- model$data$file.output.list$add_vars
+
   if ("estimates" %in% what) {
-    # TODO: write estimate tables from model$data$estimate.list via data.table::fwrite()
-    message("write_rsparrow_results: 'estimates' output not yet implemented.")
+    if (is.null(predict.list)) {
+      message("write_rsparrow_results: no predictions available; skipping 'estimates' output.")
+    } else {
+      dir.create(file.path(path, "estimate"), recursive = TRUE, showWarnings = FALSE)
+      # Reconstruct class.input.list from available model data
+      class.input.list <- list(
+        classvar              = model$data$classvar,
+        class_landuse         = NA,
+        class_landuse_percent = NA
+      )
+      predictSummaryOutCSV(
+        fol, estimate.input.list,
+        SelParmValues, estimate.list, predict.list,
+        subdata, class.input.list
+      )
+      written <- c(written,
+        file.path(path, "estimate", paste0(run_id, "_summary_predictions.csv")))
+    }
   }
+
   if ("predictions" %in% what) {
-    # TODO: write prediction tables from model$predictions
-    message("write_rsparrow_results: 'predictions' output not yet implemented.")
+    if (is.null(predict.list)) {
+      message("write_rsparrow_results: no predictions available; skipping 'predictions' output.")
+    } else {
+      dir.create(file.path(path, "predict"), recursive = TRUE, showWarnings = FALSE)
+      predictOutCSV(
+        fol, estimate.list, predict.list, subdata,
+        add_vars, data_names
+      )
+      written <- c(written,
+        file.path(path, "predict", paste0(run_id, "_predicts_load.csv")),
+        file.path(path, "predict", paste0(run_id, "_predicts_load_units.csv")),
+        file.path(path, "predict", paste0(run_id, "_predicts_yield.csv")),
+        file.path(path, "predict", paste0(run_id, "_predicts_yield_units.csv")))
+    }
   }
+
   if ("diagnostics" %in% what) {
-    # TODO: write correlation matrix, ANOVA tables, spatial autocorrelation summary
-    message("write_rsparrow_results: 'diagnostics' output not yet implemented.")
+    anova <- estimate.list$ANOVA.list
+    if (!is.null(anova)) {
+      dir.create(file.path(path, "estimate"), recursive = TRUE, showWarnings = FALSE)
+      fileout <- file.path(path, "estimate", paste0(run_id, "_anova.csv"))
+      utils::write.csv(as.data.frame(anova), file = fileout, row.names = TRUE)
+      written <- c(written, fileout)
+    } else {
+      message("write_rsparrow_results: no diagnostics data available; skipping 'diagnostics' output.")
+    }
   }
 
   invisible(written)

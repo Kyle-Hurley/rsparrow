@@ -686,11 +686,6 @@ estimate <- function(if_estimate, if_predict, file.output.list,
         SelParmValues, subdata, dlvdsgn
       )
 
-      predictSummaryOutCSV(
-        file.output.list, estimate.input.list,
-        SelParmValues, estimate.list, predict.list,
-        subdata, class.input.list
-      )
     } else {
       message("Summary predictions not executed; mean_exp_weighted_error and predictions = infinity;
                check standardized residuals for outliers...")

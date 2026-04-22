@@ -24,9 +24,6 @@
 
 estimateOptimize <- function(file.output.list, SelParmValues, estimate.input.list,
                              DataMatrix.list, dlvdsgn, Csites.weights.list) {
-  path_results <- file.output.list$path_results
-  run_id <- file.output.list$run_id
-
   s_offset <- estimate.input.list$s_offset
   if_mean_adjust_delivery_vars <- estimate.input.list$if_mean_adjust_delivery_vars
 
@@ -53,10 +50,6 @@ estimateOptimize <- function(file.output.list, SelParmValues, estimate.input.lis
     }
   }
 
-
-  filename <- paste0(path_results, .Platform$file.sep, "estimate", .Platform$file.sep, run_id, "_log.txt")
-  sink(file = filename, split = "TRUE")
-  on.exit({if (sink.number() > 0) sink()}, add = TRUE)
 
   ptm <- proc.time()
 
@@ -93,9 +86,6 @@ estimateOptimize <- function(file.output.list, SelParmValues, estimate.input.lis
   xtime <- proc.time() - ptm
   message("Time elapsed in optimization")
   print(xtime)
-
-  sink(type = "message")
-  sink()
 
   sparrowEsts$betamn <- betamn
   sparrowEsts$betamx <- betamx

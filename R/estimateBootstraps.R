@@ -39,8 +39,6 @@ estimateBootstraps <- function(iseed, biters, estimate.list,
   bmax <- JacobResults$bmax
   Parmnames <- JacobResults$Parmnames
 
-  path_results <- file.output.list$path_results
-  run_id <- file.output.list$run_id
   csv_decimalSeparator <- file.output.list$csv_decimalSeparator
   csv_columnSeparator <- file.output.list$csv_columnSeparator
 
@@ -174,8 +172,6 @@ estimateBootstraps <- function(iseed, biters, estimate.list,
   # store bootstrap parameter estimates in object as list and save
 
   BootResults <- named.list(bEstimate, bootmean_exp_weighted_error, boot_resids, boot_lev)
-  objfile <- paste0(path_results, "estimate", .Platform$file.sep, run_id, "_BootBetaest")
-  save(BootResults, file = objfile)
 
   return(BootResults)
 } # end function

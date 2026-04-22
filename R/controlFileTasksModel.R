@@ -300,10 +300,6 @@ if (if_boot_estimate == "yes" & biters!=0){
         SelParmValues, subdata, dlvdsgn
       )
 
-      predictOutCSV(
-        file.output.list, estimate.list, predict.list, subdata,
-        add_vars, data_names
-      )
     } # end check on JacobResults available
   } # end if_predict
 
