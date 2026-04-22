@@ -116,7 +116,7 @@ estimateBootstraps <- function(iseed, biters, estimate.list,
   # Coefficients are for thinned set of parameters, as required for estimateFeval.R
 
   cov2 <- estimate.list$HesResults$cov2 # coefficient variance from Hessian
-  H <- decomp.cov(cov2) # decomp.cov returns a decomposition matrix H such that V <- H %*% t(H)
+  H <- t(chol(cov2)) # lower Cholesky factor: H %*% t(H) == cov2; used for multivariate normal sampling
   sMestimate <- matrix(0, nrow = biters, ncol = ndim)
   bootmean_exp_weighted_error <- numeric(biters)
 

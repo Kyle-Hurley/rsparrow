@@ -43,6 +43,11 @@ rsparrow_bootstrap <- function(object, n_boot = 100L, seed = NULL, ...) {
   iseed <- seed %||% sample.int(.Machine$integer.max, 1L)
   if (!is.null(seed)) set.seed(seed)
 
+  el <- object$data$estimate.list
+  if (is.null(el) || is.null(el$HesResults) || is.null(el$HesResults$cov2))
+    stop("Bootstrap requires the Hessian covariance matrix (HesResults$cov2). ",
+         "Refit the model with ifHess=\"yes\" and at least 2 estimated parameters.")
+
   boot_results <- estimateBootstraps(
     iseed               = iseed,
     biters              = as.integer(n_boot),
