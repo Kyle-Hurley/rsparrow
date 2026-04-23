@@ -56,7 +56,8 @@ The dataset contains five elements:
 - **`sites`** — 5 monitoring sites with synthetic observed loads (`depvar`, kg/year).
 - **`parameters`** — parameter configuration (SOURCE and DELIVF types).
 - **`design_matrix`** — binary matrix associating sources with delivery variables.
-- **`data_dictionary`** — maps internal SPARROW variable names to data column names.
+- **`data_dictionary`** — optional; maps internal SPARROW variable names to data
+  column names (not needed when column names already match).
 
 ## Step 2: Inspect the Network Topology
 
@@ -73,19 +74,49 @@ has the most negative value.
 
 ## Step 3: Fit the Model
 
-Pass the four data frames directly to `rsparrow_model()`. No CSV files or directories
-are required:
+### Quick Start (one-call interface)
+
+Pass the three required data frames to `rsparrow_model()`. No CSV files, directories,
+or data dictionary are required when column names already match SPARROW variable names:
 
 ```{r fit-model, eval=FALSE}
 model <- rsparrow_model(
   sparrow_example$reaches,
   sparrow_example$parameters,
-  sparrow_example$design_matrix,
-  sparrow_example$data_dictionary
+  sparrow_example$design_matrix
 )
 ```
 
-After a few seconds, the model produces a summary of estimation performance:
+### Composable Workflow
+
+For finer control, call the two steps separately. This lets you inspect and reuse
+the prepared data object, or swap out estimation options without re-validating inputs:
+
+```{r composable, eval=FALSE}
+# Step 1: Validate and prepare inputs
+sparrow_data <- rsparrow_prepare(
+  sparrow_example$reaches,
+  sparrow_example$parameters,
+  sparrow_example$design_matrix
+)
+print(sparrow_data)
+#> rsparrow_data
+#>   Reaches     : 60
+#>   Calibration sites (depvar > 0 & calsites == 1): 5
+#>   Parameters  : 2 (1 SOURCE, 1 DELIVF)
+
+# Step 2: Estimate the model
+model <- rsparrow_estimate(sparrow_data)
+
+# Step 3: Predict at all reaches (already done when if_predict = TRUE)
+predictions <- predict(model)
+
+# Post-processing (same functions as before)
+model <- rsparrow_bootstrap(model, n_boot = 200, seed = 42)
+model <- rsparrow_validate(model)
+```
+
+After estimation, the model produces a summary of estimation performance:
 
 ```
   SPARROW NLLS MODEL SUMMARY
@@ -132,7 +163,7 @@ names(model$predictions)
 
 ## Step 5: Diagnostic Plots
 
-If the **plotly** package is installed, diagnostic residual plots are available:
+Diagnostic plots use base R graphics and are available for any fitted model:
 
 ```{r plots, eval=FALSE}
 plot(model, type = "residuals")           # observed vs predicted, residuals
@@ -159,9 +190,25 @@ Evaluate the effect of changing source inputs:
 model <- rsparrow_scenario(model, source_changes = list(agN = 0.5))
 ```
 
+## API Reference
+
+| Function | Description |
+|---|---|
+| `rsparrow_prepare()` | Validate inputs; return `rsparrow_data` object |
+| `rsparrow_estimate()` | Fit NLLS model; return `rsparrow` object |
+| `rsparrow_model()` | One-call convenience wrapper for the two steps above |
+| `predict()` | Reach-level load/yield predictions |
+| `rsparrow_bootstrap()` | Parametric bootstrap for parameter uncertainty |
+| `rsparrow_validate()` | Holdout validation |
+| `rsparrow_scenario()` | Source-change scenario analysis |
+| `rsparrow_hydseq()` | Compute hydrological sequence |
+| `write_rsparrow_results()` | Write results to disk |
+
 ## Further Reading
 
-- `?rsparrow_model` — full parameter documentation
+- `?rsparrow_prepare` — data preparation and required column names
+- `?rsparrow_estimate` — estimation options (hessian, weights, units)
+- `?rsparrow_model` — convenience wrapper documentation
 - `?sparrow_example` — description of the example dataset
 - SPARROW methodology: Alexander, R.B., et al. (2008). *Differences in phosphorus and
   nitrogen delivery to the Gulf of Mexico from the Mississippi River basin.*
