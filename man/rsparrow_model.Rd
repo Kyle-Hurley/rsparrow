@@ -8,7 +8,7 @@ rsparrow_model(
   reaches,
   parameters,
   design_matrix,
-  data_dictionary,
+  data_dictionary = NULL,
   run_id = "run1",
   output_dir = NULL,
   if_estimate = TRUE,
@@ -37,9 +37,11 @@ parameters (rows) with delivery parameters (columns). The first column
 must be named \code{sparrowNames} and contain the SOURCE parameter names;
 remaining columns are DELIVF parameter names with values 0 or 1.}
 
-\item{data_dictionary}{Data frame. Maps internal SPARROW variable names to
-data column names. Required columns: \code{varType}, \code{sparrowNames},
-\code{data1UserNames}, \code{varunits}. Optional: \code{explanation}.}
+\item{data_dictionary}{Data frame or \code{NULL} (default). Maps internal
+SPARROW variable names to data column names. Required columns:
+\code{varType}, \code{sparrowNames}, \code{data1UserNames},
+\code{varunits}. Optional: \code{explanation}. When \code{NULL},
+column names in \code{reaches} are used directly.}
 
 \item{run_id}{Character. Name of the model run (default: \code{"run1"}).
 Used in output file names when \code{output_dir} is provided.}
@@ -80,33 +82,42 @@ rsparrow_validate() called)}
 }
 \description{
 Estimates a SPARROW (SPAtially Referenced Regressions On Watershed
-attributes) model using nonlinear least squares. Accepts the four input
-data frames directly, without requiring CSV files on disk.
+attributes) model using nonlinear least squares. This is a convenience
+wrapper that calls \code{\link{rsparrow_prepare}} followed by
+\code{\link{rsparrow_estimate}} in a single step.
 }
 \details{
-The function orchestrates the full SPARROW estimation workflow:
-\enumerate{
-\item Validates and prepares the four input data frames
-\item Computes hydrological sequencing via \code{\link{rsparrow_hydseq}}
-(if not already present in \code{reaches})
-\item Prepares data matrices for optimization
-\item Calls nonlinear least squares optimizer
-\item Computes fit statistics and diagnostics
+For finer control over the workflow—data validation, estimation, prediction,
+and post-processing as separate steps—use the composable API directly:
+
+\preformatted{
+sparrow_data <- rsparrow_prepare(reaches, parameters, design_matrix)
+model        <- rsparrow_estimate(sparrow_data)
+predictions  <- predict(model)
 }
 }
 \examples{
 \donttest{
+# One-call interface (convenience wrapper)
 model <- rsparrow_model(
   sparrow_example$reaches,
   sparrow_example$parameters,
-  sparrow_example$design_matrix,
-  sparrow_example$data_dictionary
+  sparrow_example$design_matrix
 )
 print(model)
 coef(model)
+
+# Composable workflow (same result)
+sparrow_data <- rsparrow_prepare(
+  sparrow_example$reaches,
+  sparrow_example$parameters,
+  sparrow_example$design_matrix
+)
+model2 <- rsparrow_estimate(sparrow_data)
 }
 }
 \seealso{
+\code{\link{rsparrow_prepare}}, \code{\link{rsparrow_estimate}},
 \code{\link{predict.rsparrow}}, \code{\link{summary.rsparrow}},
 \code{\link{rsparrow_hydseq}}
 }
