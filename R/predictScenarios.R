@@ -447,13 +447,17 @@ predictScenarios <- function(
           #########################################
           ################## end predictScenarios#######
 
-          # output csv files
-          predictScenariosOutCSV(
-            file.output.list, estimate.list, predictScenarios.list, subdata, add_vars,
-            scenario_name, scenarioFlag, data_names, scenarioCoefficients
-          )
+          # output csv files (skipped in in-memory mode when path_results is NULL)
+          if (!is.null(file.output.list$path_results)) {
+            predictScenariosOutCSV(
+              file.output.list, estimate.list, predictScenarios.list, subdata, add_vars,
+              scenario_name, scenarioFlag, data_names, scenarioCoefficients
+            )
+          }
 
           # NOTE: Batch and Shiny mapping removed (Plan 05A).
+
+          return(predictScenarios.list)
 
           #############################################
           #############################################

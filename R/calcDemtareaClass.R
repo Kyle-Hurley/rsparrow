@@ -26,8 +26,11 @@ calcDemtareaClass <- function(demtarea) {
         }
       }
     }
+  } else {
+    # Fewer than 10 unique quantile breaks (e.g. small validation sets) —
+    # assign each site to its own rank class labelled by its demtarea value.
+    demtarea.class <- rank(vvar, ties.method = "first")
   }
-
 
   return(demtarea.class)
 } # end function

@@ -18,7 +18,7 @@
 
 
 validateFevalNoadj <- function(beta0, vdepvar,
-                               SelParmValues) {
+                               SelParmValues, DataMatrix.list, dlvdsgn) {
   # setup global variables in function environment
   data <- DataMatrix.list$data
   beta <- DataMatrix.list$beta
@@ -76,7 +76,7 @@ validateFevalNoadj <- function(beta0, vdepvar,
       ddliv1[, i] <- (beta1[, data.index.list$jbdlvvar[i]] * data[, data.index.list$jdlvvar[i]])
     }
     ddliv2 <- matrix(0, nrow = nreach, ncol = jjsrc)
-    ddliv2 <- exp(ddliv1 %*% t(data.index.list$dlvdsgn)) # "exp(ddliv1 %*% t(dlvdsgn))"
+    ddliv2 <- exp(ddliv1 %*% t(dlvdsgn)) # "exp(ddliv1 %*% t(dlvdsgn))"
   } else {
     ddliv2 <- matrix(1, nrow = nreach, ncol = jjsrc) # change ncol from =1 to =jjsrc to avoid non-conformity error (2-19-2013)
   }

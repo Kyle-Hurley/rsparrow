@@ -75,7 +75,9 @@ predictScenariosOutCSV <- function(
 
   # test if waterid was renumbered, if so add it to add_vars
   origWaterid <- as.character(data_names[which(data_names$sparrowNames == "waterid"), ]$data1UserNames)
-  if (unique(unique(waterid_for_RSPARROW_mapping - waterid) != 0) & length(unique(unique(waterid_for_RSPARROW_mapping - waterid) != 0)) == 1) {
+  if (!is.null(waterid_for_RSPARROW_mapping) &&
+      unique(unique(waterid_for_RSPARROW_mapping - waterid) != 0) &
+      length(unique(unique(waterid_for_RSPARROW_mapping - waterid) != 0)) == 1) {
     add_vars <- c("waterid_for_RSPARROW_mapping", add_vars)
   } else if (!identical(origWaterid, "waterid")) {
     add_vars <- c(origWaterid, add_vars)

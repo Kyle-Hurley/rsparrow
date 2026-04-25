@@ -53,7 +53,7 @@ validateMetrics <- function(classvar, estimate.list, dlvdsgn, Vsites.list, yield
   Estimate <- estimate.list$JacobResults$oEstimate[SelParmValues$betaconstant == 0]
   pResids <- validateFevalNoadj(
     Estimate, vdepvar,
-    SelParmValues
+    SelParmValues, DataMatrix.list, dlvdsgn
   )
 
   # Obtain predicted, observed, residual values

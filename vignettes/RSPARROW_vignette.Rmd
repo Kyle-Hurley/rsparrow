@@ -8,7 +8,7 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", message = FALSE)
 ```
 
 ## Overview
@@ -47,13 +47,12 @@ library(rsparrow)
 str(sparrow_example, max.level = 1)
 ```
 
-The dataset contains five elements:
+The dataset contains:
 
-- **`reaches`** — 60-reach dendritic network with two tributary branches draining to
-  a single outlet. Columns include topology (`waterid`, `fnode`, `tnode`), drainage
-  area (`demiarea`, `demtarea`), a synthetic agricultural-N source (`agN`), and a
-  precipitation delivery variable (`ppt`).
-- **`sites`** — 5 monitoring sites with synthetic observed loads (`depvar`, kg/year).
+- **`reaches`** — 60-reach dendritic network. Columns include topology (`waterid`,
+  `fnode`, `tnode`), drainage area (`demiarea`, `demtarea`), a synthetic
+  agricultural-N source (`agN`), a precipitation delivery variable (`ppt`),
+  observed loads (`depvar`), and calibration flags (`calsites`).
 - **`parameters`** — parameter configuration (SOURCE and DELIVF types).
 - **`design_matrix`** — binary matrix associating sources with delivery variables.
 - **`data_dictionary`** — optional; maps internal SPARROW variable names to data
@@ -61,8 +60,8 @@ The dataset contains five elements:
 
 ## Step 2: Inspect the Network Topology
 
-Before fitting a model, compute the hydrological sequence — the reach ordering from
-upstream to downstream that SPARROW uses for load accumulation.
+Compute the hydrological sequence — the reach ordering from upstream to downstream
+that SPARROW uses for load accumulation.
 
 ```{r hydseq}
 network <- rsparrow_hydseq(sparrow_example$reaches)
@@ -74,10 +73,27 @@ has the most negative value.
 
 ## Step 3: Fit the Model
 
-### Quick Start (one-call interface)
+### Composable Workflow
 
-Pass the three required data frames to `rsparrow_model()`. No CSV files, directories,
-or data dictionary are required when column names already match SPARROW variable names:
+The recommended approach calls two functions separately, letting you inspect the
+prepared data object and swap estimation options without re-validating inputs:
+
+```{r composable}
+# Step 1: Validate and prepare inputs
+sparrow_data <- rsparrow_prepare(
+  sparrow_example$reaches,
+  sparrow_example$parameters,
+  sparrow_example$design_matrix
+)
+print(sparrow_data)
+
+# Step 2: Estimate the model
+model <- rsparrow_estimate(sparrow_data)
+```
+
+### Quick-Start (one-call interface)
+
+For a single call that combines preparation and estimation:
 
 ```{r fit-model, eval=FALSE}
 model <- rsparrow_model(
@@ -87,107 +103,107 @@ model <- rsparrow_model(
 )
 ```
 
-### Composable Workflow
-
-For finer control, call the two steps separately. This lets you inspect and reuse
-the prepared data object, or swap out estimation options without re-validating inputs:
-
-```{r composable, eval=FALSE}
-# Step 1: Validate and prepare inputs
-sparrow_data <- rsparrow_prepare(
-  sparrow_example$reaches,
-  sparrow_example$parameters,
-  sparrow_example$design_matrix
-)
-print(sparrow_data)
-#> rsparrow_data
-#>   Reaches     : 60
-#>   Calibration sites (depvar > 0 & calsites == 1): 5
-#>   Parameters  : 2 (1 SOURCE, 1 DELIVF)
-
-# Step 2: Estimate the model
-model <- rsparrow_estimate(sparrow_data)
-
-# Step 3: Predict at all reaches (already done when if_predict = TRUE)
-predictions <- predict(model)
-
-# Post-processing (same functions as before)
-model <- rsparrow_bootstrap(model, n_boot = 200, seed = 42)
-model <- rsparrow_validate(model)
-```
-
-After estimation, the model produces a summary of estimation performance:
-
-```
-  SPARROW NLLS MODEL SUMMARY
-
-  MODEL NAME: run1
-
-  MODEL ESTIMATION PERFORMANCE (Monitoring-Adjusted Predictions)
- MOBS NPARM DF       SSE       MSE      RMSE       RSQ
-    5     2  3 0.3410997 0.1136999 0.3371942 0.8056507
-
-  PARAMETER ESTIMATES
-  PARAMETER PARM TYPE ESTIMATE     SE         T         P-VALUE
-1 agN       SOURCE    3.417676  0.6478    5.276    0.01327
-2 ppt       DELIVF   -0.001593  0.0038   -0.422    0.70122
-```
-
 ## Step 4: Examine Results
 
 The returned `rsparrow` object supports standard S3 methods:
 
-```{r examine, eval=FALSE}
-# Compact summary
-print(model)
-
-# Full estimation summary
+```{r examine}
+# Model summary (fit statistics + parameter estimates)
 summary(model)
 
 # Parameter estimates
 coef(model)
-#>        agN        ppt
-#>  3.4176761 -0.0015935
 
 # Log residuals at calibration sites
 residuals(model)
 
 # Parameter covariance matrix
 vcov(model)
+```
 
-# Predictions (populated when if_predict = TRUE)
-names(model$predictions)
-#> [1] "oparmlist"          "loadunits"          "predmatrix"
-#> [4] "oyieldlist"         "yieldunits"         "yldmatrix"
+Reach-level load predictions are available immediately (computed when
+`if_predict = TRUE`, the default):
+
+```{r predictions}
+pred_df <- as.data.frame(model$predictions$predmatrix)
+names(pred_df) <- model$predictions$oparmlist
+head(pred_df[, c("waterid", "pload_total", "pload_agN", "mpload_total")])
 ```
 
 ## Step 5: Diagnostic Plots
 
-Diagnostic plots use base R graphics and are available for any fitted model:
+Diagnostic plots use base R graphics:
 
-```{r plots, eval=FALSE}
+```{r plots-A, fig.width=7, fig.height=6}
 plot(model, type = "residuals")           # observed vs predicted, residuals
+```
+
+```{r plots-B, fig.width=7, fig.height=6}
 plot(model, type = "residuals", panel = "B")  # Q-Q, boxplots
+```
+
+```{r plots-sensitivity, fig.width=7, fig.height=6}
 plot(model, type = "sensitivity")         # parameter sensitivity
-plot(model, type = "spatial")             # spatial autocorrelation
+```
+
+```{r plots-simulation, fig.width=7, fig.height=6}
+plot(model, type = "simulation")          # simulation vs calibration predictions
 ```
 
 ## Step 6: Bootstrap Uncertainty
 
-Estimate parameter uncertainty via parametric bootstrap:
+Estimate parameter uncertainty via parametric bootstrap. Use `n_boot >= 200` in
+practice; here we use 50 for speed:
 
-```{r bootstrap, eval=FALSE}
-model <- rsparrow_bootstrap(model, n_boot = 200, seed = 42)
-model$bootstrap$bEstimate  # bootstrapped parameter distributions
+```{r bootstrap}
+model <- rsparrow_bootstrap(model, n_boot = 50, seed = 42)
+
+# Bootstrapped parameter distributions (iterations × parameters)
+head(model$bootstrap$bEstimate)
 ```
 
-## Step 7: Scenario Analysis
+```{r plots-bootstrap, fig.width=7, fig.height=6}
+plot(model, type = "bootstrap")           # bootstrap parameter distributions
+```
 
-Evaluate the effect of changing source inputs:
+## Step 7: Holdout Validation
 
-```{r scenario, eval=FALSE}
+To use holdout validation, designate at least one monitoring site as a validation
+site by setting `calsites = 0`. Here we hold out one site from the five available:
+
+```{r validation}
+reaches_v <- sparrow_example$reaches
+# Mark the first monitoring site as a validation site
+cal_rows <- which(reaches_v$calsites == 1 & reaches_v$depvar > 0)
+reaches_v$calsites[cal_rows[1]] <- 0
+
+model_v <- rsparrow_estimate(
+  rsparrow_prepare(reaches_v, sparrow_example$parameters, sparrow_example$design_matrix),
+  if_validate = TRUE
+)
+
+# Compute validation metrics at the held-out site
+model_v <- rsparrow_validate(model_v)
+model_v$validation$vANOVA.list
+```
+
+## Step 8: Scenario Analysis
+
+Evaluate the effect of changing source inputs. Source multipliers less than 1 reduce
+the source; greater than 1 increase it:
+
+```{r scenario}
 # Simulate a 50% reduction in agricultural N loading
 model <- rsparrow_scenario(model, source_changes = list(agN = 0.5))
+
+# Scenario predictions (loads roughly halved)
+scen_df <- as.data.frame(model$predictions$scenarios$predmatrix)
+names(scen_df) <- model$predictions$scenarios$oparmlist
+baseline <- pred_df$pload_total
+scenario  <- scen_df$pload_total
+head(data.frame(waterid = pred_df$waterid, baseline_load = round(baseline, 1),
+                scenario_load = round(scenario, 1),
+                pct_change = round((scenario / baseline - 1) * 100, 1)))
 ```
 
 ## API Reference

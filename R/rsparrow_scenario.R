@@ -49,9 +49,10 @@ rsparrow_scenario <- function(object, source_changes,
 
   # Build scenario.input.list from model defaults, overriding scenario sources
   sc <- object$data$scenario.input.list
-  sc$scenario_name    <- scenario_name
-  sc$scenario_sources <- names(source_changes)
-  sc$scenario_factors <- unlist(unname(source_changes), use.names = FALSE)
+  sc$scenario_name              <- scenario_name
+  sc$scenario_sources           <- names(source_changes)
+  sc$scenario_factors           <- unlist(unname(source_changes), use.names = FALSE)
+  sc$select_scenarioReachAreas  <- "all reaches"  # apply scenario to all reaches
 
   estimate_list <- object_to_estimate_list(object)
 
