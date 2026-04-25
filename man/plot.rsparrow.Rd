@@ -7,7 +7,7 @@
 \method{plot}{rsparrow}(
   x,
   type = c("residuals", "sensitivity", "spatial", "simulation", "class", "ratio",
-    "validation", "bootstrap"),
+    "validation", "bootstrap", "results"),
   ...
 )
 }
@@ -26,12 +26,22 @@
 validation data in \code{estimate.list$vMdiagnostics.list})
 \item \code{"bootstrap"} — Bootstrap coefficient uncertainty
 (requires prior call to \code{\link{rsparrow_bootstrap}})
+\item \code{"results"} — Model output visualizations (predicted loads,
+yields, source attribution). Use the \code{subtype} argument to select
+which panel: \code{"profile"} (default), \code{"network"},
+\code{"map"}, \code{"sources"}, or \code{"obs_pred"}.
 }}
 
-\item{...}{Additional arguments. For \code{type = "residuals"},
-\code{"simulation"}, or \code{"validation"}, the \code{panel} argument
-selects which 4-panel group: \code{"A"} (observed vs. predicted and
-residuals), \code{"B"} (boxplots and Q-Q), or \code{"both"}.}
+\item{...}{Additional arguments passed to the subtype dispatcher.
+For \code{type = "residuals"}, \code{"simulation"}, or
+\code{"validation"}, the \code{panel} argument selects which 4-panel
+group: \code{"A"} (observed vs. predicted and residuals), \code{"B"}
+(boxplots and Q-Q), or \code{"both"}.
+For \code{type = "results"}, the \code{subtype} argument selects the
+panel (\code{"profile"}, \code{"network"}, \code{"map"},
+\code{"sources"}, \code{"obs_pred"}); \code{"map"} also accepts a
+\code{variable} argument (\code{"load"}, \code{"yield"}, or
+\code{"concentration"}).}
 }
 \value{
 Called for its side effects (plots drawn to the current graphics

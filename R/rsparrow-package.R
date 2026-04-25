@@ -25,8 +25,8 @@
 #' @importFrom stats qnorm qqline qqnorm quantile residuals sd weighted.mean
 #' @importFrom stats coef predict vcov median var pt
 #' @importFrom utils read.csv write.csv head tail str packageVersion
-#' @importFrom grDevices dev.off pdf png colorRampPalette
-#' @importFrom graphics abline legend lines par plot points text title hist
+#' @importFrom grDevices dev.off pdf png colorRampPalette heat.colors rainbow
+#' @importFrom graphics abline barplot legend lines par plot points text title hist boxplot
 #'
 #' @keywords internal
 "_PACKAGE"

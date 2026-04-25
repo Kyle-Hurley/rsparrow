@@ -217,3 +217,148 @@ test_that("bootstrap plot produces output with bootstrap data", {
   dev.off()
   expect_null(err)
 })
+
+# ---- results subtype mock and tests --------------------------------------------
+
+make_mock_rsparrow_pred <- function(n = 30) {
+  set.seed(99)
+  mod <- make_mock_rsparrow_diag(n)
+
+  # Extend subdata with spatial + hydrological columns
+  mod$data$subdata <- data.frame(
+    waterid  = seq_len(n),
+    lat      = runif(n, 35, 45),
+    lon      = runif(n, -100, -80),
+    demtarea = sort(runif(n, 10, 5000)),
+    demiarea = runif(n, 1, 100),
+    hydseq   = sample(seq_len(n)),
+    meanq    = runif(n, 1, 1000)
+  )
+
+  # Also extend Mdiagnostics.list with fields used by obs_pred / network / map
+  Md <- mod$data$estimate.list$Mdiagnostics.list
+  Md$tarea   <- mod$data$sitedata$demtarea
+  Md$xlon    <- runif(n, -100, -80)
+  Md$xlat    <- runif(n, 35, 45)
+  Md$classgrp <- as.integer(cut(Md$tarea,
+                                quantile(Md$tarea, probs = 0:10 / 10),
+                                include.lowest = TRUE))
+  mod$data$estimate.list$Mdiagnostics.list <- Md
+
+  # Build minimal predmatrix / yldmatrix
+  oparmlist <- c("waterid", "pload_total", "pload_b1", "pload_b2",
+                 "mpload_total", "pload_nd_total",
+                 "share_total_b1", "share_total_b2")
+  ncols_p  <- length(oparmlist)
+  predmatrix <- matrix(0, nrow = n, ncol = ncols_p)
+  predmatrix[, 1] <- seq_len(n)
+  predmatrix[, 2] <- exp(rnorm(n, 8, 1))
+  predmatrix[, 3] <- predmatrix[, 2] * 0.6
+  predmatrix[, 4] <- predmatrix[, 2] * 0.4
+  predmatrix[, 5] <- predmatrix[, 2] * 1.02
+  predmatrix[, 6] <- predmatrix[, 2] * 0.95
+  predmatrix[, 7] <- 60 + rnorm(n, 0, 5)
+  predmatrix[, 8] <- 100 - predmatrix[, 7]
+
+  oyieldlist <- c("waterid", "concentration", "yield_total",
+                  "yield_b1", "yield_b2",
+                  "myield_total", "yield_inc", "yield_inc_deliv")
+  ncols_y   <- length(oyieldlist)
+  yldmatrix <- matrix(0, nrow = n, ncol = ncols_y)
+  yldmatrix[, 1] <- seq_len(n)
+  yldmatrix[, 2] <- runif(n, 0.1, 5)
+  yldmatrix[, 3] <- predmatrix[, 2] / mod$data$subdata$demtarea * 0.01
+  yldmatrix[, 4] <- yldmatrix[, 3] * 0.6
+  yldmatrix[, 5] <- yldmatrix[, 3] * 0.4
+  yldmatrix[, 6] <- yldmatrix[, 3] * 1.02
+  yldmatrix[, 7] <- yldmatrix[, 3] * 0.1
+  yldmatrix[, 8] <- yldmatrix[, 7] * 0.9
+
+  mod$predictions <- list(
+    oparmlist  = oparmlist,
+    predmatrix = predmatrix,
+    oyieldlist = oyieldlist,
+    yldmatrix  = yldmatrix
+  )
+  mod
+}
+
+test_that("type='results' dispatches without invalid-type error", {
+  mod <- make_mock_rsparrow_pred()
+  err <- tryCatch(plot(mod, type = "results"), error = function(e) e)
+  if (inherits(err, "error"))
+    expect_false(grepl("should be one of|invalid|type", conditionMessage(err),
+                       ignore.case = TRUE))
+})
+
+test_that("results subtype='profile' produces output without error", {
+  mod <- make_mock_rsparrow_pred()
+  tmp <- tempfile(fileext = ".pdf")
+  on.exit(unlink(tmp))
+  pdf(tmp)
+  err <- tryCatch(plot(mod, type = "results", subtype = "profile"),
+                  error = function(e) e)
+  dev.off()
+  expect_null(err)
+})
+
+test_that("results subtype='network' produces output without error", {
+  mod <- make_mock_rsparrow_pred()
+  tmp <- tempfile(fileext = ".pdf")
+  on.exit(unlink(tmp))
+  pdf(tmp)
+  err <- tryCatch(plot(mod, type = "results", subtype = "network"),
+                  error = function(e) e)
+  dev.off()
+  expect_null(err)
+})
+
+test_that("results subtype='map' produces output without error", {
+  mod <- make_mock_rsparrow_pred()
+  tmp <- tempfile(fileext = ".pdf")
+  on.exit(unlink(tmp))
+  pdf(tmp)
+  err <- tryCatch(plot(mod, type = "results", subtype = "map"),
+                  error = function(e) e)
+  dev.off()
+  expect_null(err)
+})
+
+test_that("results subtype='sources' produces output without error", {
+  mod <- make_mock_rsparrow_pred()
+  tmp <- tempfile(fileext = ".pdf")
+  on.exit(unlink(tmp))
+  pdf(tmp)
+  err <- tryCatch(plot(mod, type = "results", subtype = "sources"),
+                  error = function(e) e)
+  dev.off()
+  expect_null(err)
+})
+
+test_that("results subtype='obs_pred' produces output without error (no predictions needed)", {
+  mod <- make_mock_rsparrow_diag()
+  tmp <- tempfile(fileext = ".pdf")
+  on.exit(unlink(tmp))
+  pdf(tmp)
+  err <- tryCatch(plot(mod, type = "results", subtype = "obs_pred"),
+                  error = function(e) e)
+  dev.off()
+  expect_null(err)
+})
+
+test_that("results plot gives informative error when predictions=NULL for non-obs_pred subtypes", {
+  mod <- make_mock_rsparrow_diag()
+  expect_error(
+    plot(mod, type = "results", subtype = "profile"),
+    regexp = "Predictions not available"
+  )
+})
+
+test_that("results subtype='map' gives informative error when lat/lon absent from subdata", {
+  mod <- make_mock_rsparrow_pred()
+  mod$data$subdata <- mod$data$subdata[, setdiff(names(mod$data$subdata), c("lat", "lon"))]
+  expect_error(
+    plot(mod, type = "results", subtype = "map"),
+    regexp = "lat.*lon|lon.*lat"
+  )
+})
