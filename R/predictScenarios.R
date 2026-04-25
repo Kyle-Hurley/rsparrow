@@ -1,4 +1,3 @@
-# TODO Plan 05 — Shiny/input$ coupling deferred to Plan 05C.
 #' @title predictScenarios
 #' @description Executes tasks for the management source-change scenarios, including generating
 #'            load predictions for the scenario, saving the predictions to the 'predictScenarios.list', and
@@ -12,12 +11,6 @@
 #'             \item deliv_fraction.for
 #'             \item mptnoder.for
 #'             \item ptnoder.for} \cr
-#' @param input top level interactive user input in Shiny app
-#' @param allMetrics character string of all load, yield, uncertainty, and data dictionary
-#'       variables to map in shiny batch mode
-#' @param output_map_type character string control setting to identify type of map(s) to output
-#'       to PDF file from "stream","catchment", or "both"
-#' @param Rshiny TRUE/FALSE indicating whether routine is being run from the Shiny app
 #' @param estimate.input.list named list of sparrow_control settings: ifHess, s_offset,
 #'                           NLLS_weights,if_auto_scaling, and if_mean_adjust_delivery_vars
 #' @param predict.list archive with all load and yield prediction variables to provide for
@@ -56,9 +49,6 @@
 
 
 predictScenarios <- function(
-    # Rshiny
-    input, allMetrics, output_map_type, Rshiny,
-    # regular
     estimate.input.list, estimate.list,
     predict.list, scenario.input.list,
     data_names, JacobResults, if_predict,
@@ -104,10 +94,6 @@ predictScenarios <- function(
   yieldUnits  <- estimate.input.list$yieldUnits
   ConcUnits   <- estimate.input.list$ConcUnits
 
-  if (Rshiny) {
-    scenario_name     <- as.character(input$scenarioName)
-    forecast_filename <- as.character(input$forecast_filename)
-  }
   # delete files in subdirectory
   dirout <- paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name, .Platform$file.sep)
   if (dir.exists(dirout)) {
@@ -118,11 +104,7 @@ predictScenarios <- function(
   }
 
 
-  if (((select_scenarioReachAreas != "none" | !is.na(forecast_filename)) & !Rshiny) |
-    Rshiny) {
-    if (Rshiny) {
-      scenario_sources <- as.character(input$scenario_sources)
-    }
+  if (select_scenarioReachAreas != "none" | !is.na(forecast_filename)) {
 
     # Calculate and output with bias-corrected predictions
     if (is.null(JacobResults$mean_exp_weighted_error)) {
@@ -137,9 +119,6 @@ predictScenarios <- function(
 
       # perform checks on scenario variable names designated by user
       #  scenario only executed if all source variables match
-      if (!Rshiny) {
-        input$forecast_filename <- ""
-      }
       vcheck <- 0
       if (length(forecast_filename) == 0 | forecast_filename == "" | is.na(forecast_filename)) {
         for (i in 1:length(JacobResults$Parmnames)) {
@@ -158,9 +137,7 @@ predictScenarios <- function(
         # set data object for predictScenarios
         data <- DataMatrix.list$data
 
-        scenarioPrep.list <- predictScenariosPrep( ## Rshiny
-          input, allMetrics, output_map_type, Rshiny,
-          ## regular
+        scenarioPrep.list <- predictScenariosPrep(
           scenario.input.list,
           data_names,
           if_predict,
@@ -458,11 +435,6 @@ predictScenarios <- function(
           yieldunits[2] <- ConcUnits
 
 
-          if (Rshiny) {
-            scenario_name <- as.character(input$scenarioName)
-          }
-
-
           predictScenarios.list <- named.list(
             select_scenarioReachAreas, select_targetReachWatersheds, scenario_name,
             scenario_sources, scenario_factors, landuseConversion,
@@ -476,9 +448,7 @@ predictScenarios <- function(
           ################## end predictScenarios#######
 
           # output csv files
-          predictScenariosOutCSV( # Rshiny
-            input, Rshiny,
-            # regular
+          predictScenariosOutCSV(
             file.output.list, estimate.list, predictScenarios.list, subdata, add_vars,
             scenario_name, scenarioFlag, data_names, scenarioCoefficients
           )

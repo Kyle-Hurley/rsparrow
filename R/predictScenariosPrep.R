@@ -1,18 +1,9 @@
-# Plan 05C: S_ bare-variable patterns replaced with scenario_mods/lc_mods named lists.
-# Remaining eval(parse()): 3 calls, all Shiny DSS only (guarded by Rshiny=TRUE):
-#   selectFuncs/lcFuncs loop (~line 210/212) and cfFuncs loop (~line 461).
 #' @title predictScenariosPrep
 #' @description Sets up source reduction scenario applying change factors to specified areas \cr \cr
 #' Executed By: predictScenarios.R \cr
 #' Executes Routines: \itemize{\item hydseqTerm.R
 #'             \item named.list.R
 #'             } \cr
-#' @param input top level interactive user input in Shiny app
-#' @param allMetrics character string of all load, yield, uncertainty, and data dictionary
-#'       variables to map in shiny batch mode
-#' @param output_map_type character string control setting to identify type of map(s) to output
-#'       to PDF file from "stream","catchment", or "both"
-#' @param Rshiny TRUE/FALSE indicating whether routine is being run from the Shiny app
 #' @param scenario.input.list list of control settings related to source change scenarios
 #' @param data_names data.frame of variable metadata from data_Dictionary.csv file
 #' @param if_predict yes/no indicating whether or not prediction is run
@@ -62,9 +53,6 @@
 
 
 predictScenariosPrep <- function(
-    ## Rshiny
-    input, allMetrics, output_map_type, Rshiny,
-    ## regular
     scenario.input.list,
     data_names,
     if_predict,
@@ -109,47 +97,13 @@ predictScenariosPrep <- function(
     PercentChange = rep(0, length(JacobResults$oEstimate))
   )
 
-  if (Rshiny) {
-    map_years <- as.character(input$yearSelect)
-    if (length(map_years) != 0 & !map_years[1] %in% c("mean", "median", "min", "max")) {
-      map_years <- as.numeric(map_years)
-    } else if (length(map_years) == 0) {
-      map_years <- NA
-    }
-    map_seasons <- as.character(input$seasonSelect)
-    if (length(map_seasons) == 0) {
-      map_seasons <- NA
-    }
-
-    if (length(input$forecast_filename) == 0 | input$forecast_filename == "" | input$forecastScenario == "no") {
-      forecast_filename <- NA
-    } else if (input$forecastScenario == "yes") {
-      forecast_filename <- input$forecast_filename
-    }
-    if (length(input$use_sparrowNames) != 0) {
-      if (input$use_sparrowNames == FALSE) {
-        use_sparrowNames <- FALSE
-      } else {
-        use_sparrowNames <- TRUE
-      }
-    } else {
-      use_sparrowNames <- FALSE
-    }
-  } # Rshiny
-
   # create scenario_name directory
     old_warn <- getOption("warn")
     on.exit(options(warn = old_warn), add = TRUE)
     options(warn = -1)
-    if (!Rshiny) {
-      if (!dir.exists(paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name))) {
-        dir.create(paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name))
-      } # if directory not found
-    } else { # Rshiny TRUE
-      if (!dir.exists(paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, input$scenarioName))) {
-        dir.create(paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, input$scenarioName), showWarnings = FALSE)
-      } # if direcotry not found
-    } # if Rshiny TRUE
+    if (!dir.exists(paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name))) {
+      dir.create(paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name))
+    } # if directory not found
     options(warn = old_warn)  # restore early; on.exit is safety net for errors above
 
 
@@ -162,98 +116,8 @@ predictScenariosPrep <- function(
     rm(.vname)
 
 
-    # convert Rshiny metrics to control setting names
-    if (Rshiny) {
-      scenario_name <- as.character(input$scenarioName)
-      scenario_sources <- as.character(input$scenario_sources)
-      select_targetReachWatersheds <- as.character(input$target)
-      select_scenarioReachAreas <- as.character(input$domain)
-      scenario_factors <- input$scenario_factors
-      ChangeCoef <- as.character(input$ChangeCoef)
-      sourceCoef <- as.character(input$sourceCoef)
-
-      # clear any (source)_LC variables from subdata
-      for (s in scenario_sources) {
-        suppressWarnings(rm(list = c(paste0("S_", s, "_LC"))))
-        suppressWarnings(rm(list = c(paste0("S_", s))))
-        scenario_mods[[s]] <- NULL  # Plan 05C
-        lc_mods[[s]] <- NULL        # Plan 05C
-      }
-
-
-
-      if (select_scenarioReachAreas == "selected reaches") {
-        # apply source reduction factors to create 'scenario_factor' with selected reach application of factors
-        for (f in 1:length(input$selectFuncs)) {
-          # Shiny DSS only — not evaluated in batch mode (Rshiny=FALSE)
-          eval(parse(text = input$selectFuncs[f]))
-          if (input$allSrc == "no") {
-            eval(parse(text = input$lcFuncs[f]))
-          }
-        }
-        # Bridge S_ variables created by selectFuncs into scenario_mods (Plan 05C)
-        for (s in scenario_sources) {
-          if (exists(paste0("S_", s))) scenario_mods[[s]] <- get(paste0("S_", s))
-          if (exists(paste0("S_", s, "_LC"))) lc_mods[[s]] <- get(paste0("S_", s, "_LC"))
-        }
-      }
-      if (select_scenarioReachAreas == "all reaches" | input$allSrc == "yes") { # if all reaches
-        landuseConversion <- as.character(input$landuseConversion)
-        landuseConversion <- ifelse(landuseConversion == "", NA, landuseConversion)
-        landuseConversion <- ifelse(landuseConversion == "None", NA, landuseConversion)
-      } else { # selected reaches
-        landuseConversion <- NA
-      } # if all reaches
-
-      if (tolower(select_targetReachWatersheds) == "default" | select_targetReachWatersheds == "") {
-        select_targetReachWatersheds <- NA
-      } else if (tolower(select_targetReachWatersheds) == "import") {
-        # read flag file
-        filein <- paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, "flag_TargetReachWatersheds.csv")
-        select_targetReachWatersheds <- utils::read.csv(filein,
-          header = TRUE, stringsAsFactors = FALSE,
-          sep = csv_columnSeparator, dec = csv_decimalSeparator
-        )
-
-        # save flag file to subdirectory
-        fileout <- paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name, .Platform$file.sep, scenario_name, "_", run_id, "_flag_TargetReachWatersheds.csv")
-        utils::write.csv(select_targetReachWatersheds, file = fileout, row.names = FALSE)
-
-        # extract only flagged waterids
-        select_targetReachWatersheds <- select_targetReachWatersheds[which(select_targetReachWatersheds$flag == 1), ]$waterid
-        if (length(select_targetReachWatersheds) == 0) {
-          message(paste0("WARNING : No target reach watershed flagged in ", filein, ".  \nEdit ~/scenarios/flag_TargetReachWatersheds.csv."))
-          # open file for edit
-          shell(filein, wait = TRUE, invisible = FALSE)
-          # get waterids
-          select_targetReachWatersheds <- fread(filein,
-            header = TRUE, stringsAsFactors = FALSE,
-            dec = csv_decimalSeparator, sep = csv_columnSeparator
-          )
-
-
-          # save flag file to subdirectory
-          fileout <- paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name, .Platform$file.sep, scenario_name, "_", run_id, "_flag_TargetReachWatersheds.csv")
-          fwrite(select_targetReachWatersheds,
-            file = fileout, row.names = F, append = F, showProgress = FALSE, col.names = TRUE,
-            dec = csv_decimalSeparator, sep = csv_columnSeparator, na = "NA"
-          )
-
-          # extract only flagged waterids
-          select_targetReachWatersheds <- select_targetReachWatersheds[which(select_targetReachWatersheds$flag == 1), ]$waterid
-
-          if (length(select_targetReachWatersheds) == 0) {
-            message(paste0("WARNING : No target reach watershed flagged in ", filein, ".  \nScenario run with all reaches"))
-            select_targetReachWatersheds <- NA
-          }
-        }
-      } else {
-        select_targetReachWatersheds <- as.numeric(trimws(strsplit(select_targetReachWatersheds, ",")[[1]]))
-      }
-    } else { # not Rshiny
-      ChangeCoef <- rep("no", length(scenario_sources))
-      sourceCoef <- NA
-    }
+    ChangeCoef <- rep("no", length(scenario_sources))
+    sourceCoef <- NA
 
 
 
@@ -283,12 +147,7 @@ predictScenariosPrep <- function(
         }
       } else { # selected reaches
 
-        if (!is.na(landuseConversion[i]) & is.null(lc_mods[[scenario_sources[i]]])) {
-          if (Rshiny) {
-            lc_mods[[scenario_sources[i]]] <- ifelse(scenario_mods[[scenario_sources[i]]] != 1,
-                                                      landuseConversion[i], NA)
-          }
-        } else if (!Rshiny & !is.null(lc_mods[[scenario_sources[i]]])) {
+        if (!is.null(lc_mods[[scenario_sources[i]]])) {
           temp <- lc_mods[[scenario_sources[i]]]
 
           if (length(unique(temp)) == 1 & all(is.na(unique(temp)))) {
@@ -390,12 +249,6 @@ predictScenariosPrep <- function(
     # coefficient change
     coefSource <- sourceCoef[which(ChangeCoef == "yes")]
     coefFactor <- scenario_factors[which(ChangeCoef == "yes")]
-    if (Rshiny && length(names(input)[which(names(input) == "cfFuncs")]) != 0) {
-      # Shiny DSS only — not evaluated in batch mode (Rshiny=FALSE)
-      for (f in input$cfFuncs) {
-        eval(parse(text = f))
-      }
-    }
     for (c in 1:length(betalst)) {
       if (JacobResults$Parmnames[c] %in% coefSource) {
         if (!exists(paste0("S_", JacobResults$Parmnames[c], "_CF"))) {

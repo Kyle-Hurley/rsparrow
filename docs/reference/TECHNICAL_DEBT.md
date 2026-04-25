@@ -31,17 +31,16 @@ Zero unPackList() calls remain in R/.
 </issue>
 
 <issue name="eval(parse(text=...)) Anti-Pattern" status="PARTIALLY_RESOLVED">
-9 occurrences remain across R/ (down from 339 across 61 files originally; 25 post-Plan 09;
-10 post-Plan 15; 9 after Plan 16 archives replaceNAs.R).
+6 occurrences remain across R/ (down from 339 across 61 files originally; 25 post-Plan 09;
+10 post-Plan 15; 9 after Plan 16 archives replaceNAs.R; 6 after Plan 18D removes 3 Shiny-only calls).
 Remaining in active R/ (all NECESSARY or DEFERRED — each has a GH issue):
 - diagnosticSpatialAutoCorr.R (5, GH #21): MoranDistanceWeightFunc is a user-supplied R
   expression string for spatial weight computation. Cannot remove without API change.
   Suggested fix: accept function object as alternative to string.
-- predictScenariosPrep.R (3, GH #22): Shiny DSS reactive expressions, guarded by Rshiny=TRUE.
-  Never executed in CRAN-tested code paths. Suggested fix: evaluateShinyFunc() helper.
 - createSubdataSorted.R (1, GH #23): filter_data1_conditions is a user-supplied character
   vector of R filter expressions. Hardened with tryCatch (Plan 05C).
   Suggested fix: accept function(data1) as alternative form.
+- GH #22 RESOLVED (Plan 18D): 3 Shiny DSS eval/parse calls in predictScenariosPrep.R removed.
 Archived/Resolved (Plans 08–16):
 - replaceNAs.R (1): ARCHIVED Plan 16 — 0 active callers (applyUserModify + mapSiteAttributes both archived)
 - plotlyLayout.R (8): DELETED Plan 16 (base R plotting) — file deleted
@@ -210,12 +209,13 @@ predict, deliver, hydseq, estimateOptimize, bootstrap estimation, scenario predi
 Core mathematical functions have zero test coverage.
 </issue>
 
-<issue name="Shiny Code Entangled with Core" status="PARTIALLY_RESOLVED">
+<issue name="Shiny Code Entangled with Core" status="RESOLVED">
 25 Shiny/GUI files moved to inst/shiny_dss/ in Plan 02 (including shinyMap2.R, streamCatch.R,
 and all UI/server modules). runBatchShiny() call removed from startModelRun.R.
-Remaining entanglement: predictScenarios.R still handles both Shiny and batch scenarios in one
-function. The Rshiny parameter in predictMaps.R, make_residMaps.R, and ~9 other core files
-becomes dead code (always FALSE) but doesn't break anything.
+Plan 18A: All 25 shiny_dss files archived to inst/archived/shiny_dss/. stringi/leaflet removed.
+Plan 18D: Rshiny/input parameters removed from predictScenarios.R, predictScenariosPrep.R, and
+predictScenariosOutCSV.R. 3 eval/parse calls (GH #22) eliminated. Zero Rshiny references remain
+in any active R/ file.
 </issue>
 
 <issue name="roxygen2 Documentation Inconsistencies">
@@ -293,9 +293,9 @@ Plan 16 (Function Audit): 3 functions archived after 0-caller verification:
   estimate.R as direct diagnosticPlotsNLLS(..., validation=TRUE) call)
 </issue>
 
-<issue name="Remaining technical debt (post Plan 16)" status="OPEN">
+<issue name="Remaining technical debt (post Plan 18D)" status="OPEN">
 The following items are known but not blocking CRAN submission:
-- eval(parse()): 9 remaining (5+3+1, all NECESSARY or Shiny-only); GH issues opened Plan 16
+- eval(parse()): 6 remaining (5+1, all NECESSARY); GH #22 resolved Plan 18D, GH #21/#23 deferred
 - Monolith decomposition: estimate.R (693L), estimateNLLSmetrics.R (661L),
   estimateNLLStable.R (550L); seam comments added Plan 16; GH issues opened
 - "yes"/"no" string flags: ~50 control settings use character not logical; converting them

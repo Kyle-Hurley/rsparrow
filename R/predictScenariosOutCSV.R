@@ -4,8 +4,6 @@
 #' Executes Routines: \itemize{\item getVarList.R
 #'             \item named.list.R
 #'             } \cr
-#' @param input top level interactive user input in Shiny app
-#' @param Rshiny TRUE/FALSE indicating whether routine is being run from the Shiny app
 #' @param file.output.list list of control settings and relative paths used for input and
 #'                        output of external files.  Created by `generateInputList.R`
 #' @param estimate.list list output from `estimate.R`
@@ -28,17 +26,10 @@
 
 
 predictScenariosOutCSV <- function(
-    # Rshiny
-    input, Rshiny,
-    # regular
     file.output.list, estimate.list, predictScenarios.list, subdata, add_vars,
     scenario_name, scenarioFlag, data_names, scenarioCoefficients) {
   #################################################
 
-
-  if (Rshiny) {
-    scenario_name <- input$scenarioName
-  }
   # define "space" for printing
   ch <- character(1)
   space <- data.frame(ch)
@@ -258,14 +249,12 @@ predictScenariosOutCSV <- function(
 
 
 
-  if (!Rshiny) {
-    # save the modifySubdata routine with a record of the source change settings
-    filesList <- c("_modifySubdata.R")
-    sapply(filesList, function(x) {
-      file.copy(
-        paste0(path_results, run_id, x),
-        paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name, .Platform$file.sep, scenario_name, "_", run_id, x)
-      )
-    })
-  }
+  # save the modifySubdata routine with a record of the source change settings
+  filesList <- c("_modifySubdata.R")
+  sapply(filesList, function(x) {
+    file.copy(
+      paste0(path_results, run_id, x),
+      paste0(path_results, .Platform$file.sep, "scenarios", .Platform$file.sep, scenario_name, .Platform$file.sep, scenario_name, "_", run_id, x)
+    )
+  })
 } # end function

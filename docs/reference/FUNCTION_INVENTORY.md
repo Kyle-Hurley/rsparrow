@@ -65,16 +65,19 @@ Must be merged with predict_sparrow().
 <function name="predictBootstraps" file="predictBootstraps.R" lines="~150" class="KEEP">
 Bootstrap prediction loop calling predictBoot for each iteration.
 </function>
-<function name="predictScenarios" file="predictScenarios.R" lines="821" class="REFACTOR">
-Scenario analysis. Contains embedded prediction logic duplicated from predict.R plus
-Shiny coupling. Specification-string eval(parse()) inlined, 2 assign(.GlobalEnv) removed
-(Plan 04B). 5 dynamic source variable eval(parse()) remain (flagged TODO Plan 05).
-Must extract core scenario logic from UI code.
+<function name="predictScenarios" file="predictScenarios.R" lines="~460" class="KEEP">
+Scenario analysis. Rshiny/input params removed (Plan 18D). Signature:
+predictScenarios(estimate.input.list, estimate.list, predict.list, scenario.input.list,
+  data_names, JacobResults, if_predict, DataMatrix.list, SelParmValues, subdata,
+  file.output.list, add_vars, mapping.input.list, dlvdsgn, RSPARROW_errorOption).
+Zero Rshiny references remain.
 </function>
-<function name="predictScenariosPrep" file="predictScenariosPrep.R" lines="~300" class="REFACTOR">
-Prepares scenario data modifications. 12 eval(parse()) remain (3 COMPLEX Shiny DSS expressions,
-9 S_ bare-variable patterns). .GlobalEnv rm() removed, 1 fixable eval replaced (Plan 04C).
-All flagged TODO Plan 05.
+<function name="predictScenariosPrep" file="predictScenariosPrep.R" lines="~400" class="KEEP">
+Prepares scenario data modifications. Rshiny/input params removed (Plan 18D). 3 eval/parse
+Shiny DSS calls eliminated (GH #22 resolved). Signature:
+predictScenariosPrep(scenario.input.list, data_names, if_predict, data, srcvar, jsrcvar,
+  dataNames, JacobResults, subdata, SelParmValues, file.output.list).
+Zero Rshiny references remain.
 </function>
 <function name="predictSensitivity" file="predictSensitivity.R" lines="179" class="MERGE">
 Parameter sensitivity predictions. Another predict.R variant. Specification-string eval(parse())
@@ -195,7 +198,9 @@ Computes/verifies reach attributes (hydseq, headflag, termflag, demtarea).
 
 <module name="CSV Output">
 <function name="predictOutCSV" file="predictOutCSV.R" class="REFACTOR">Write load/yield prediction CSVs.</function>
-<function name="predictScenariosOutCSV" file="predictScenariosOutCSV.R" class="REFACTOR">Write scenario prediction CSVs.</function>
+<function name="predictScenariosOutCSV" file="predictScenariosOutCSV.R" class="KEEP">Write scenario prediction CSVs. Rshiny/input params removed (Plan 18D). Signature:
+predictScenariosOutCSV(file.output.list, estimate.list, predictScenarios.list, subdata,
+  add_vars, scenario_name, scenarioFlag, data_names, scenarioCoefficients).</function>
 <function name="predictBootsOutCSV" file="predictBootsOutCSV.R" class="REFACTOR">Write bootstrap prediction CSVs.</function>
 <function name="predictSummaryOutCSV" file="predictSummaryOutCSV.R" class="REFACTOR">Write summary prediction CSVs.</function>
 </module>

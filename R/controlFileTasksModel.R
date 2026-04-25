@@ -251,11 +251,8 @@ if (if_boot_estimate == "yes" & biters!=0){
   # NOTE: standard predictions ("if_predict = yes") must be executed to support this feature
   #       to ensure creation of load and yield matrices
 
-  input <- list(variable = "", scLoadCheck = "", batch = "", scYieldCheck = "", domain = "", selectReaches = "", sourcesCheck = "", factors = "")
-  if (exists("estimate.list") & !is.null(estimate.list)) {
-    predictScenarios( # Rshiny
-      input, NA, output_map_type, FALSE,
-      # regular
+  if (!is.null(estimate.list)) {
+    predictScenarios(
       estimate.input.list, estimate.list,
       predict.list, scenario.input.list,
       data_names, estimate.list$JacobResults, if_predict,

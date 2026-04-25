@@ -56,12 +56,6 @@ rsparrow_scenario <- function(object, source_changes,
   estimate_list <- object_to_estimate_list(object)
 
   scenario_results <- predictScenarios(
-    # Shiny-specific args (unused when Rshiny = FALSE)
-    input           = NULL,
-    allMetrics      = NULL,
-    output_map_type = NA,
-    Rshiny          = FALSE,
-    # estimation objects
     estimate.input.list = object$data$estimate.input.list,
     estimate.list       = estimate_list,
     predict.list        = object$predictions,
