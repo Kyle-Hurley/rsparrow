@@ -619,7 +619,7 @@ estimateNLLSmetrics <- function(if_estimate, if_estimate_simulation, if_sparrowE
 
 
   ######################################################################################
-  if (identical(if_sparrowEsts, 1)) {
+  if (if_sparrowEsts == 1L) {
     jacobian <- sparrowEsts$jacobian
     JacobResults <- named.list(
       Parmnames, Beta.inital, bmin, bmax, esttype, btype,
