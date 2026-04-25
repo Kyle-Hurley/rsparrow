@@ -607,9 +607,7 @@ rsparrow_model <- function(reaches,
     use_sparrowNames        = FALSE,
     compare_models          = NA,
     modelComparison_name    = NA,
-    RSPARROW_errorOption    = "no",
-    enable_ShinyApp         = "no",
-    path_shinyBrowser       = NA
+    RSPARROW_errorOption    = "no"
   )
 }
 

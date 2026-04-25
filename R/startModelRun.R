@@ -3,23 +3,18 @@
 #' Executed By: \itemize{\item batchRun.R
 #'             \item executeRSPARROW.R} \cr
 #' Executes Routines: \itemize{\item calcDemtareaClass.R
-#'             \item calcIncremLandUse.R
 #'             \item checkAnyMissingSubdataVars.R
 #'             \item checkClassificationVars.R
 #'             \item checkMissingSubdataVars.R
 #'             \item controlFileTasksModel.R
-#'             \item correlationMatrix.R
 #'             \item createDataMatrix.R
-#'             \item createMasterDataDictionary.R
 #'             \item createSubdataSorted.R
-#'             \item findMinMaxLatLon.R
 #'             \item named.list.R
 #'             \item selectCalibrationSites.R
 #'             \item selectDesignMatrix.R
 #'             \item selectParmValues.R
 #'             \item selectValidationSites.R
 #'             \item setNLLSWeights.R
-#'             \item shinyMap2.R
 #'             \item startEndmodifySubdata.R} \cr
 #' @param file.output.list list of control settings and relative paths used for input and
 #'                        output of external files.  Created by `generateInputList.R`
@@ -97,17 +92,11 @@ startModelRun <- function(file.output.list,
 
   NLLS_weights <- estimate.input.list$NLLS_weights
   if_mean_adjust_delivery_vars <- estimate.input.list$if_mean_adjust_delivery_vars
-  if_corrExplanVars <- estimate.input.list$if_corrExplanVars
 
   master_map_list <- mapping.input.list$master_map_list
   lon_limit <- mapping.input.list$lon_limit
   ConcFactor <- mapping.input.list$ConcFactor
   sparrow_state <- list()
-
-  # compile master_dataDictionary (skipped when running in-memory)
-  if (!is.null(file.output.list$path_results)) {
-    createMasterDataDictionary(file.output.list)
-  }
 
   message("Reading parameters and design matrix...")
   # (A) input parameters and settings
@@ -239,16 +228,8 @@ startModelRun <- function(file.output.list,
   sparrow_state$numsites <- numsites
 
 
-  # Find minimum and maximum Lat/Lon values for setting mapping projection limits
-  geo_result <- findMinMaxLatLon(sitedata, mapping.input.list)
-  sitegeolimits <- geo_result$sitegeolimits
-  mapping.input.list <- geo_result$mapping.input.list
+  sitegeolimits <- NA
   sparrow_state$sitegeolimits <- sitegeolimits
-
-
-  message("Monitoring station latitude and longitude minimums and maximums = ")
-  print(unlist(sitegeolimits))
-
 
   vnumsites <- 0
   if (if_validate == "yes") {
@@ -258,21 +239,17 @@ startModelRun <- function(file.output.list,
     vnumsites
   }
 
-  # (D) Setup land use for incremental basins for diagnostics
-  #      (includes setup of 'classvar2' classes in 'sitedata' and 'vsitedata' objects for
-  #      plotting diagnostics for non-contiguous variables)
+  # (D) Setup drainage-area classification for diagnostics
+  sitedata.landuse <- NA
+  vsitedata.landuse <- NA
   if (numsites > 0) {
-    sitedata.landuse <- calcIncremLandUse(subdata, class_landuse, subdata$staidseq, minimum_reaches_separating_sites)
     # Obtain total drainage area classification variable for calibration sites
     sitedata.demtarea.class <- calcDemtareaClass(sitedata$demtarea)
-    sparrow_state$sitedata.landuse <- sitedata.landuse
     sparrow_state$sitedata.demtarea.class <- sitedata.demtarea.class
   }
   if (vnumsites > 0) {
-    vsitedata.landuse <- calcIncremLandUse(subdata, class_landuse, subdata$vstaidseq, minimum_reaches_separating_sites)
     # Obtain total drainage area classification variable for validation sites
     vsitedata.demtarea.class <- calcDemtareaClass(vsitedata$demtarea)
-    sparrow_state$vsitedata.landuse <- vsitedata.landuse
     sparrow_state$vsitedata.demtarea.class <- vsitedata.demtarea.class
   }
 
@@ -306,19 +283,7 @@ startModelRun <- function(file.output.list,
   }
 
 
-  # (E) Run correlations among explanatory variables
-  #     NOTE: needs conversion to subroutine; HUC8 computation of mean to reduce size needs generalization
   Cor.ExplanVars.list <- NA
-  if (if_corrExplanVars == "yes") {
-    maxsamples <- 500
-    # select user-specified names from 'parmCorrGroup' in the parameters.csv file
-    names <- SelParmValues$sparrowNames[SelParmValues$bCorrGroup == 1]
-    if (length(names) > 1) { # minimum of 2 explanatory variables required
-      message("Running correlations among explanatory variables...")
-      Cor.ExplanVars.list <- correlationMatrix(file.output.list, SelParmValues, subdata)
-
-    }
-  }
 
   ########################################
   ### 7. PERFORM MODEL EXECUTION TASKS ###
@@ -383,57 +348,9 @@ startModelRun <- function(file.output.list,
 
 
 
-  if (if_boot_estimate == "yes") {
-    message("Bootstrap estimation run time")
-    print(runTimes$BootEstRunTime)
-  }
-
-  if (if_boot_predict == "yes") {
-    message("Bootstrap prediction run time")
-    print(runTimes$BootPredictRunTime)
-  }
-
-  if (!is.na(master_map_list[1])) {
-    message("Map predictions run time")
-    print(runTimes$MapPredictRunTime)
-  }
-
-
-  # obtain uncertainties, if available
-  objfile <- paste0(path_results, .Platform$file.sep, "predict", .Platform$file.sep, run_id, "_BootUncertainties")
-  if (file.exists(objfile) == TRUE) {
-    load(objfile)
-    map_uncertainties <- c("se_pload_total", "ci_pload_total")
-  } else {
-    map_uncertainties <- NA
-    BootUncertainties <- NA
-  }
-  sparrow_state$map_uncertainties <- map_uncertainties
-  sparrow_state$BootUncertainties <- BootUncertainties
-
   estimate.list <- runTimes$estimate.list
   sparrow_state$estimate.list <- estimate.list  # expose to rsparrow_model()
   sparrow_state$predict.list  <- runTimes$predict.list  # expose to rsparrow_model()
-  if (!is.null(estimate.list) && !is.null(path_results)) {
-    # setup for interactive Mapping
-    shinyArgs <- named.list(
-      file.output.list, map_uncertainties, BootUncertainties,
-      data_names, mapping.input.list,
-      subdata, SelParmValues,
-      # site attr
-      sitedata,
-      # scenarios
-      estimate.list, estimate.input.list,
-      ConcFactor, DataMatrix.list, dlvdsgn,
-      scenario.input.list,
-      if_predict,
-      # scenarios out
-      add_vars,
-      RSPARROW_errorOption
-    )
-
-    save(shinyArgs, file = paste0(path_results, .Platform$file.sep, "maps", .Platform$file.sep, "shinyArgs"))
-  }
 
   return(sparrow_state)
 } # end function
