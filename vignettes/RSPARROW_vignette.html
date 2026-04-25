@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Getting Started with rsparrow</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Getting Started with rsparrow</h1>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p><strong>rsparrow</strong> is an R package for executing and
+evaluating SPARROW (SPAtially Referenced Regressions On Watershed
+attributes) models. SPARROW models three watershed processes:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Source generation</strong> — contaminant inputs from land
+uses (e.g., agricultural N, atmospheric deposition)</li>
+<li><strong>Land-to-water delivery</strong> — transport to streams via
+surficial and subsurface pathways, modulated by climate and landscape
+variables</li>
+<li><strong>In-stream transport and decay</strong> — removal and
+attenuation as water moves downstream through reaches and
+reservoirs</li>
+</ol>
+<p>The package implements static (long-term mean annual) SPARROW models.
+It generates reach-level load and yield predictions, source attribution,
+parameter uncertainty via bootstrap, and diagnostic plots.</p>
+</div>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;rsparrow&quot;</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co"># Or the development version from GitHub:</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co"># remotes::install_github(&quot;Kyle-Hurley/rsparrow&quot;)</span></span></code></pre></div>
+</div>
+<div id="step-1-load-the-example-data" class="section level2">
+<h2>Step 1: Load the Example Data</h2>
+<p>rsparrow includes a synthetic 60-reach example dataset,
+<code>sparrow_example</code>, that demonstrates the full modeling
+workflow without requiring real data.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(rsparrow)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">str</span>(sparrow_example, <span class="at">max.level =</span> <span class="dv">1</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt; List of 5</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt;  $ reaches        :&#39;data.frame&#39;: 60 obs. of  20 variables:</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt;  $ sites          :&#39;data.frame&#39;: 5 obs. of  6 variables:</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&gt;  $ parameters     :&#39;data.frame&#39;: 2 obs. of  8 variables:</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co">#&gt;  $ design_matrix  :&#39;data.frame&#39;: 1 obs. of  2 variables:</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt;  $ data_dictionary:&#39;data.frame&#39;: 20 obs. of  5 variables:</span></span></code></pre></div>
+<p>The dataset contains five elements:</p>
+<ul>
+<li><strong><code>reaches</code></strong> — 60-reach dendritic network
+with two tributary branches draining to a single outlet. Columns include
+topology (<code>waterid</code>, <code>fnode</code>, <code>tnode</code>),
+drainage area (<code>demiarea</code>, <code>demtarea</code>), a
+synthetic agricultural-N source (<code>agN</code>), and a precipitation
+delivery variable (<code>ppt</code>).</li>
+<li><strong><code>sites</code></strong> — 5 monitoring sites with
+synthetic observed loads (<code>depvar</code>, kg/year).</li>
+<li><strong><code>parameters</code></strong> — parameter configuration
+(SOURCE and DELIVF types).</li>
+<li><strong><code>design_matrix</code></strong> — binary matrix
+associating sources with delivery variables.</li>
+<li><strong><code>data_dictionary</code></strong> — optional; maps
+internal SPARROW variable names to data column names (not needed when
+column names already match).</li>
+</ul>
+</div>
+<div id="step-2-inspect-the-network-topology" class="section level2">
+<h2>Step 2: Inspect the Network Topology</h2>
+<p>Before fitting a model, compute the hydrological sequence — the reach
+ordering from upstream to downstream that SPARROW uses for load
+accumulation.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>network <span class="ot">&lt;-</span> <span class="fu">rsparrow_hydseq</span>(sparrow_example<span class="sc">$</span>reaches)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">head</span>(network[<span class="fu">order</span>(network<span class="sc">$</span>hydseq), <span class="fu">c</span>(<span class="st">&quot;waterid&quot;</span>, <span class="st">&quot;fnode&quot;</span>, <span class="st">&quot;tnode&quot;</span>, <span class="st">&quot;hydseq&quot;</span>)])</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt;    waterid fnode tnode hydseq</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; 36      36   301   302    -60</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; 26      26   201   202    -59</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; 11      11   101   102    -58</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; 1        1     1     2    -57</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; 37      37   302   303    -56</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; 27      27   202   203    -55</span></span></code></pre></div>
+<p>Reaches with more negative <code>hydseq</code> values are further
+downstream. The outlet reach has the most negative value.</p>
+</div>
+<div id="step-3-fit-the-model" class="section level2">
+<h2>Step 3: Fit the Model</h2>
+<div id="quick-start-one-call-interface" class="section level3">
+<h3>Quick Start (one-call interface)</h3>
+<p>Pass the three required data frames to <code>rsparrow_model()</code>.
+No CSV files, directories, or data dictionary are required when column
+names already match SPARROW variable names:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">rsparrow_model</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  sparrow_example<span class="sc">$</span>reaches,</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  sparrow_example<span class="sc">$</span>parameters,</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  sparrow_example<span class="sc">$</span>design_matrix</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="composable-workflow" class="section level3">
+<h3>Composable Workflow</h3>
+<p>For finer control, call the two steps separately. This lets you
+inspect and reuse the prepared data object, or swap out estimation
+options without re-validating inputs:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Step 1: Validate and prepare inputs</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>sparrow_data <span class="ot">&lt;-</span> <span class="fu">rsparrow_prepare</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  sparrow_example<span class="sc">$</span>reaches,</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  sparrow_example<span class="sc">$</span>parameters,</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  sparrow_example<span class="sc">$</span>design_matrix</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>)</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="fu">print</span>(sparrow_data)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; rsparrow_data</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt;   Reaches     : 60</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt;   Calibration sites (depvar &gt; 0 &amp; calsites == 1): 5</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt;   Parameters  : 2 (1 SOURCE, 1 DELIVF)</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co"># Step 2: Estimate the model</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">rsparrow_estimate</span>(sparrow_data)</span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co"># Step 3: Predict at all reaches (already done when if_predict = TRUE)</span></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>predictions <span class="ot">&lt;-</span> <span class="fu">predict</span>(model)</span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co"># Post-processing (same functions as before)</span></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">rsparrow_bootstrap</span>(model, <span class="at">n_boot =</span> <span class="dv">200</span>, <span class="at">seed =</span> <span class="dv">42</span>)</span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">rsparrow_validate</span>(model)</span></code></pre></div>
+<p>After estimation, the model produces a summary of estimation
+performance:</p>
+<pre><code>  SPARROW NLLS MODEL SUMMARY
+
+  MODEL NAME: run1
+
+  MODEL ESTIMATION PERFORMANCE (Monitoring-Adjusted Predictions)
+ MOBS NPARM DF       SSE       MSE      RMSE       RSQ
+    5     2  3 0.3410997 0.1136999 0.3371942 0.8056507
+
+  PARAMETER ESTIMATES
+  PARAMETER PARM TYPE ESTIMATE     SE         T         P-VALUE
+1 agN       SOURCE    3.417676  0.6478    5.276    0.01327
+2 ppt       DELIVF   -0.001593  0.0038   -0.422    0.70122</code></pre>
+</div>
+</div>
+<div id="step-4-examine-results" class="section level2">
+<h2>Step 4: Examine Results</h2>
+<p>The returned <code>rsparrow</code> object supports standard S3
+methods:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Compact summary</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">print</span>(model)</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co"># Full estimation summary</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="fu">summary</span>(model)</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co"># Parameter estimates</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="fu">coef</span>(model)</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt;        agN        ppt</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt;  3.4176761 -0.0015935</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co"># Log residuals at calibration sites</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="fu">residuals</span>(model)</span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co"># Parameter covariance matrix</span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="fu">vcov</span>(model)</span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="co"># Predictions (populated when if_predict = TRUE)</span></span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="fu">names</span>(model<span class="sc">$</span>predictions)</span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="co">#&gt; [1] &quot;oparmlist&quot;          &quot;loadunits&quot;          &quot;predmatrix&quot;</span></span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="co">#&gt; [4] &quot;oyieldlist&quot;         &quot;yieldunits&quot;         &quot;yldmatrix&quot;</span></span></code></pre></div>
+</div>
+<div id="step-5-diagnostic-plots" class="section level2">
+<h2>Step 5: Diagnostic Plots</h2>
+<p>Diagnostic plots use base R graphics and are available for any fitted
+model:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">plot</span>(model, <span class="at">type =</span> <span class="st">&quot;residuals&quot;</span>)           <span class="co"># observed vs predicted, residuals</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="fu">plot</span>(model, <span class="at">type =</span> <span class="st">&quot;residuals&quot;</span>, <span class="at">panel =</span> <span class="st">&quot;B&quot;</span>)  <span class="co"># Q-Q, boxplots</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="fu">plot</span>(model, <span class="at">type =</span> <span class="st">&quot;sensitivity&quot;</span>)         <span class="co"># parameter sensitivity</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="fu">plot</span>(model, <span class="at">type =</span> <span class="st">&quot;spatial&quot;</span>)             <span class="co"># spatial autocorrelation</span></span></code></pre></div>
+</div>
+<div id="step-6-bootstrap-uncertainty" class="section level2">
+<h2>Step 6: Bootstrap Uncertainty</h2>
+<p>Estimate parameter uncertainty via parametric bootstrap:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">rsparrow_bootstrap</span>(model, <span class="at">n_boot =</span> <span class="dv">200</span>, <span class="at">seed =</span> <span class="dv">42</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>model<span class="sc">$</span>bootstrap<span class="sc">$</span>bEstimate  <span class="co"># bootstrapped parameter distributions</span></span></code></pre></div>
+</div>
+<div id="step-7-scenario-analysis" class="section level2">
+<h2>Step 7: Scenario Analysis</h2>
+<p>Evaluate the effect of changing source inputs:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># Simulate a 50% reduction in agricultural N loading</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">rsparrow_scenario</span>(model, <span class="at">source_changes =</span> <span class="fu">list</span>(<span class="at">agN =</span> <span class="fl">0.5</span>))</span></code></pre></div>
+</div>
+<div id="api-reference" class="section level2">
+<h2>API Reference</h2>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>rsparrow_prepare()</code></td>
+<td>Validate inputs; return <code>rsparrow_data</code> object</td>
+</tr>
+<tr class="even">
+<td><code>rsparrow_estimate()</code></td>
+<td>Fit NLLS model; return <code>rsparrow</code> object</td>
+</tr>
+<tr class="odd">
+<td><code>rsparrow_model()</code></td>
+<td>One-call convenience wrapper for the two steps above</td>
+</tr>
+<tr class="even">
+<td><code>predict()</code></td>
+<td>Reach-level load/yield predictions</td>
+</tr>
+<tr class="odd">
+<td><code>rsparrow_bootstrap()</code></td>
+<td>Parametric bootstrap for parameter uncertainty</td>
+</tr>
+<tr class="even">
+<td><code>rsparrow_validate()</code></td>
+<td>Holdout validation</td>
+</tr>
+<tr class="odd">
+<td><code>rsparrow_scenario()</code></td>
+<td>Source-change scenario analysis</td>
+</tr>
+<tr class="even">
+<td><code>rsparrow_hydseq()</code></td>
+<td>Compute hydrological sequence</td>
+</tr>
+<tr class="odd">
+<td><code>write_rsparrow_results()</code></td>
+<td>Write results to disk</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="further-reading" class="section level2">
+<h2>Further Reading</h2>
+<ul>
+<li><code>?rsparrow_prepare</code> — data preparation and required
+column names</li>
+<li><code>?rsparrow_estimate</code> — estimation options (hessian,
+weights, units)</li>
+<li><code>?rsparrow_model</code> — convenience wrapper
+documentation</li>
+<li><code>?sparrow_example</code> — description of the example
+dataset</li>
+<li>SPARROW methodology: Alexander, R.B., et al. (2008). <em>Differences
+in phosphorus and nitrogen delivery to the Gulf of Mexico from the
+Mississippi River basin.</em> Environmental Science &amp; Technology,
+42(3), 822–830.</li>
+<li>USGS SPARROW resources: <a href="https://www.usgs.gov/mission-areas/water-resources/science/sparrow-modeling" class="uri">https://www.usgs.gov/mission-areas/water-resources/science/sparrow-modeling</a></li>
+</ul>
+</div>
+<div id="citation" class="section level2">
+<h2>Citation</h2>
+<p>Gorman Sanisaca, Lillian, Hurley, Kyle P., and Alexander, Richard B.
+(2025). RSPARROW 2.1.0: An R system for SPARROW modeling. U.S.
+Geological Survey.</p>
+</div>
+<div id="disclaimer" class="section level2">
+<h2>Disclaimer</h2>
+<p>This software has been approved for release by the U.S. Geological
+Survey (USGS). Although the software has been subjected to rigorous
+review, the USGS reserves the right to update the software as needed
+pursuant to further analysis and review. No warranty, expressed or
+implied, is made by the USGS or the U.S. Government as to the
+functionality of the software and related material nor shall the fact of
+release constitute any such warranty.</p>
+<p>Any use of trade, firm, or product names is for descriptive purposes
+only and does not imply endorsement by the U.S. Government.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
