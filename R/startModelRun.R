@@ -316,24 +316,19 @@ startModelRun <- function(file.output.list,
     # parameters
     SelParmValues, betavalues,
     # NLR weights
-    Csites.list, 
+    Csites.list,
     Csites.weights.list,
     # data
     subdata, data_names, DataMatrix.list, sitedata, Vsites.list, vsitedata, numsites,
-    # land use classifcation
+    # land use classification
     class.input.list,
-    # explanatory variable correlations
-    Cor.ExplanVars.list,
     # estimation
-    min.sites.list,
-    minimum_reaches_separating_sites,
     if_estimate, if_estimate_simulation, dlvdsgn,
     estimate.input.list,
     # prediction
     if_predict,
     # diagnostics and validation
-    if_validate, sitedata.landuse, vsitedata.landuse, sitedata.demtarea.class, 
-    vsitedata.demtarea.class, 
+    if_validate,
     # mapping
     mapping.input.list,
     # bootstrapping

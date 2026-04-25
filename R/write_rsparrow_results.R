@@ -42,7 +42,8 @@ write_rsparrow_results <- function(model, path, what = "all") {
     run_id               = run_id,
     add_vars             = model$data$file.output.list$add_vars,
     csv_decimalSeparator = model$data$file.output.list$csv_decimalSeparator,
-    csv_columnSeparator  = model$data$file.output.list$csv_columnSeparator
+    csv_columnSeparator  = model$data$file.output.list$csv_columnSeparator,
+    if_corrExplanVars    = "no"
   )
 
   estimate.list       <- model$data$estimate.list
@@ -54,11 +55,39 @@ write_rsparrow_results <- function(model, path, what = "all") {
   add_vars            <- model$data$file.output.list$add_vars
 
   if ("estimates" %in% what) {
+    dir.create(file.path(path, "estimate"), recursive = TRUE, showWarnings = FALSE)
+
+    # Write NLLS summary table (does not require predict.list)
+    if (!is.null(estimate.list$ANOVA.list)) {
+      classvar_val <- model$data$classvar
+      if (identical(classvar_val, NA_character_)) classvar_val <- "sitedata.demtarea.class"
+      sitedata_wr  <- model$data$sitedata
+      numsites_wr  <- if (!is.null(sitedata_wr)) nrow(sitedata_wr) else 0L
+      betavalues_wr <- model$data$SelParmValues  # has sparrowNames / description / parmUnits columns
+
+      estimateNLLStable(
+        fol,
+        if_estimate           = "yes",
+        if_estimate_simulation = "no",
+        ifHess                = if (!is.null(estimate.list$HesResults)) "yes" else "no",
+        if_sparrowEsts        = 1L,
+        classvar              = classvar_val,
+        sitedata              = sitedata_wr,
+        numsites              = numsites_wr,
+        estimate.list         = estimate.list,
+        Cor.ExplanVars.list   = NA,
+        if_validate           = if (!is.null(estimate.list$vANOVA.list)) "yes" else "no",
+        vANOVA.list           = estimate.list$vANOVA.list,
+        vMdiagnostics.list    = estimate.list$vMdiagnostics.list,
+        betavalues            = betavalues_wr,
+        Csites.weights.list   = model$data$Csites.weights.list
+      )
+    }
+
+    # Write summary predictions CSV (requires predict.list)
     if (is.null(predict.list)) {
-      message("write_rsparrow_results: no predictions available; skipping 'estimates' output.")
+      message("write_rsparrow_results: no predictions available; skipping summary predictions output.")
     } else {
-      dir.create(file.path(path, "estimate"), recursive = TRUE, showWarnings = FALSE)
-      # Reconstruct class.input.list from available model data
       class.input.list <- list(
         classvar              = model$data$classvar,
         class_landuse         = NA,
