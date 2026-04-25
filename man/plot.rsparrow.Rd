@@ -4,18 +4,34 @@
 \alias{plot.rsparrow}
 \title{Diagnostic Plots for SPARROW Models}
 \usage{
-\method{plot}{rsparrow}(x, type = c("residuals", "sensitivity", "spatial"), ...)
+\method{plot}{rsparrow}(
+  x,
+  type = c("residuals", "sensitivity", "spatial", "simulation", "class", "ratio",
+    "validation", "bootstrap"),
+  ...
+)
 }
 \arguments{
 \item{x}{An object of class \code{"rsparrow"}.}
 
-\item{type}{Character. One of \code{"residuals"}, \code{"sensitivity"}, or
-\code{"spatial"}. Selects the diagnostic plot type.}
+\item{type}{Character. One of:
+\itemize{
+\item \code{"residuals"} — Estimation residual panels (4-panel A/B)
+\item \code{"sensitivity"} — Parameter sensitivity analysis
+\item \code{"spatial"} — Spatial autocorrelation of residuals
+\item \code{"simulation"} — Simulation (unconditioned) performance panels
+\item \code{"class"} — By-class (classvar group) diagnostic panels
+\item \code{"ratio"} — Obs/pred ratio by drainage area and classvar
+\item \code{"validation"} — Validation performance panels (requires
+validation data in \code{estimate.list$vMdiagnostics.list})
+\item \code{"bootstrap"} — Bootstrap coefficient uncertainty
+(requires prior call to \code{\link{rsparrow_bootstrap}})
+}}
 
-\item{...}{Additional arguments. For \code{type = "residuals"}, the
-\code{panel} argument selects which 4-panel group to display: \code{"A"}
-(observed vs. predicted and residuals), \code{"B"} (boxplots and Q-Q),
-or \code{"both"}.}
+\item{...}{Additional arguments. For \code{type = "residuals"},
+\code{"simulation"}, or \code{"validation"}, the \code{panel} argument
+selects which 4-panel group: \code{"A"} (observed vs. predicted and
+residuals), \code{"B"} (boxplots and Q-Q), or \code{"both"}.}
 }
 \value{
 Called for its side effects (plots drawn to the current graphics
